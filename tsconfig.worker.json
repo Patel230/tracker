@@ -1,0 +1,24 @@
+{
+  "compilerOptions": {
+    "composite": true,
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.worker.tsbuildinfo",
+    "target": "ES2022",
+    "lib": ["ES2022"],
+    "types": ["@cloudflare/workers-types", "vitest/globals"],
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+    "skipLibCheck": true,
+    "isolatedModules": true,
+    "moduleDetection": "force",
+    "noEmit": true,
+    "verbatimModuleSyntax": true
+  },
+  "include": ["worker", "shared"],
+  // Tests run in Node under vitest (see vitest.config.ts) and use node:fs /
+  // import.meta.url, which the workerd-targeted compiler options reject.
+  "exclude": ["worker/**/*.test.ts"]
+}

@@ -1,0 +1,59 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Space Grotesk", ui-sans-serif, system-ui, -apple-system, sans-serif;
+
+  --color-brut-ink: #111111;
+  --color-brut-paper: #f2eee3;
+  --color-brut-surface: #ffffff;
+  --color-brut-yellow: #ffd60a;
+
+  --color-brut-wishlist: #e69f00;
+  --color-brut-applied: #0072b2;
+  --color-brut-interview: #009e73;
+  --color-brut-offer: #cc79a7;
+  --color-brut-rejected: #d55e00;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  background-color: var(--color-brut-paper);
+  color: var(--color-brut-ink);
+}
+
+/* Raw brutalist edges everywhere, including native form-control corners. */
+* {
+  border-radius: 0 !important;
+}
+
+@layer components {
+  .btn-brut {
+    @apply inline-flex items-center justify-center gap-2 border-2 border-brut-ink bg-brut-yellow px-4 py-2 text-sm font-bold uppercase tracking-wide text-brut-ink shadow-[4px_4px_0_var(--color-brut-ink)] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0_var(--color-brut-ink)] active:translate-x-[4px] active:translate-y-[4px] active:shadow-none disabled:pointer-events-none disabled:opacity-50;
+  }
+  .btn-brut-ghost {
+    @apply inline-flex items-center justify-center gap-2 border-2 border-brut-ink bg-brut-surface px-4 py-2 text-sm font-bold uppercase tracking-wide text-brut-ink shadow-[4px_4px_0_var(--color-brut-ink)] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0_var(--color-brut-ink)] active:translate-x-[4px] active:translate-y-[4px] active:shadow-none disabled:pointer-events-none disabled:opacity-50;
+  }
+  .btn-brut-sm {
+    @apply inline-flex items-center justify-center gap-1 border-2 border-brut-ink bg-brut-surface px-2.5 py-1 text-xs font-bold uppercase tracking-wide text-brut-ink shadow-[2px_2px_0_var(--color-brut-ink)] transition-all hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0_var(--color-brut-ink)] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none disabled:pointer-events-none disabled:opacity-50;
+  }
+  .btn-brut-danger {
+    @apply inline-flex items-center justify-center gap-1 border-2 border-brut-ink bg-brut-rejected px-2.5 py-1 text-xs font-bold uppercase tracking-wide text-white shadow-[2px_2px_0_var(--color-brut-ink)] transition-all hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0_var(--color-brut-ink)] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none;
+  }
+  .input-brut {
+    @apply w-full border-2 border-brut-ink bg-brut-surface px-3 py-2 text-sm font-medium text-brut-ink placeholder:text-brut-ink/40 focus:outline-none focus:shadow-[3px_3px_0_var(--color-brut-ink)] transition-shadow;
+  }
+  .card-brut {
+    @apply border-2 border-brut-ink bg-brut-surface shadow-[4px_4px_0_var(--color-brut-ink)];
+  }
+  .panel-brut {
+    @apply border-2 border-brut-ink bg-brut-surface shadow-[8px_8px_0_var(--color-brut-ink)];
+  }
+  .badge-brut {
+    @apply inline-block border-2 border-brut-ink px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide;
+  }
+}

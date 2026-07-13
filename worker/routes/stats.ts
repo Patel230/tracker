@@ -1,0 +1,87 @@
+import { Hono } from "hono";
+import { JOB_STATUSES, type JobStatus, type Stats } from "../../shared/types";
+import type { AppEnv } from "../lib/auth";
+
+const INTERVIEW_TYPES = "('phone_screen', 'interview', 'onsite', 'offer')";
+
+const stats = new Hono<AppEnv>();
+
+stats.get("/", async (c) => {
+  const userId = c.get("userId");
+
+  // Four independent analytics reads — run them in parallel instead of
+  // awaiting each one and paying four cold-D1 round-trips back-to-back.
+  const [funnelRows, rates, avgRow, appliedDates] = await Promise.all([
+    c.env.DB.prepare(
+      "SELECT status, COUNT(*) AS n FROM jobs WHERE user_id = ? AND archived = 0 GROUP BY status"
+    )
+      .bind(userId)
+      .all<{ status: JobStatus; n: number }>(),
+
+    c.env.DB.prepare(
+      `SELECT
+         COUNT(*) AS applied,
+         SUM(CASE WHEN status IN ('interview', 'offer')
+                    OR EXISTS (SELECT 1 FROM activities a
+                               WHERE a.job_id = jobs.id AND a.type IN ${INTERVIEW_TYPES})
+                  THEN 1 ELSE 0 END) AS responded
+       FROM jobs WHERE user_id = ? AND applied_at IS NOT NULL`
+    )
+      .bind(userId)
+      .first<{ applied: number; responded: number | null }>(),
+
+    c.env.DB.prepare(
+      `SELECT AVG(julianday(first_iv) - julianday(applied_at)) AS avg_days
+       FROM (
+         SELECT j.applied_at,
+                (SELECT MIN(a.happened_at) FROM activities a
+                 WHERE a.job_id = j.id AND a.type IN ${INTERVIEW_TYPES}) AS first_iv
+         FROM jobs j WHERE j.user_id = ? AND j.applied_at IS NOT NULL
+       ) WHERE first_iv IS NOT NULL`
+    )
+      .bind(userId)
+      .first<{ avg_days: number | null }>(),
+
+    c.env.DB.prepare(
+      "SELECT applied_at FROM jobs WHERE user_id = ? AND applied_at >= datetime('now', '-84 days')"
+    )
+      .bind(userId)
+      .all<{ applied_at: string }>(),
+  ]);
+
+  const funnel = Object.fromEntries(JOB_STATUSES.map((s) => [s, 0])) as Record<JobStatus, number>;
+  for (const row of funnelRows.results) funnel[row.status] = row.n;
+
+  // Bucket by Monday-start week, always emitting the full 12-week window.
+  const weekStart = (d: Date) => {
+    const day = (d.getUTCDay() + 6) % 7;
+    const monday = new Date(d);
+    monday.setUTCDate(d.getUTCDate() - day);
+    return monday.toISOString().slice(0, 10);
+  };
+  const weekly: { weekStart: string; count: number }[] = [];
+  const cursor = new Date();
+  cursor.setUTCDate(cursor.getUTCDate() - 7 * 11);
+  for (let i = 0; i < 12; i++) {
+    weekly.push({ weekStart: weekStart(cursor), count: 0 });
+    cursor.setUTCDate(cursor.getUTCDate() + 7);
+  }
+  for (const row of appliedDates.results) {
+    const ws = weekStart(new Date(row.applied_at));
+    const bucket = weekly.find((w) => w.weekStart === ws);
+    if (bucket) bucket.count++;
+  }
+
+  const applied = rates?.applied ?? 0;
+  const body: Stats = {
+    funnel,
+    totalActive: funnel.wishlist + funnel.applied + funnel.interview + funnel.offer,
+    responseRate: applied > 0 ? (rates?.responded ?? 0) / applied : null,
+    offers: funnel.offer,
+    avgDaysToInterview: avgRow?.avg_days ?? null,
+    weekly,
+  };
+  return c.json(body);
+});
+
+export default stats;
