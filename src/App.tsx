@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Navigate, NavLink, Route, Routes } from "react-router-dom";
 import { KeyRound, Kanban, LayoutDashboard, LogOut, Rows3, Trash2 } from "lucide-react";
 import { useAuth } from "./lib/auth";
+import Logo from "./components/Logo";
 import Landing from "./pages/Landing";
 import Login from "./pages/Login";
 import Board from "./pages/Board";
@@ -44,9 +45,7 @@ export default function App() {
     <RemindersProvider>
     <div className="flex h-full flex-col bg-brut-paper">
       <header className="flex items-center gap-6 border-b-2 border-brut-ink bg-brut-surface px-6 py-3">
-        <h1 className="text-lg font-extrabold uppercase tracking-tight text-brut-ink">
-          Tracker<span className="text-brut-rejected">.</span>
-        </h1>
+        <Logo size={22} />
         <nav className="flex gap-2">
           {tabs.map((t) => (
             <NavLink

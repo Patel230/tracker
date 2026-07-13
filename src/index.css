@@ -13,6 +13,26 @@
   --color-brut-interview: #009e73;
   --color-brut-offer: #cc79a7;
   --color-brut-rejected: #d55e00;
+
+  --animate-float: float 3s ease-in-out infinite;
+  --animate-wiggle: wiggle 1s ease-in-out infinite;
+  --animate-pulse-dot: pulse-dot 2s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+@keyframes wiggle {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(-3deg); }
+  75% { transform: rotate(3deg); }
+}
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 1; }
 }
 
 html,
@@ -26,9 +46,14 @@ body {
   color: var(--color-brut-ink);
 }
 
-/* Raw brutalist edges everywhere, including native form-control corners. */
 * {
   border-radius: 0 !important;
+}
+
+@layer utilities {
+  .decoration-dot {
+    @apply inline-block size-2 bg-brut-ink;
+  }
 }
 
 @layer components {
