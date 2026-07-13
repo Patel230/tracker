@@ -154,7 +154,7 @@ export default function TableView() {
         <JobDrawer
           job={openJob}
           onClose={() => setOpenJobId(null)}
-          onChange={(j) => setJobs((js) => js.map((x) => (x.id === j.id ? j : x)))}
+          onChange={(updated) => setJobs((js) => js.map((x) => updated.find((u) => u.id === x.id) ?? x))}
           onDelete={(id) => { setJobs((js) => js.filter((x) => x.id !== id)); setOpenJobId(null); }}
         />
       )}

@@ -355,6 +355,36 @@ describe("jobs", () => {
     expect(stats.weekly.reduce((n, w) => n + w.count, 0)).toBe(1);
   });
 
+  it("move places the card at the requested slot and renumbers the column", async () => {
+    const c = client();
+    await c.fetch("/api/auth/register", json({ email: "order@test.dev", password: "password1" }));
+
+    // Three cards sitting in "applied".
+    const ids: string[] = [];
+    for (const company of ["A", "B", "C"]) {
+      const j = (await (await c.fetch("/api/jobs", json({ company, title: "R", status: "applied" }))).json()) as Job;
+      ids.push(j.id);
+    }
+
+    // A wishlist card moved to the top of "applied" (index 0) — this is what
+    // the drawer's status dropdown now does instead of a bare PATCH, which
+    // would have left sort_order pointing into the column it came from.
+    const moving = (await (await c.fetch("/api/jobs", json({ company: "New", title: "R" }))).json()) as Job;
+    const rows = (await (
+      await c.fetch(`/api/jobs/${moving.id}/move`, {
+        method: "PATCH",
+        body: JSON.stringify({ status: "applied", index: 0 }),
+      })
+    ).json()) as Job[];
+
+    const applied = rows.sort((a, b) => a.sort_order - b.sort_order);
+    expect(applied[0].id).toBe(moving.id);
+    expect(applied.map((j) => j.sort_order)).toEqual([0, 1, 2, 3]);
+    expect(applied.every((j) => j.status === "applied")).toBe(true);
+    expect(applied).toHaveLength(4);
+    expect(ids.every((id) => applied.some((j) => j.id === id))).toBe(true);
+  });
+
   it("validates input", async () => {
     const c = client();
     await c.fetch("/api/auth/register", json({ email: "val@test.dev", password: "password1" }));
