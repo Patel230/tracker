@@ -9,13 +9,21 @@ export default function Login() {
   const [mode, setMode] = useState<"login" | "register">("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [showPw, setShowPw] = useState(false);
+  const [showConfirmPw, setShowConfirmPw] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+
+  const passwordsMatch = mode !== "register" || password === confirmPassword;
 
   const submit = async (e: FormEvent) => {
     e.preventDefault();
     setError(null);
+    if (mode === "register" && password !== confirmPassword) {
+      setError("Passwords do not match");
+      return;
+    }
     setBusy(true);
     try {
       await (mode === "login" ? login(email, password) : register(email, password));
@@ -70,7 +78,7 @@ export default function Login() {
             <div className="flex border-2 border-brut-ink">
               <button
                 type="button"
-                onClick={() => { setMode("login"); setError(null); }}
+                onClick={() => { setMode("login"); setConfirmPassword(""); setError(null); }}
                 className={`flex-1 py-2.5 text-xs font-extrabold uppercase tracking-wide transition-colors ${
                   mode === "login"
                     ? "bg-brut-ink text-brut-yellow"
@@ -81,7 +89,7 @@ export default function Login() {
               </button>
               <button
                 type="button"
-                onClick={() => { setMode("register"); setError(null); }}
+                onClick={() => { setMode("register"); setConfirmPassword(""); setError(null); }}
                 className={`flex-1 py-2.5 text-xs font-extrabold uppercase tracking-wide transition-colors ${
                   mode === "register"
                     ? "bg-brut-ink text-brut-yellow"
@@ -131,6 +139,32 @@ export default function Login() {
                   </button>
                 </div>
               </label>
+
+              {mode === "register" && (
+                <label className="block text-xs font-bold uppercase tracking-wide text-brut-ink/60">
+                  Confirm password
+                  <div className="mt-1.5 relative">
+                    <Lock size={14} strokeWidth={2.5} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-brut-ink/40" />
+                    <input
+                      type={showConfirmPw ? "text" : "password"}
+                      required
+                      minLength={8}
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      placeholder="Repeat your password"
+                      className={`input-brut pl-9 pr-9 ${!passwordsMatch && confirmPassword ? "border-brut-rejected" : ""}`}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowConfirmPw(!showConfirmPw)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-brut-ink/40 hover:text-brut-ink"
+                      tabIndex={-1}
+                    >
+                      {showConfirmPw ? <EyeOff size={14} strokeWidth={2.5} /> : <Eye size={14} strokeWidth={2.5} />}
+                    </button>
+                  </div>
+                </label>
+              )}
 
               {error && (
                 <div className="flex items-center gap-2 border-2 border-brut-rejected bg-brut-rejected/10 px-3 py-2">
