@@ -296,6 +296,21 @@ describe("auth", () => {
   });
 });
 
+describe("route protection", () => {
+  it("leaves the auth routes public and every other API route behind requireAuth", async () => {
+    // Pins the router split: the public endpoints must still be reachable with
+    // no cookie, and everything else must 401 with no cookie.
+    const anon = client();
+    expect((await anon.fetch("/api/auth/login", json({ email: "nobody@test.dev", password: "wrongpass1" }))).status)
+      .toBe(401); // reached the handler (bad creds), not blocked by requireAuth
+    expect((await anon.fetch("/api/auth/logout", { method: "POST" })).status).toBe(200);
+
+    for (const path of ["/api/jobs", "/api/stats", "/api/reminders/upcoming"]) {
+      expect((await client().fetch(path)).status).toBe(401);
+    }
+  });
+});
+
 describe("jobs", () => {
   it("full lifecycle: create, move (logs activity, stamps applied_at), stats, delete", async () => {
     const c = client();
