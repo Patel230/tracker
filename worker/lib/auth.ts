@@ -7,7 +7,19 @@ const SESSION_DAYS = 30;
 
 export type AppEnv = { Bindings: Env; Variables: { userId: string } };
 
-function secretKey(secret: string) {
+const MIN_SECRET_LENGTH = 32;
+
+// TextEncoder turns a missing secret into a zero-length key, which jose will
+// happily sign AND verify with — a deploy that forgot the secret would accept
+// forged sessions for any user instead of failing. Refuse to start instead.
+function secretKey(secret: string | undefined) {
+  if (!secret || secret.length < MIN_SECRET_LENGTH) {
+    throw new Error(
+      `JWT_SECRET is missing or shorter than ${MIN_SECRET_LENGTH} characters. ` +
+        `Generate one with \`openssl rand -base64 32\` and set it with \`wrangler secret put JWT_SECRET\` ` +
+        `(or in .dev.vars for local development).`
+    );
+  }
   return new TextEncoder().encode(secret);
 }
 
@@ -34,8 +46,11 @@ export function clearSession(c: Context<AppEnv>) {
 export async function verifySession(c: Context<AppEnv>): Promise<string | null> {
   const token = getCookie(c, AUTH_COOKIE);
   if (!token) return null;
+  // Resolved outside the try: a bad JWT_SECRET is a misconfigured server, not a
+  // bad token, and must not be swallowed into a 401.
+  const key = secretKey(c.env.JWT_SECRET);
   try {
-    const { payload } = await jwtVerify(token, secretKey(c.env.JWT_SECRET));
+    const { payload } = await jwtVerify(token, key);
     return typeof payload.sub === "string" ? payload.sub : null;
   } catch {
     return null;

@@ -8,9 +8,12 @@ import type { Job, Activity, Stats } from "../shared/types";
 let env: Env;
 let dispose: () => Promise<void>;
 
+// Must clear the 32-char floor enforced by secretKey().
+const TEST_SECRET = "test-secret-that-is-long-enough-to-pass";
+
 beforeAll(async () => {
   const proxy = await getPlatformProxy<Env>({ persist: false });
-  env = { ...proxy.env, JWT_SECRET: "test-secret", ALLOW_REGISTRATION: "true" };
+  env = { ...proxy.env, JWT_SECRET: TEST_SECRET, ALLOW_REGISTRATION: "true" };
   dispose = proxy.dispose;
 
   const statements = (
@@ -68,6 +71,24 @@ describe("auth", () => {
       closed
     );
     expect(res.status).toBe(403);
+  });
+
+  it("refuses to issue a session when JWT_SECRET is missing or too short", async () => {
+    // A zero-length key is one jose will sign and verify with, so a deploy that
+    // forgot the secret would accept forged sessions. It must fail loudly.
+    // Distinct emails: the row is inserted before createSession throws, so
+    // reusing one address would make the second case a 409 rather than a 500.
+    for (const [i, secret] of [undefined, "too-short"].entries()) {
+      const res = await app.request(
+        "/api/auth/register",
+        {
+          ...json({ email: `weak${i}@test.dev`, password: "password1" }),
+          headers: { "Content-Type": "application/json" },
+        },
+        { ...env, JWT_SECRET: secret } as Env
+      );
+      expect(res.status).toBe(500);
+    }
   });
 
   it("rejects bad credentials and unauthenticated API access", async () => {
