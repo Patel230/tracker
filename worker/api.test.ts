@@ -14,7 +14,11 @@ const TEST_SECRET = "test-secret-that-is-long-enough-to-pass";
 
 beforeAll(async () => {
   const proxy = await getPlatformProxy<Env>({ persist: false });
-  env = { ...proxy.env, JWT_SECRET: TEST_SECRET, ALLOW_REGISTRATION: "true" };
+  // getPlatformProxy DOES hand back a real AUTH_RATE_LIMITER because
+  // wrangler.jsonc declares one, and the suite makes far more than 10 login
+  // calls from a single (absent → "unknown") IP. Drop it by default so the
+  // limiter can't throttle unrelated tests; the rate-limit test injects a stub.
+  env = { ...proxy.env, AUTH_RATE_LIMITER: undefined, JWT_SECRET: TEST_SECRET, ALLOW_REGISTRATION: "true" };
   dispose = proxy.dispose;
 
   // Read the whole directory in order rather than naming files: a new migration
@@ -143,6 +147,36 @@ describe("auth", () => {
     // the bound is loose because CI timing is noisy, but a regression would
     // show up as unknown being many times faster, not marginally so.
     expect(unknown).toBeGreaterThan(known * 0.5);
+  });
+
+  it("rate limits login attempts when the binding is present, and works without it", async () => {
+    let calls = 0;
+    const limited: Env = {
+      ...env,
+      AUTH_RATE_LIMITER: {
+        limit: async ({ key }) => {
+          expect(key).toBe("login:203.0.113.7"); // bucket + client IP
+          return { success: ++calls <= 2 };
+        },
+      },
+    };
+
+    const attempt = (e: Env) =>
+      app.request(
+        "/api/auth/login",
+        {
+          ...json({ email: "nobody@test.dev", password: "wrongpassword" }),
+          headers: { "Content-Type": "application/json", "CF-Connecting-IP": "203.0.113.7" },
+        },
+        e
+      );
+
+    expect((await attempt(limited)).status).toBe(401); // 1st: allowed, bad creds
+    expect((await attempt(limited)).status).toBe(401); // 2nd: allowed, bad creds
+    expect((await attempt(limited)).status).toBe(429); // 3rd: throttled
+
+    // Absent binding (tests, local dev) must not break the endpoint.
+    expect((await attempt(env)).status).toBe(401);
   });
 
   it("rejects bad credentials and unauthenticated API access", async () => {

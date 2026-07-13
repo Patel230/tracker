@@ -2,6 +2,7 @@ import { Hono } from "hono";
 import { z } from "zod";
 import { createSession, clearSession, authenticate, type AppEnv } from "../lib/auth";
 import { hashPassword, verifyPassword, isLegacyHash, dummyVerify } from "../lib/password";
+import { rateLimitByIp } from "../lib/ratelimit";
 
 const credentials = z.object({
   email: z.string().email().max(254),
@@ -14,6 +15,13 @@ const changePasswordBody = z.object({
 });
 
 const auth = new Hono<AppEnv>();
+
+// Guessing a password is a game of volume; these are the only endpoints where
+// volume is the attack. change-password is included because it accepts the
+// current password.
+auth.use("/login", rateLimitByIp("login"));
+auth.use("/register", rateLimitByIp("register"));
+auth.use("/change-password", rateLimitByIp("change-password"));
 
 auth.post("/register", async (c) => {
   if (c.env.ALLOW_REGISTRATION !== "true") {
