@@ -1,5 +1,19 @@
 @import "tailwindcss";
 
+/* Self-hosted so the app makes no third-party request on load: the Google Fonts
+   <link> leaked every visitor's IP and User-Agent to Google, blocked the first
+   paint on a server we don't control, and forced font-src to allow an external
+   origin in the CSP. This is the latin subset of the variable face (300–700).
+   Note the design uses font-black (900), which this face does not contain — the
+   browser synthesises it, exactly as it did when Google served the font. */
+@font-face {
+  font-family: "Space Grotesk";
+  font-style: normal;
+  font-weight: 300 700;
+  font-display: swap;
+  src: url("/fonts/space-grotesk-var.woff2") format("woff2");
+}
+
 @theme {
   --font-sans: "Space Grotesk", ui-sans-serif, system-ui, -apple-system, sans-serif;
   --font-head: "Space Grotesk", ui-sans-serif, system-ui, -apple-system, sans-serif;
