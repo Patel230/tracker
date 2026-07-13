@@ -1,7 +1,16 @@
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { Clock, MapPin, Wallet } from "lucide-react";
-import { PERIOD_LABELS, type Job } from "../../shared/types";
+import { PERIOD_LABELS, type Job, type JobStatus } from "../../shared/types";
+import { STATUS_BG } from "../lib/theme";
+
+const BORDER_COLORS: Record<JobStatus, string> = {
+  wishlist: "border-l-brut-wishlist",
+  applied: "border-l-brut-applied",
+  interview: "border-l-brut-interview",
+  offer: "border-l-brut-offer",
+  rejected: "border-l-brut-rejected",
+};
 
 export function salaryLabel(job: Job): string | null {
   const fmt = (n: number) => (n >= 1000 ? `${Math.round(n / 1000)}k` : String(n));
@@ -42,6 +51,7 @@ export default function JobCard({ job, onOpen, overlay }: Props) {
       };
 
   const salary = salaryLabel(job);
+  const borderColor = BORDER_COLORS[job.status];
 
   return (
     <div
@@ -49,8 +59,8 @@ export default function JobCard({ job, onOpen, overlay }: Props) {
       style={style}
       {...(overlay ? {} : { ...sortable.attributes, ...sortable.listeners })}
       onClick={() => onOpen?.(job.id)}
-      className={`card-brut cursor-grab p-3 hover:shadow-[2px_2px_0_var(--color-brut-ink)] hover:translate-x-[2px] hover:translate-y-[2px] transition-all ${
-        overlay ? "rotate-2 shadow-[6px_6px_0_var(--color-brut-ink)]" : ""
+      className={`border-2 border-brut-ink border-l-4 bg-brut-surface cursor-grab p-3 hover:shadow-[2px_2px_0_var(--color-brut-ink)] hover:translate-x-[2px] hover:translate-y-[2px] transition-all ${borderColor} ${
+        overlay ? "rotate-2 shadow-[6px_6px_0_var(--color-brut-ink)]" : "shadow-[4px_4px_0_var(--color-brut-ink)]"
       }`}
     >
       <div className="text-sm font-extrabold text-brut-ink">{job.company}</div>
@@ -63,7 +73,7 @@ export default function JobCard({ job, onOpen, overlay }: Props) {
           </span>
         )}
         {salary && (
-          <span className="badge-brut flex items-center gap-1 border-brut-offer bg-brut-offer/15 text-brut-ink">
+          <span className={`badge-brut flex items-center gap-1 ${STATUS_BG[job.status]} border-brut-ink text-white`}>
             <Wallet size={10} strokeWidth={2.5} />
             {salary}
           </span>

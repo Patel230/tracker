@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { ArchiveRestore, ChevronDown, ChevronUp, Search } from "lucide-react";
+import { ArchiveRestore, ChevronDown, ChevronUp, Search, ListFilter } from "lucide-react";
 import { api } from "../lib/api";
 import { JOB_STATUSES, STATUS_LABELS, type Job, type JobStatus } from "../../shared/types";
 import { salaryLabel, daysAgo, exactTimestamp } from "../components/JobCard";
@@ -41,16 +41,13 @@ export default function TableView() {
 
   const openJob = openJobId ? (jobs.find((j) => j.id === openJobId) ?? null) : null;
 
-  const header = (key: SortKey, label: string) => (
+  const header = (key: SortKey, label: string, color: string) => (
     <th
       onClick={() => {
         if (sortKey === key) setSortAsc(!sortAsc);
-        else {
-          setSortKey(key);
-          setSortAsc(true);
-        }
+        else { setSortKey(key); setSortAsc(true); }
       }}
-      className="cursor-pointer select-none px-4 py-2.5 text-left text-xs font-extrabold uppercase tracking-wide text-brut-paper hover:text-brut-yellow"
+      className={`cursor-pointer select-none px-4 py-2.5 text-left text-xs font-extrabold uppercase tracking-wide text-white hover:opacity-80 ${color}`}
     >
       <span className="flex items-center gap-1">
         {label}
@@ -63,8 +60,8 @@ export default function TableView() {
   return (
     <div className="h-full overflow-y-auto p-6">
       <div className="mb-4 flex flex-wrap items-center gap-3">
-        <div className="relative w-72">
-          <Search size={14} strokeWidth={2.5} className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-brut-ink/40" />
+        <div className="relative">
+          <Search size={14} strokeWidth={2.5} className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-brut-interview" />
           <input
             placeholder="Search company, title, location…"
             value={query}
@@ -72,14 +69,15 @@ export default function TableView() {
             className="input-brut pl-8"
           />
         </div>
-        <select value={status} onChange={(e) => setStatus(e.target.value as JobStatus | "all")} className="input-brut w-auto">
-          <option value="all">All statuses</option>
-          {JOB_STATUSES.map((s) => (
-            <option key={s} value={s}>
-              {STATUS_LABELS[s]}
-            </option>
-          ))}
-        </select>
+        <div className="flex items-center gap-1">
+          <ListFilter size={14} strokeWidth={2.5} className="text-brut-wishlist" />
+          <select value={status} onChange={(e) => setStatus(e.target.value as JobStatus | "all")} className="input-brut w-auto">
+            <option value="all">All statuses</option>
+            {JOB_STATUSES.map((s) => (
+              <option key={s} value={s}>{STATUS_LABELS[s]}</option>
+            ))}
+          </select>
+        </div>
         <label className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wide text-brut-ink">
           <input
             type="checkbox"
@@ -87,7 +85,7 @@ export default function TableView() {
             onChange={(e) => setShowArchived(e.target.checked)}
             className="size-4 accent-brut-ink"
           />
-          <ArchiveRestore size={13} strokeWidth={2.5} />
+          <ArchiveRestore size={13} strokeWidth={2.5} className="text-brut-offer" />
           Include archived
         </label>
         <span className="ml-auto text-xs font-bold uppercase tracking-wide text-brut-ink/40">{rows.length} jobs</span>
@@ -95,15 +93,15 @@ export default function TableView() {
 
       <div className="card-brut overflow-x-auto">
         <table className="w-full text-sm">
-          <thead className="bg-brut-ink">
+          <thead>
             <tr>
-              {header("company", "Company")}
-              {header("title", "Title")}
-              {header("status", "Status")}
-              <th className="px-4 py-2.5 text-left text-xs font-extrabold uppercase tracking-wide text-brut-paper">Location</th>
-              <th className="px-4 py-2.5 text-left text-xs font-extrabold uppercase tracking-wide text-brut-paper">Salary</th>
-              {header("applied_at", "Applied")}
-              {header("created_at", "Added")}
+              {header("company", "Company", "bg-brut-wishlist")}
+              {header("title", "Title", "bg-brut-applied")}
+              {header("status", "Status", "bg-brut-interview")}
+              <th className="bg-brut-wishlist px-4 py-2.5 text-left text-xs font-extrabold uppercase tracking-wide text-white">Location</th>
+              <th className="bg-brut-offer px-4 py-2.5 text-left text-xs font-extrabold uppercase tracking-wide text-white">Salary</th>
+              {header("applied_at", "Applied", "bg-brut-applied")}
+              {header("created_at", "Added", "bg-brut-ink")}
             </tr>
           </thead>
           <tbody>
@@ -111,9 +109,10 @@ export default function TableView() {
               <tr
                 key={j.id}
                 onClick={() => setOpenJobId(j.id)}
-                className="cursor-pointer border-b-2 border-brut-ink/10 last:border-0 hover:bg-brut-yellow/20"
+                className={`cursor-pointer border-b-2 border-brut-ink/10 last:border-0 transition-colors hover:${STATUS_BG[j.status]}/10`}
               >
-                <td className="px-4 py-2.5 font-extrabold text-brut-ink">
+                <td className="px-4 py-2.5 font-extrabold text-brut-ink border-l-4"
+                  style={{ borderLeftColor: `var(--color-brut-${j.status})` }}>
                   {j.company}
                   {!!j.archived && <span className="ml-2 text-xs font-bold text-brut-ink/40">(archived)</span>}
                 </td>
@@ -124,10 +123,12 @@ export default function TableView() {
                   </span>
                 </td>
                 <td className="px-4 py-2.5 font-medium text-brut-ink/60">{j.location ?? "—"}</td>
-                <td className="px-4 py-2.5 font-medium text-brut-ink/60">{salaryLabel(j) ?? "—"}</td>
+                <td className="px-4 py-2.5 font-medium">
+                  <span className="font-bold text-brut-offer">{salaryLabel(j) ?? "—"}</span>
+                </td>
                 <td
                   title={j.applied_at ? exactTimestamp(j.applied_at) : undefined}
-                  className="px-4 py-2.5 font-medium text-brut-ink/60"
+                  className="px-4 py-2.5 font-medium text-brut-applied/70"
                 >
                   {j.applied_at ? daysAgo(j.applied_at) : "—"}
                 </td>
@@ -152,10 +153,7 @@ export default function TableView() {
           job={openJob}
           onClose={() => setOpenJobId(null)}
           onChange={(j) => setJobs((js) => js.map((x) => (x.id === j.id ? j : x)))}
-          onDelete={(id) => {
-            setJobs((js) => js.filter((x) => x.id !== id));
-            setOpenJobId(null);
-          }}
+          onDelete={(id) => { setJobs((js) => js.filter((x) => x.id !== id)); setOpenJobId(null); }}
         />
       )}
     </div>

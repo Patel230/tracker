@@ -12,6 +12,8 @@ const TILE_STYLES = [
   { bg: "bg-brut-offer", border: "border-brut-offer", text: "text-brut-ink" },
 ];
 
+const BAR_COLORS = [STATUS_HEX.wishlist, STATUS_HEX.applied, STATUS_HEX.interview, STATUS_HEX.offer, STATUS_HEX.rejected];
+
 export default function Dashboard() {
   const [stats, setStats] = useState<Stats | null>(null);
   const { reminders, complete } = useReminders();
@@ -66,13 +68,19 @@ export default function Dashboard() {
 
         <div className="grid gap-6 lg:grid-cols-2">
           <div className="card-brut p-4">
-            <h2 className="text-xs font-extrabold uppercase tracking-wide text-brut-ink">Applications per week</h2>
+            <h2 className="flex items-center gap-1.5 text-xs font-extrabold uppercase tracking-wide text-brut-ink">
+              <Briefcase size={13} strokeWidth={2.5} className="text-brut-applied" />
+              Applications per week
+            </h2>
             <p className="text-xs font-medium text-brut-ink/40">last 12 weeks</p>
             <WeeklyBars weekly={stats.weekly} />
           </div>
 
           <div className="card-brut p-4">
-            <h2 className="text-xs font-extrabold uppercase tracking-wide text-brut-ink">Pipeline</h2>
+            <h2 className="flex items-center gap-1.5 text-xs font-extrabold uppercase tracking-wide text-brut-ink">
+              <Timer size={13} strokeWidth={2.5} className="text-brut-interview" />
+              Pipeline
+            </h2>
             <p className="text-xs font-medium text-brut-ink/40">jobs by stage (active)</p>
             <Funnel funnel={stats.funnel} />
           </div>
@@ -80,7 +88,7 @@ export default function Dashboard() {
 
         <div className="card-brut p-4">
           <h2 className="flex items-center gap-1.5 text-xs font-extrabold uppercase tracking-wide text-brut-ink">
-            <Bell size={13} strokeWidth={2.5} />
+            <Bell size={13} strokeWidth={2.5} className="text-brut-wishlist" />
             Upcoming reminders
           </h2>
           {reminders.length === 0 ? (
@@ -117,8 +125,6 @@ export default function Dashboard() {
   );
 }
 
-const BAR_FILL = STATUS_HEX.applied;
-
 function WeeklyBars({ weekly }: { weekly: Stats["weekly"] }) {
   const [hover, setHover] = useState<number | null>(null);
 
@@ -150,6 +156,7 @@ function WeeklyBars({ weekly }: { weekly: Stats["weekly"] }) {
         {weekly.map((w, i) => {
           const x = pad.left + i * step + (step - barW) / 2;
           const barH = plotH * (w.count / max);
+          const color = BAR_COLORS[i % BAR_COLORS.length];
           return (
             <g key={w.weekStart}>
               {w.count > 0 && (
@@ -158,10 +165,10 @@ function WeeklyBars({ weekly }: { weekly: Stats["weekly"] }) {
                   y={y(w.count)}
                   width={barW}
                   height={barH}
-                  fill={BAR_FILL}
+                  fill={color}
                   stroke={INK_HEX}
                   strokeWidth="2"
-                  opacity={hover === null || hover === i ? 1 : 0.45}
+                  opacity={hover === null || hover === i ? 1 : 0.35}
                 />
               )}
               {(i === 0 || i === weekly.length - 1 || i === 6) && (
@@ -203,7 +210,7 @@ function Funnel({ funnel }: { funnel: Stats["funnel"] }) {
     <div className="mt-4 space-y-2.5">
       {JOB_STATUSES.map((s) => (
         <div key={s} className="flex items-center gap-3">
-          <span className="w-20 shrink-0 text-right text-xs font-extrabold uppercase tracking-wide text-brut-ink/60">
+          <span className="w-20 shrink-0 text-right text-xs font-extrabold uppercase tracking-wide" style={{ color: `var(--color-brut-${s})` }}>
             {STATUS_LABELS[s]}
           </span>
           <div className="h-4 flex-1 border-2 border-brut-ink/15 bg-brut-paper">

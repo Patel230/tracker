@@ -14,6 +14,12 @@ import ChangePasswordModal from "./components/ChangePasswordModal";
 import DeleteAccountModal from "./components/DeleteAccountModal";
 import { useClickOutside } from "./lib/useClickOutside";
 
+const TAB_COLORS = [
+  { border: "border-brut-wishlist", bg: "bg-brut-wishlist" },
+  { border: "border-brut-applied", bg: "bg-brut-applied" },
+  { border: "border-brut-interview", bg: "bg-brut-interview" },
+];
+
 const tabs = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard },
   { to: "/board", label: "Board", icon: Kanban },
@@ -63,21 +69,26 @@ export default function App() {
       <header className="flex items-center gap-6 border-b-2 border-brut-ink bg-brut-surface px-6 py-3">
         <Logo size={22} />
         <nav className="flex gap-2">
-          {tabs.map((t) => (
-            <NavLink
-              key={t.to}
-              to={t.to}
-              end={t.to === "/"}
-              className={({ isActive }) =>
-                `flex items-center gap-1.5 border-2 border-brut-ink px-3 py-1.5 text-xs font-bold uppercase tracking-wide transition-colors ${
-                  isActive ? "bg-brut-yellow text-brut-ink" : "bg-brut-surface text-brut-ink hover:bg-brut-paper"
-                }`
-              }
-            >
-              <t.icon size={14} strokeWidth={2.5} />
-              {t.label}
-            </NavLink>
-          ))}
+          {tabs.map((t, i) => {
+            const c = TAB_COLORS[i];
+            return (
+              <NavLink
+                key={t.to}
+                to={t.to}
+                end={t.to === "/"}
+                className={({ isActive }) =>
+                  `flex items-center gap-1.5 border-2 px-3 py-1.5 text-xs font-bold uppercase tracking-wide transition-all ${
+                    isActive
+                      ? `${c.border} ${c.bg} text-white shadow-[2px_2px_0_var(--color-brut-ink)]`
+                      : "border-brut-ink bg-brut-surface text-brut-ink hover:bg-brut-paper"
+                  }`
+                }
+              >
+                <t.icon size={14} strokeWidth={2.5} />
+                {t.label}
+              </NavLink>
+            );
+          })}
         </nav>
 
         <div className="ml-auto relative" ref={menuRef}>
@@ -93,21 +104,21 @@ export default function App() {
 
           {menuOpen && (
             <div className="absolute right-0 top-full mt-1.5 w-52 border-2 border-brut-ink bg-brut-surface shadow-[4px_4px_0_var(--color-brut-ink)] z-50">
-              <div className="border-b-2 border-brut-ink px-4 py-2.5">
+              <div className="border-b-2 border-brut-ink bg-brut-yellow/30 px-4 py-2.5">
                 <p className="text-xs font-bold uppercase tracking-wide text-brut-ink/50">Signed in as</p>
                 <p className="text-sm font-bold text-brut-ink truncate">{user.email}</p>
               </div>
               <div className="py-1">
                 <button
                   onClick={() => { setChangingPassword(true); setMenuOpen(false); }}
-                  className="flex w-full items-center gap-3 px-4 py-2.5 text-xs font-bold uppercase tracking-wide text-brut-ink hover:bg-brut-paper transition-colors"
+                  className="flex w-full items-center gap-3 px-4 py-2.5 text-xs font-bold uppercase tracking-wide text-brut-applied hover:bg-brut-paper transition-colors"
                 >
                   <KeyRound size={14} strokeWidth={2.5} />
                   Change password
                 </button>
                 <button
                   onClick={() => { logout(); setMenuOpen(false); }}
-                  className="flex w-full items-center gap-3 px-4 py-2.5 text-xs font-bold uppercase tracking-wide text-brut-ink hover:bg-brut-paper transition-colors"
+                  className="flex w-full items-center gap-3 px-4 py-2.5 text-xs font-bold uppercase tracking-wide text-brut-rejected hover:bg-brut-paper transition-colors"
                 >
                   <LogOut size={14} strokeWidth={2.5} />
                   Log out
