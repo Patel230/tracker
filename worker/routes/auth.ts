@@ -1,6 +1,6 @@
 import { Hono } from "hono";
 import { z } from "zod";
-import { createSession, clearSession, verifySession, type AppEnv } from "../lib/auth";
+import { createSession, clearSession, authenticate, type AppEnv } from "../lib/auth";
 import { hashPassword, verifyPassword, isLegacyHash } from "../lib/password";
 
 const credentials = z.object({
@@ -33,7 +33,7 @@ auth.post("/register", async (c) => {
   await c.env.DB.prepare("INSERT INTO users (id, email, password_hash) VALUES (?, ?, ?)")
     .bind(id, email.toLowerCase(), hash)
     .run();
-  await createSession(c, id);
+  await createSession(c, id, 0);
   return c.json({ id, email: email.toLowerCase() }, 201);
 });
 
@@ -42,9 +42,11 @@ auth.post("/login", async (c) => {
   if (!parsed.success) return c.json({ error: "Email and password required" }, 400);
   const { email, password } = parsed.data;
 
-  const user = await c.env.DB.prepare("SELECT id, email, password_hash FROM users WHERE email = ?")
+  const user = await c.env.DB.prepare(
+    "SELECT id, email, password_hash, token_version FROM users WHERE email = ?"
+  )
     .bind(email.toLowerCase())
-    .first<{ id: string; email: string; password_hash: string }>();
+    .first<{ id: string; email: string; password_hash: string; token_version: number }>();
   const ok = user && (await verifyPassword(password, user.password_hash));
   if (!ok) return c.json({ error: "Invalid email or password" }, 401);
 
@@ -55,7 +57,7 @@ auth.post("/login", async (c) => {
       .run();
   }
 
-  await createSession(c, user.id);
+  await createSession(c, user.id, user.token_version);
   return c.json({ id: user.id, email: user.email });
 });
 
@@ -65,7 +67,7 @@ auth.post("/logout", (c) => {
 });
 
 auth.delete("/account", async (c) => {
-  const userId = await verifySession(c);
+  const userId = await authenticate(c);
   if (!userId) return c.json({ error: "Unauthorized" }, 401);
   // Cascades to jobs, contacts, activities, reminders via FK ON DELETE CASCADE.
   await c.env.DB.prepare("DELETE FROM users WHERE id = ?").bind(userId).run();
@@ -74,7 +76,7 @@ auth.delete("/account", async (c) => {
 });
 
 auth.post("/change-password", async (c) => {
-  const userId = await verifySession(c);
+  const userId = await authenticate(c);
   if (!userId) return c.json({ error: "Unauthorized" }, 401);
 
   const parsed = changePasswordBody.safeParse(await c.req.json().catch(() => null));
@@ -88,13 +90,23 @@ auth.post("/change-password", async (c) => {
     return c.json({ error: "Current password is incorrect" }, 401);
   }
 
+  // Bumping token_version revokes every session issued before this change —
+  // the point of changing a password is that a leaked one stops working.
   const hash = await hashPassword(newPassword);
-  await c.env.DB.prepare("UPDATE users SET password_hash = ? WHERE id = ?").bind(hash, userId).run();
+  const updated = await c.env.DB.prepare(
+    "UPDATE users SET password_hash = ?, token_version = token_version + 1 WHERE id = ? RETURNING token_version"
+  )
+    .bind(hash, userId)
+    .first<{ token_version: number }>();
+
+  // Re-issue for the device that made the change, so "change password" doesn't
+  // also mean "log yourself out".
+  await createSession(c, userId, updated!.token_version);
   return c.json({ ok: true });
 });
 
 auth.get("/me", async (c) => {
-  const userId = await verifySession(c);
+  const userId = await authenticate(c);
   if (!userId) return c.json({ error: "Unauthorized" }, 401);
   const user = await c.env.DB.prepare("SELECT id, email FROM users WHERE id = ?")
     .bind(userId)

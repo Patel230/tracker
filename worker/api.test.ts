@@ -1,5 +1,5 @@
 import { beforeAll, afterAll, describe, expect, it } from "vitest";
-import { readFileSync } from "node:fs";
+import { readFileSync, readdirSync } from "node:fs";
 import bcrypt from "bcryptjs";
 import { getPlatformProxy } from "wrangler";
 import app from "./index";
@@ -17,11 +17,14 @@ beforeAll(async () => {
   env = { ...proxy.env, JWT_SECRET: TEST_SECRET, ALLOW_REGISTRATION: "true" };
   dispose = proxy.dispose;
 
-  const statements = (
-    readFileSync(new URL("../migrations/0001_init.sql", import.meta.url), "utf8") +
-    "\n" +
-    readFileSync(new URL("../migrations/0002_salary_currency_period.sql", import.meta.url), "utf8")
-  )
+  // Read the whole directory in order rather than naming files: a new migration
+  // must not be able to land without the test schema picking it up.
+  const dir = new URL("../migrations/", import.meta.url);
+  const statements = readdirSync(dir)
+    .filter((f) => f.endsWith(".sql"))
+    .sort()
+    .map((f) => readFileSync(new URL(f, dir), "utf8"))
+    .join("\n")
     .split(";")
     .map((s) => s.replace(/--.*$/gm, "").trim())
     .filter(Boolean);
@@ -163,6 +166,29 @@ describe("auth", () => {
 
     const newLogin = await client().fetch("/api/auth/login", json({ email: "pw@test.dev", password: "brandnew12" }));
     expect(newLogin.status).toBe(200);
+  });
+
+  it("revokes sessions issued before a password change, but not the one that made it", async () => {
+    const changer = client();
+    await changer.fetch("/api/auth/register", json({ email: "revoke@test.dev", password: "originalpw1" }));
+
+    // A second device logged in with the same account, before the change.
+    const other = client();
+    await other.fetch("/api/auth/login", json({ email: "revoke@test.dev", password: "originalpw1" }));
+    expect((await other.fetch("/api/auth/me")).status).toBe(200);
+
+    await changer.fetch(
+      "/api/auth/change-password",
+      json({ currentPassword: "originalpw1", newPassword: "brandnew12" })
+    );
+
+    // The other device's cookie is still a validly-signed JWT, but its token
+    // version is stale — it must no longer authenticate.
+    expect((await other.fetch("/api/auth/me")).status).toBe(401);
+    expect((await other.fetch("/api/jobs")).status).toBe(401);
+
+    // The device that changed the password stays signed in.
+    expect((await changer.fetch("/api/auth/me")).status).toBe(200);
   });
 
   it("requires auth for change-password and validates the new password length", async () => {

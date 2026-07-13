@@ -23,8 +23,8 @@ function secretKey(secret: string | undefined) {
   return new TextEncoder().encode(secret);
 }
 
-export async function createSession(c: Context<AppEnv>, userId: string) {
-  const token = await new SignJWT({ sub: userId })
+export async function createSession(c: Context<AppEnv>, userId: string, tokenVersion: number) {
+  const token = await new SignJWT({ sub: userId, tv: tokenVersion })
     .setProtectedHeader({ alg: "HS256" })
     .setIssuedAt()
     .setExpirationTime(`${SESSION_DAYS}d`)
@@ -43,22 +43,40 @@ export function clearSession(c: Context<AppEnv>) {
   deleteCookie(c, AUTH_COOKIE, { path: "/" });
 }
 
-export async function verifySession(c: Context<AppEnv>): Promise<string | null> {
+// Authenticates the request: the cookie's JWT must be valid AND its token
+// version must still match the user's current one. A valid signature alone is
+// not enough — that is what let sessions outlive a password change.
+export async function authenticate(c: Context<AppEnv>): Promise<string | null> {
   const token = getCookie(c, AUTH_COOKIE);
   if (!token) return null;
   // Resolved outside the try: a bad JWT_SECRET is a misconfigured server, not a
   // bad token, and must not be swallowed into a 401.
   const key = secretKey(c.env.JWT_SECRET);
+
+  let userId: string;
+  let tokenVersion: number;
   try {
     const { payload } = await jwtVerify(token, key);
-    return typeof payload.sub === "string" ? payload.sub : null;
+    if (typeof payload.sub !== "string" || typeof payload.tv !== "number") return null;
+    userId = payload.sub;
+    tokenVersion = payload.tv;
   } catch {
     return null;
   }
+
+  // Costs one D1 read per authenticated request. That is the price of being
+  // able to revoke a session at all; the alternative is a 30-day window in
+  // which a leaked cookie cannot be taken away.
+  const user = await c.env.DB.prepare("SELECT token_version FROM users WHERE id = ?")
+    .bind(userId)
+    .first<{ token_version: number }>();
+  if (!user || user.token_version !== tokenVersion) return null;
+
+  return userId;
 }
 
 export async function requireAuth(c: Context<AppEnv>, next: Next) {
-  const userId = await verifySession(c);
+  const userId = await authenticate(c);
   if (!userId) return c.json({ error: "Unauthorized" }, 401);
   c.set("userId", userId);
   await next();
