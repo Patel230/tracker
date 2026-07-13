@@ -19,11 +19,11 @@ export const STATUS_BG: Record<JobStatus, string> = {
 };
 
 export const STATUS_TEXT: Record<JobStatus, string> = {
-  wishlist: "text-brut-ink",
+  wishlist: "text-white",
   applied: "text-white",
   interview: "text-white",
-  offer: "text-brut-ink",
+  offer: "text-white",
   rejected: "text-white",
 };
 
-export const INK_HEX = "#111111";
+export const INK_HEX = "#ffffff";

@@ -4,41 +4,41 @@
   --font-sans: "Space Grotesk", ui-sans-serif, system-ui, -apple-system, sans-serif;
   --font-head: "Space Grotesk", ui-sans-serif, system-ui, -apple-system, sans-serif;
 
-  /* RetroUI / Defolio theme */
-  --color-background: hsl(0 0% 100%);
-  --color-foreground: hsl(0 0% 0%);
-  --color-card: hsl(0 0% 100%);
-  --color-card-foreground: hsl(0 0% 0%);
-  --color-primary: hsl(50 100% 60%);
-  --color-primary-foreground: hsl(0 0% 0%);
-  --color-muted: hsl(0 0% 68%);
-  --color-muted-foreground: hsl(0 0% 35%);
-  --color-accent: hsl(50 89% 74%);
-  --color-accent-foreground: hsl(0 0% 0%);
-  --color-destructive: hsl(355 78% 56%);
-  --color-destructive-foreground: hsl(0 0% 100%);
-  --color-border: hsl(0 0% 0%);
-  --color-input: hsl(0 0% 100%);
+  /* Neo Brutalism theme */
+  --color-background: #0a0a0a;
+  --color-foreground: #ffffff;
+  --color-card: #1a1a1a;
+  --color-card-foreground: #ffffff;
+  --color-primary: #ffd23f;
+  --color-primary-foreground: #000000;
+  --color-muted: #ffffff;
+  --color-muted-foreground: #a3a3a3;
+  --color-accent: #ff6b6b;
+  --color-accent-foreground: #000000;
+  --color-destructive: #ef4444;
+  --color-destructive-foreground: #ffffff;
+  --color-border: #ffffff;
+  --color-input: #1a1a1a;
 
-  /* Hard shadows - defolio uses 4px offset consistently */
-  --shadow-xs: 2px 2px 0 0 hsl(0 0% 0%);
-  --shadow-sm: 3px 3px 0 0 hsl(0 0% 0%);
-  --shadow: 4px 4px 0 0 hsl(0 0% 0%);
-  --shadow-md: 5px 5px 0 0 hsl(0 0% 0%);
-  --shadow-lg: 6px 6px 0 0 hsl(0 0% 0%);
-  --shadow-xl: 8px 8px 0 1px hsl(0 0% 0%);
-  --shadow-2xl: 10px 10px 0 1px hsl(0 0% 0%);
+  /* Neo Brutalist hard shadows */
+  --shadow-xs: 3px 3px 0 0 #000000;
+  --shadow-sm: 5px 5px 0 0 #000000;
+  --shadow: 5px 5px 0 0 #000000;
+  --shadow-md: 7px 7px 0 0 #000000;
+  --shadow-lg: 9px 9px 0 0 #000000;
+  --shadow-xl: 12px 12px 0 0 #000000;
+  --shadow-2xl: 15px 15px 0 0 #000000;
 
-  /* Pipeline stage colors (Okabe-Ito) */
-  --color-brut-ink: #111111;
-  --color-brut-paper: #f2eee3;
-  --color-brut-surface: #ffffff;
-  --color-brut-yellow: #ffd60a;
-  --color-brut-wishlist: #e69f00;
-  --color-brut-applied: #0072b2;
-  --color-brut-interview: #009e73;
-  --color-brut-offer: #cc79a7;
-  --color-brut-rejected: #d55e00;
+  /* Pipeline stage colors */
+  --color-brut-ink: #ffffff;
+  --color-brut-paper: #0a0a0a;
+  --color-brut-surface: #1a1a1a;
+  --color-brut-yellow: #ffd23f;
+  --color-brut-wishlist: #eab308;
+  --color-brut-applied: #eab308;
+  --color-brut-interview: #84cc16;
+  --color-brut-offer: #ec4899;
+  --color-brut-rejected: #f97316;
 }
 
 html,
@@ -48,7 +48,7 @@ body,
 }
 
 body {
-  background-color: var(--color-brut-paper);
+  background-color: var(--color-background);
   color: var(--color-foreground);
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
@@ -60,12 +60,37 @@ body {
   color: var(--color-primary-foreground);
 }
 
-/* Thick borders — defolio style */
+/* Neo Brutalism: square corners */
 * {
-  border-radius: 3px;
+  border-radius: 0;
 }
 
 button:not(:disabled),
 [role="button"]:not(:disabled) {
   cursor: pointer;
+}
+
+/* Neo Brutalist geometric background - 8x8 grid */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background-image: 
+    linear-gradient(rgba(255,255,255,0.08) 1px 0,
+                   rgba(255,255,255,0.08) 0 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px),
+    linear-gradient(transparent 0, transparent calc(100% - 1px), rgba(255,255,255,0.05) calc(100% - 1px));
+  background-size: 32px 32px, 16px 16px, 16px 16px;
+  z-index: -1;
+}
+
+@layer base {
+  .text-brut-ink { color: var(--color-brut-ink); }
+  .bg-brut-wishlist { background-color: var(--color-brut-wishlist); }
+  .bg-brut-applied { background-color: var(--color-brut-applied); }
+  .bg-brut-interview { background-color: var(--color-brut-interview); }
+  .bg-brut-offer { background-color: var(--color-brut-offer); }
+  .bg-brut-rejected { background-color: var(--color-brut-rejected); }
+  .border-l-brut-wishlist { border-left-color: var(--color-brut-wishlist); }
 }
