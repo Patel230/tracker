@@ -39,7 +39,7 @@ export default function App() {
 
   if (loading) {
     return (
-      <div className="flex h-full items-center justify-center bg-brut-paper text-sm font-bold uppercase tracking-wider text-muted-foreground">
+      <div className="flex h-full items-center justify-center bg-background text-sm font-bold uppercase tracking-wider text-muted-foreground">
         Loading…
       </div>
     );
@@ -59,7 +59,7 @@ export default function App() {
 
   return (
     <RemindersProvider>
-    <div className="flex h-full flex-col bg-brut-paper">
+    <div className="flex h-full flex-col bg-background">
       <header className="flex items-center gap-5 border-b-[3px] border-brut-ink bg-background/90 backdrop-blur-sm px-5 py-2.5">
         <Logo size={20} />
         <nav className="flex gap-1">
@@ -101,18 +101,18 @@ export default function App() {
               </div>
               <div className="py-1">
                 <button onClick={() => { setChangingPassword(true); setMenuOpen(false); }}
-                  className="flex w-full items-center gap-3 px-4 py-2.5 text-xs font-semibold text-muted-foreground hover:text-foreground hover:bg-brut-paper transition-colors">
+                  className="flex w-full items-center gap-3 px-4 py-2.5 text-xs font-semibold text-muted-foreground hover:text-foreground hover:bg-background/30 transition-colors">
                   <KeyRound size={14} strokeWidth={2} />
                   Change password
                 </button>
                 <button onClick={() => { logout(); setMenuOpen(false); }}
-                  className="flex w-full items-center gap-3 px-4 py-2.5 text-xs font-semibold text-muted-foreground hover:text-foreground hover:bg-brut-paper transition-colors">
+                  className="flex w-full items-center gap-3 px-4 py-2.5 text-xs font-semibold text-muted-foreground hover:text-foreground hover:bg-background/30 transition-colors">
                   <LogOut size={14} strokeWidth={2} />
                   Sign out
                 </button>
                 <div className="mx-3 my-1 border-t-[3px] border-brut-ink/5" />
                 <button onClick={() => { setDeletingAccount(true); setMenuOpen(false); }}
-                  className="flex w-full items-center gap-3 px-4 py-2.5 text-xs font-semibold text-destructive/70 hover:text-destructive hover:bg-brut-paper transition-colors">
+                  className="flex w-full items-center gap-3 px-4 py-2.5 text-xs font-semibold text-destructive/70 hover:text-destructive hover:bg-background/30 transition-colors">
                   <Trash2 size={14} strokeWidth={2} />
                   Delete account
                 </button>

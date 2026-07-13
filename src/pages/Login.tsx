@@ -37,7 +37,7 @@ export default function Login() {
   };
 
   return (
-    <div className="flex min-h-full bg-brut-paper">
+    <div className="flex min-h-full bg-background">
       {/* Left panel */}
       <div className="hidden flex-1 flex-col justify-between border-r-[3px] border-brut-ink bg-primary p-12 lg:flex">
         <Link to="/">
@@ -159,14 +159,14 @@ export default function Login() {
               )}
 
               {error && (
-                <div className="border-[3px] border-destructive bg-destructive/5 px-4 py-3">
+                <div className="border-[3px] border-destructive bg-destructive/20 px-4 py-3">
                   <p className="text-sm font-bold leading-snug text-destructive">{error}</p>
                   {error.includes("private") && (
                     <a
                       href="https://github.com/Patel230/tracker"
                       target="_blank"
                       rel="noreferrer"
-                      className="mt-2 inline-flex items-center gap-1 border-[3px] border-brut-ink bg-card px-2.5 py-1.5 text-xs font-bold uppercase tracking-wider text-foreground"
+                      className="mt-2 inline-flex items-center gap-1 border-[3px] border-brut-ink bg-foreground px-2.5 py-1.5 text-xs font-bold uppercase tracking-wider text-background"
                     >
                       Fork on GitHub →
                     </a>

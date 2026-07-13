@@ -234,7 +234,7 @@ function Funnel({ funnel }: { funnel: Stats["funnel"] }) {
           <span className="w-20 shrink-0 text-right text-xs font-bold uppercase tracking-wider" style={{ color: `var(--color-brut-${s})` }}>
             {STATUS_LABELS[s]}
           </span>
-          <div className="h-4 flex-1 border-[3px] border-brut-ink/10 bg-brut-paper">
+          <div className="h-4 flex-1 border-[3px] border-brut-ink/10 bg-background">
             <div
               className={`h-full border-r-[3px] border-brut-ink ${STATUS_BG[s]}`}
               style={{ width: `${(funnel[s] / max) * 100}%`, minWidth: funnel[s] ? "4px" : 0 }}

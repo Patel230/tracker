@@ -60,7 +60,7 @@ export default function JobCard({ job, onOpen, overlay }: Props) {
       {...(overlay ? {} : { ...sortable.attributes, ...sortable.listeners })}
       onClick={() => onOpen?.(job.id)}
       className={`border-[3px] border-brut-ink border-l-[6px] bg-card cursor-grab p-3 transition-all ${borderColor} ${
-        overlay ? "rotate-2 shadow-[6px_6px_0_0_hsl(0_0%_0%)]" : "hover:shadow-[3px_3px_0_0_hsl(0_0%_0%)] hover:-translate-y-0.5"
+        overlay ? "rotate-2 shadow-[6px_6px_0_0_#000]" : "hover:shadow-[3px_3px_0_0_#000] hover:-translate-y-0.5"
       }`}
     >
       <div className="text-sm font-black text-foreground">{job.company}</div>

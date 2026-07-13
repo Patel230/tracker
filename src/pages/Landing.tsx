@@ -71,7 +71,7 @@ const STACK = [
 
 export default function Landing() {
   return (
-    <div className="min-h-full bg-brut-paper">
+    <div className="min-h-full bg-background">
       {/* Header — defolio-style */}
       <header className="sticky top-0 z-10 flex items-center justify-between border-b-[3px] border-brut-ink bg-background/90 backdrop-blur-sm px-6 py-3">
         <Logo size={20} />
@@ -261,7 +261,7 @@ export default function Landing() {
             </p>
           </div>
           <Link to="/login">
-            <Button variant="outline" size="lg">
+            <Button variant="default" size="lg" className="shadow-none">
               Get started free <ArrowRight size={16} strokeWidth={2.5} />
             </Button>
           </Link>
