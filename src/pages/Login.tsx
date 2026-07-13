@@ -3,6 +3,8 @@ import { ArrowRight, Eye, EyeOff, Loader2, Lock, Mail, UserPlus } from "lucide-r
 import { Link } from "react-router-dom";
 import { useAuth } from "../lib/auth";
 import Logo from "../components/Logo";
+import { Button } from "../components/ui/button";
+import { Input } from "../components/ui/input";
 
 export default function Login() {
   const { login, register } = useAuth();
@@ -36,35 +38,34 @@ export default function Login() {
 
   return (
     <div className="flex min-h-full bg-brut-paper">
-      {/* ─── Left panel ─── */}
-      <div className="hidden flex-1 flex-col justify-between border-r-2 border-brut-ink bg-brut-yellow p-12 lg:flex">
+      {/* Left panel */}
+      <div className="hidden flex-1 flex-col justify-between border-r-2 border-brut-ink bg-primary p-12 lg:flex">
         <Link to="/">
           <Logo />
         </Link>
         <div>
-          <blockquote className="text-2xl font-extrabold uppercase leading-[0.95] tracking-tight text-brut-ink">
+          <blockquote className="text-2xl font-extrabold uppercase leading-[0.95] tracking-tight text-foreground">
             "The best time to organize your job search
             <br />
-            <span className="text-brut-rejected">was yesterday.</span>
+            <span className="text-destructive">was yesterday.</span>
             <br />
             The second best time is now."
           </blockquote>
-          <div className="mt-4 h-1 w-20 bg-brut-ink" />
-          <p className="mt-4 text-sm font-bold uppercase tracking-wider text-brut-ink/50">
+          <div className="mt-4 h-1 w-20 bg-foreground" />
+          <p className="mt-4 text-sm font-bold uppercase tracking-wider text-foreground/60">
             Free for students · No time limit
           </p>
         </div>
       </div>
 
-      {/* ─── Right panel ─── */}
+      {/* Right panel */}
       <div className="flex flex-1 items-center justify-center px-6 py-12">
         <div className="w-full max-w-sm">
-          {/* Mobile logo */}
           <Link to="/" className="mb-8 flex lg:hidden">
             <Logo />
           </Link>
 
-          <div className="border-2 border-brut-ink bg-brut-surface p-8">
+          <div className="border-2 border-brut-ink bg-card p-8">
             {/* Mode tabs */}
             <div className="flex border-2 border-brut-ink">
               <button
@@ -72,8 +73,8 @@ export default function Login() {
                 onClick={() => { setMode("login"); setConfirmPassword(""); setError(null); }}
                 className={`flex-1 py-2.5 text-xs font-bold uppercase tracking-wider transition-colors ${
                   mode === "login"
-                    ? "bg-brut-ink text-brut-yellow"
-                    : "bg-brut-surface text-brut-ink/40 hover:text-brut-ink"
+                    ? "bg-foreground text-primary"
+                    : "bg-card text-muted-foreground hover:text-foreground"
                 }`}
               >
                 Log in
@@ -83,8 +84,8 @@ export default function Login() {
                 onClick={() => { setMode("register"); setConfirmPassword(""); setError(null); }}
                 className={`flex-1 py-2.5 text-xs font-bold uppercase tracking-wider transition-colors ${
                   mode === "register"
-                    ? "bg-brut-ink text-brut-yellow"
-                    : "bg-brut-surface text-brut-ink/40 hover:text-brut-ink"
+                    ? "bg-foreground text-primary"
+                    : "bg-card text-muted-foreground hover:text-foreground"
                 }`}
               >
                 Create account
@@ -93,37 +94,37 @@ export default function Login() {
 
             <form onSubmit={submit} className="mt-6 space-y-4">
               <div>
-                <label className="text-xs font-bold uppercase tracking-wider text-brut-ink/50">Email</label>
+                <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Email</label>
                 <div className="mt-1.5 relative">
-                  <Mail size={14} strokeWidth={2.5} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-brut-ink/30" />
-                  <input
+                  <Mail size={14} strokeWidth={2.5} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                  <Input
                     type="email"
                     required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="you@example.com"
-                    className="input-brut pl-9"
+                    className="pl-9"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="text-xs font-bold uppercase tracking-wider text-brut-ink/50">Password</label>
+                <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Password</label>
                 <div className="mt-1.5 relative">
-                  <Lock size={14} strokeWidth={2.5} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-brut-ink/30" />
-                  <input
+                  <Lock size={14} strokeWidth={2.5} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                  <Input
                     type={showPw ? "text" : "password"}
                     required
                     minLength={8}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder={mode === "register" ? "Min 8 characters" : "Your password"}
-                    className="input-brut pl-9 pr-9"
+                    className="pl-9 pr-9"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPw(!showPw)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-brut-ink/30 hover:text-brut-ink transition-colors"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
                     tabIndex={-1}
                   >
                     {showPw ? <EyeOff size={14} strokeWidth={2.5} /> : <Eye size={14} strokeWidth={2.5} />}
@@ -133,22 +134,22 @@ export default function Login() {
 
               {mode === "register" && (
                 <div>
-                  <label className="text-xs font-bold uppercase tracking-wider text-brut-ink/50">Confirm password</label>
+                  <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Confirm password</label>
                   <div className="mt-1.5 relative">
-                    <Lock size={14} strokeWidth={2.5} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-brut-ink/30" />
-                    <input
+                    <Lock size={14} strokeWidth={2.5} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                    <Input
                       type={showConfirmPw ? "text" : "password"}
                       required
                       minLength={8}
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
                       placeholder="Repeat your password"
-                      className={`input-brut pl-9 pr-9 ${!passwordsMatch && confirmPassword ? "border-brut-rejected" : ""}`}
+                      className={`pl-9 pr-9 ${!passwordsMatch && confirmPassword ? "border-destructive" : ""}`}
                     />
                     <button
                       type="button"
                       onClick={() => setShowConfirmPw(!showConfirmPw)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-brut-ink/30 hover:text-brut-ink transition-colors"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
                       tabIndex={-1}
                     >
                       {showConfirmPw ? <EyeOff size={14} strokeWidth={2.5} /> : <Eye size={14} strokeWidth={2.5} />}
@@ -158,14 +159,14 @@ export default function Login() {
               )}
 
               {error && (
-                <div className="border-2 border-brut-rejected bg-brut-rejected/5 px-4 py-3">
-                  <p className="text-sm font-bold leading-snug text-brut-rejected">{error}</p>
+                <div className="border-2 border-destructive bg-destructive/5 px-4 py-3">
+                  <p className="text-sm font-bold leading-snug text-destructive">{error}</p>
                   {error.includes("private") && (
                     <a
                       href="https://github.com/Patel230/tracker"
                       target="_blank"
                       rel="noreferrer"
-                      className="mt-2 inline-flex items-center gap-1 border-2 border-brut-ink bg-brut-surface px-2.5 py-1.5 text-xs font-bold uppercase tracking-wider text-brut-ink"
+                      className="mt-2 inline-flex items-center gap-1 border-2 border-brut-ink bg-card px-2.5 py-1.5 text-xs font-bold uppercase tracking-wider text-foreground"
                     >
                       Fork on GitHub →
                     </a>
@@ -173,7 +174,7 @@ export default function Login() {
                 </div>
               )}
 
-              <button type="submit" disabled={busy} className="btn-brut w-full">
+              <Button type="submit" disabled={busy} className="w-full">
                 {busy ? (
                   <Loader2 size={14} strokeWidth={2.5} className="animate-spin" />
                 ) : mode === "login" ? (
@@ -186,7 +187,7 @@ export default function Login() {
                     Create account
                   </>
                 )}
-              </button>
+              </Button>
             </form>
           </div>
         </div>

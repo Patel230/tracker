@@ -2,12 +2,38 @@
 
 @theme {
   --font-sans: "Space Grotesk", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-head: "Space Grotesk", ui-sans-serif, system-ui, -apple-system, sans-serif;
 
+  /* RetroUI theme */
+  --color-background: hsl(0 0% 100%);
+  --color-foreground: hsl(0 0% 0%);
+  --color-card: hsl(0 0% 100%);
+  --color-card-foreground: hsl(0 0% 0%);
+  --color-primary: hsl(50 100% 60%);
+  --color-primary-foreground: hsl(0 0% 0%);
+  --color-muted: hsl(0 0% 68%);
+  --color-muted-foreground: hsl(0 0% 35%);
+  --color-accent: hsl(50 89% 74%);
+  --color-accent-foreground: hsl(0 0% 0%);
+  --color-destructive: hsl(355 78% 56%);
+  --color-destructive-foreground: hsl(0 0% 100%);
+  --color-border: hsl(0 0% 0%);
+  --color-input: hsl(0 0% 100%);
+
+  /* Shadows */
+  --shadow-xs: 1px 1px 0 0 hsl(0 0% 0%);
+  --shadow-sm: 2px 2px 0 0 hsl(0 0% 0%);
+  --shadow: 3px 3px 0 0 hsl(0 0% 0%);
+  --shadow-md: 4px 4px 0 0 hsl(0 0% 0%);
+  --shadow-lg: 6px 6px 0 0 hsl(0 0% 0%);
+  --shadow-xl: 10px 10px 0 1px hsl(0 0% 0%);
+  --shadow-2xl: 16px 16px 0 1px hsl(0 0% 0%);
+
+  /* Pipeline stage colors */
   --color-brut-ink: #111111;
   --color-brut-paper: #f2eee3;
   --color-brut-surface: #ffffff;
   --color-brut-yellow: #ffd60a;
-
   --color-brut-wishlist: #e69f00;
   --color-brut-applied: #0072b2;
   --color-brut-interview: #009e73;
@@ -23,39 +49,27 @@ body,
 
 body {
   background-color: var(--color-brut-paper);
-  color: var(--color-brut-ink);
+  color: var(--color-foreground);
+  font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
 ::selection {
-  background-color: var(--color-brut-yellow);
-  color: var(--color-brut-ink);
+  background-color: var(--color-primary);
+  color: var(--color-primary-foreground);
 }
 
-@layer components {
-  .btn-brut {
-    @apply inline-flex items-center justify-center gap-2 border-2 border-brut-ink bg-brut-yellow px-5 py-2.5 text-sm font-bold uppercase tracking-wider text-brut-ink shadow-[3px_3px_0_var(--color-brut-ink)] transition-all duration-150 hover:-translate-y-0.5 hover:shadow-[4px_4px_0_var(--color-brut-ink)] active:translate-x-[2px] active:translate-y-[2px] active:shadow-[1px_1px_0_var(--color-brut-ink)] disabled:pointer-events-none disabled:opacity-50;
-  }
-  .btn-brut-ghost {
-    @apply inline-flex items-center justify-center gap-2 border-2 border-brut-ink bg-brut-surface px-5 py-2.5 text-sm font-bold uppercase tracking-wider text-brut-ink shadow-[3px_3px_0_var(--color-brut-ink)] transition-all duration-150 hover:-translate-y-0.5 hover:shadow-[4px_4px_0_var(--color-brut-ink)] active:translate-x-[2px] active:translate-y-[2px] active:shadow-[1px_1px_0_var(--color-brut-ink)] disabled:pointer-events-none disabled:opacity-50;
-  }
-  .btn-brut-sm {
-    @apply inline-flex items-center justify-center gap-1.5 border-2 border-brut-ink bg-brut-surface px-3 py-1.5 text-xs font-bold uppercase tracking-wider text-brut-ink shadow-[2px_2px_0_var(--color-brut-ink)] transition-all duration-150 hover:-translate-y-0.5 hover:shadow-[3px_3px_0_var(--color-brut-ink)] active:translate-x-[1px] active:translate-y-[1px] active:shadow-[1px_1px_0_var(--color-brut-ink)] disabled:pointer-events-none disabled:opacity-50;
-  }
-  .btn-brut-danger {
-    @apply inline-flex items-center justify-center gap-1.5 border-2 border-brut-ink bg-brut-rejected px-3 py-1.5 text-xs font-bold uppercase tracking-wider text-white shadow-[2px_2px_0_var(--color-brut-ink)] transition-all duration-150 hover:-translate-y-0.5 hover:shadow-[3px_3px_0_var(--color-brut-ink)] active:translate-x-[1px] active:translate-y-[1px] active:shadow-[1px_1px_0_var(--color-brut-ink)] disabled:pointer-events-none disabled:opacity-50;
-  }
-  .input-brut {
-    @apply w-full border-2 border-brut-ink bg-brut-surface px-3 py-2.5 text-sm font-medium text-brut-ink placeholder:text-brut-ink/40 focus:outline-none focus:ring-2 focus:ring-brut-yellow focus:ring-offset-2 focus:ring-offset-brut-paper transition-all duration-150;
-  }
-  .card-brut {
-    @apply border-2 border-brut-ink bg-brut-surface shadow-[3px_3px_0_var(--color-brut-ink)];
-  }
-  .panel-brut {
-    @apply border-2 border-brut-ink bg-brut-surface shadow-[6px_6px_0_var(--color-brut-ink)];
-  }
-  .badge-brut {
-    @apply inline-flex items-center border-2 border-brut-ink px-2 py-0.5 text-[11px] font-bold uppercase tracking-wider;
-  }
+/*
+  RetroUI base layer
+  Rounded corners on everything is a key retroui aesthetic.
+  Remove the old `border-radius: 0 !important` in favor of sensible defaults.
+*/
+* {
+  border-radius: 2px;
+}
+
+button:not(:disabled),
+[role="button"]:not(:disabled) {
+  cursor: pointer;
 }

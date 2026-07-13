@@ -2,6 +2,8 @@ import { useRef, useState, type FormEvent } from "react";
 import { AlertCircle, CheckCircle2, KeyRound, X } from "lucide-react";
 import { useAuth } from "../lib/auth";
 import { useFocusTrap } from "../lib/useFocusTrap";
+import { Button } from "./ui/button";
+import { Input } from "./ui/input";
 
 export default function ChangePasswordModal({ onClose }: { onClose: () => void }) {
   const { changePassword } = useAuth();
@@ -34,14 +36,14 @@ export default function ChangePasswordModal({ onClose }: { onClose: () => void }
 
   return (
     <>
-      <div className="fixed inset-0 z-40 bg-brut-ink/40" onClick={onClose} />
+      <div className="fixed inset-0 z-40 bg-foreground/40" onClick={onClose} />
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-        <div ref={panelRef} tabIndex={-1} className="panel-brut w-full max-w-sm focus:outline-none">
+        <div ref={panelRef} tabIndex={-1} className="border-2 border-brut-ink bg-card p-6 w-full max-w-sm focus:outline-none">
           <div className="flex items-start justify-between">
-            <h2 className="text-lg font-extrabold uppercase tracking-tight text-brut-ink">Change password</h2>
+            <h2 className="text-lg font-extrabold uppercase tracking-tight text-foreground">Change password</h2>
             <button
               onClick={onClose}
-              className="border-2 border-brut-ink px-2 py-1 text-brut-ink hover:bg-brut-paper"
+              className="border-2 border-brut-ink px-2 py-1 text-foreground hover:bg-brut-paper transition-colors"
               aria-label="Close"
             >
               <X size={16} strokeWidth={2.5} />
@@ -50,57 +52,57 @@ export default function ChangePasswordModal({ onClose }: { onClose: () => void }
 
           {done ? (
             <>
-              <p className="mt-4 flex w-fit items-center gap-1.5 badge-brut border-brut-interview bg-brut-interview/15 text-brut-interview">
+              <p className="mt-4 flex w-fit items-center gap-1.5 border-2 border-brut-interview bg-brut-interview/10 px-2 py-1 text-xs font-bold uppercase tracking-wider text-brut-interview">
                 <CheckCircle2 size={12} strokeWidth={2.5} />
                 Password updated.
               </p>
-              <button onClick={onClose} className="btn-brut mt-6 w-full">
+              <Button onClick={onClose} className="mt-6 w-full">
                 Done
-              </button>
+              </Button>
             </>
           ) : (
             <form onSubmit={submit} className="mt-4 space-y-3">
-              <label className="block text-xs font-bold uppercase tracking-wide text-brut-ink/60">
+              <label className="block text-xs font-bold uppercase tracking-wider text-muted-foreground">
                 Current password
-                <input
+                <Input
                   type="password"
                   required
                   value={current}
                   onChange={(e) => setCurrent(e.target.value)}
-                  className="input-brut mt-1"
+                  className="mt-1"
                 />
               </label>
-              <label className="block text-xs font-bold uppercase tracking-wide text-brut-ink/60">
+              <label className="block text-xs font-bold uppercase tracking-wider text-muted-foreground">
                 New password
-                <input
+                <Input
                   type="password"
                   required
                   minLength={8}
                   value={next}
                   onChange={(e) => setNext(e.target.value)}
-                  className="input-brut mt-1"
+                  className="mt-1"
                 />
               </label>
-              <label className="block text-xs font-bold uppercase tracking-wide text-brut-ink/60">
+              <label className="block text-xs font-bold uppercase tracking-wider text-muted-foreground">
                 Confirm new password
-                <input
+                <Input
                   type="password"
                   required
                   minLength={8}
                   value={confirm}
                   onChange={(e) => setConfirm(e.target.value)}
-                  className="input-brut mt-1"
+                  className="mt-1"
                 />
               </label>
 
               {error && (
-                <p className="flex items-center gap-1.5 border-2 border-brut-rejected bg-brut-rejected/10 px-2 py-1 text-sm font-bold text-brut-rejected">
+                <p className="flex items-center gap-1.5 border-2 border-destructive bg-destructive/5 px-2 py-1 text-sm font-bold text-destructive">
                   <AlertCircle size={14} strokeWidth={2.5} />
                   {error}
                 </p>
               )}
 
-              <button type="submit" disabled={busy} className="btn-brut mt-2 w-full">
+              <Button type="submit" disabled={busy} className="mt-2 w-full">
                 {busy ? (
                   "…"
                 ) : (
@@ -109,7 +111,7 @@ export default function ChangePasswordModal({ onClose }: { onClose: () => void }
                     Update password
                   </>
                 )}
-              </button>
+              </Button>
             </form>
           )}
         </div>

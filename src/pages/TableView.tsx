@@ -5,6 +5,8 @@ import { JOB_STATUSES, STATUS_LABELS, type Job, type JobStatus } from "../../sha
 import { salaryLabel, daysAgo, exactTimestamp } from "../components/JobCard";
 import { STATUS_BG, STATUS_TEXT } from "../lib/theme";
 import JobDrawer from "../components/JobDrawer";
+import { Input } from "../components/ui/input";
+import { Badge } from "../components/ui/badge";
 
 type SortKey = "company" | "title" | "status" | "applied_at" | "created_at";
 
@@ -61,37 +63,37 @@ export default function TableView() {
     <div className="h-full overflow-y-auto p-6">
       <div className="mb-5 flex flex-wrap items-center gap-3">
         <div className="relative">
-          <Search size={14} strokeWidth={2.5} className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-brut-ink/30" />
-          <input
+          <Search size={14} strokeWidth={2.5} className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
+          <Input
             placeholder="Search company, title, location…"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            className="input-brut pl-8"
+            className="pl-8"
           />
         </div>
         <div className="flex items-center gap-1">
           <ListFilter size={14} strokeWidth={2.5} className="text-brut-wishlist" />
-          <select value={status} onChange={(e) => setStatus(e.target.value as JobStatus | "all")} className="input-brut w-auto">
+          <select value={status} onChange={(e) => setStatus(e.target.value as JobStatus | "all")} className="flex w-auto border-2 border-brut-ink bg-input px-3 py-2.5 text-sm font-medium text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background">
             <option value="all">All statuses</option>
             {JOB_STATUSES.map((s) => (
               <option key={s} value={s}>{STATUS_LABELS[s]}</option>
             ))}
           </select>
         </div>
-        <label className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-brut-ink">
+        <label className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-foreground">
           <input
             type="checkbox"
             checked={showArchived}
             onChange={(e) => setShowArchived(e.target.checked)}
-            className="size-4 accent-brut-ink"
+            className="size-4 accent-foreground"
           />
           <ArchiveRestore size={13} strokeWidth={2.5} className="text-brut-offer" />
           Include archived
         </label>
-        <span className="ml-auto text-xs font-bold uppercase tracking-wider text-brut-ink/30">{rows.length} jobs</span>
+        <span className="ml-auto text-xs font-bold uppercase tracking-wider text-muted-foreground">{rows.length} jobs</span>
       </div>
 
-      <div className="border-2 border-brut-ink bg-brut-surface overflow-x-auto">
+      <div className="border-2 border-brut-ink bg-card overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
             <tr>
@@ -109,20 +111,20 @@ export default function TableView() {
               <tr
                 key={j.id}
                 onClick={() => setOpenJobId(j.id)}
-                className="cursor-pointer border-b border-brut-ink/5 last:border-0 hover:bg-brut-paper/80 transition-colors"
+                className="cursor-pointer border-b-2 border-brut-ink/5 last:border-0 hover:bg-brut-paper/80 transition-colors"
               >
-                <td className="px-4 py-2.5 font-extrabold text-brut-ink border-l-4"
+                <td className="px-4 py-2.5 font-extrabold text-foreground border-l-4"
                   style={{ borderLeftColor: `var(--color-brut-${j.status})` }}>
                   {j.company}
-                  {!!j.archived && <span className="ml-2 text-xs font-bold text-brut-ink/30">(archived)</span>}
+                  {!!j.archived && <span className="ml-2 text-xs font-bold text-muted-foreground">(archived)</span>}
                 </td>
-                <td className="px-4 py-2.5 font-medium text-brut-ink/70">{j.title}</td>
+                <td className="px-4 py-2.5 font-medium text-foreground/70">{j.title}</td>
                 <td className="px-4 py-2.5">
-                  <span className={`border-2 border-brut-ink px-2 py-0.5 text-[11px] font-bold uppercase tracking-wider ${STATUS_BG[j.status]} ${STATUS_TEXT[j.status]}`}>
+                  <Badge variant="outline" className={`${STATUS_BG[j.status]} ${STATUS_TEXT[j.status]} border-brut-ink`}>
                     {STATUS_LABELS[j.status]}
-                  </span>
+                  </Badge>
                 </td>
-                <td className="px-4 py-2.5 font-medium text-brut-ink/50">{j.location ?? "—"}</td>
+                <td className="px-4 py-2.5 font-medium text-muted-foreground">{j.location ?? "—"}</td>
                 <td className="px-4 py-2.5 font-medium">
                   <span className="font-bold text-brut-offer">{salaryLabel(j) ?? "—"}</span>
                 </td>
@@ -132,14 +134,14 @@ export default function TableView() {
                 >
                   {j.applied_at ? daysAgo(j.applied_at) : "—"}
                 </td>
-                <td title={exactTimestamp(j.created_at)} className="px-4 py-2.5 font-medium text-brut-ink/50">
+                <td title={exactTimestamp(j.created_at)} className="px-4 py-2.5 font-medium text-muted-foreground">
                   {daysAgo(j.created_at)}
                 </td>
               </tr>
             ))}
             {rows.length === 0 && (
               <tr>
-                <td colSpan={7} className="px-4 py-10 text-center text-sm font-bold uppercase tracking-wider text-brut-ink/30">
+                <td colSpan={7} className="px-4 py-10 text-center text-sm font-bold uppercase tracking-wider text-muted-foreground">
                   No jobs match.
                 </td>
               </tr>

@@ -4,12 +4,13 @@ import { api } from "../lib/api";
 import { STATUS_LABELS, JOB_STATUSES, type Stats } from "../../shared/types";
 import { INK_HEX, STATUS_BG, STATUS_HEX } from "../lib/theme";
 import { useReminders } from "../components/RemindersProvider";
+import { Button } from "../components/ui/button";
 
 const TILE_STYLES = [
-  { bg: "bg-brut-wishlist", border: "border-brut-wishlist", text: "text-brut-ink" },
-  { bg: "bg-brut-applied", border: "border-brut-applied", text: "text-white" },
-  { bg: "bg-brut-interview", border: "border-brut-interview", text: "text-white" },
-  { bg: "bg-brut-offer", border: "border-brut-offer", text: "text-brut-ink" },
+  { bg: "bg-brut-wishlist", text: "text-brut-ink" },
+  { bg: "bg-brut-applied", text: "text-white" },
+  { bg: "bg-brut-interview", text: "text-white" },
+  { bg: "bg-brut-offer", text: "text-brut-ink" },
 ];
 
 const BAR_COLORS = [STATUS_HEX.wishlist, STATUS_HEX.applied, STATUS_HEX.interview, STATUS_HEX.offer, STATUS_HEX.rejected];
@@ -24,7 +25,7 @@ export default function Dashboard() {
 
   if (!stats) {
     return (
-      <div className="flex h-full items-center justify-center text-sm font-bold uppercase tracking-wider text-brut-ink/30">
+      <div className="flex h-full items-center justify-center text-sm font-bold uppercase tracking-wider text-muted-foreground">
         Loading…
       </div>
     );
@@ -54,7 +55,7 @@ export default function Dashboard() {
           {tiles.map((t, i) => {
             const s = TILE_STYLES[i];
             return (
-              <div key={t.label} className={`border-2 ${s.border} ${s.bg} p-4`}>
+              <div key={t.label} className={`border-2 border-brut-ink ${s.bg} p-4`}>
                 <div className={`flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider ${s.text}/70`}>
                   <t.icon size={13} strokeWidth={2.5} />
                   {t.label}
@@ -67,32 +68,32 @@ export default function Dashboard() {
         </div>
 
         <div className="grid gap-6 lg:grid-cols-2">
-          <div className="border-2 border-brut-ink bg-brut-surface p-5">
-            <h2 className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-brut-ink">
+          <div className="border-2 border-brut-ink bg-card p-5">
+            <h2 className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-foreground">
               <Briefcase size={13} strokeWidth={2.5} className="text-brut-applied" />
               Applications per week
             </h2>
-            <p className="text-xs font-medium text-brut-ink/30">last 12 weeks</p>
+            <p className="text-xs font-medium text-muted-foreground">last 12 weeks</p>
             <WeeklyBars weekly={stats.weekly} />
           </div>
 
-          <div className="border-2 border-brut-ink bg-brut-surface p-5">
-            <h2 className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-brut-ink">
+          <div className="border-2 border-brut-ink bg-card p-5">
+            <h2 className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-foreground">
               <Timer size={13} strokeWidth={2.5} className="text-brut-interview" />
               Pipeline
             </h2>
-            <p className="text-xs font-medium text-brut-ink/30">jobs by stage (active)</p>
+            <p className="text-xs font-medium text-muted-foreground">jobs by stage (active)</p>
             <Funnel funnel={stats.funnel} />
           </div>
         </div>
 
-        <div className="border-2 border-brut-ink bg-brut-surface p-5">
-          <h2 className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-brut-ink">
+        <div className="border-2 border-brut-ink bg-card p-5">
+          <h2 className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-foreground">
             <Bell size={13} strokeWidth={2.5} className="text-brut-wishlist" />
             Upcoming reminders
           </h2>
           {reminders.length === 0 ? (
-            <p className="mt-3 text-sm font-bold uppercase tracking-wider text-brut-ink/30">
+            <p className="mt-3 text-sm font-bold uppercase tracking-wider text-muted-foreground">
               Nothing due in the next 7 days.
             </p>
           ) : (
@@ -100,20 +101,20 @@ export default function Dashboard() {
               {reminders.map((r) => {
                 const overdue = new Date(r.due_at) <= new Date();
                 return (
-                  <li key={r.id} className="flex items-center gap-3 py-2 text-sm border-t border-brut-ink/10 first:border-0">
+                  <li key={r.id} className="flex items-center gap-3 py-2 text-sm border-t-2 border-brut-ink/10 first:border-0">
                     <span
                       title={new Date(r.due_at).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" })}
-                      className={`font-bold shrink-0 ${overdue ? "text-brut-rejected" : "text-brut-ink/50"}`}
+                      className={`font-bold shrink-0 ${overdue ? "text-destructive" : "text-muted-foreground"}`}
                     >
                       {new Date(r.due_at).toLocaleDateString(undefined, { month: "short", day: "numeric" })}
                     </span>
-                    <span className="font-bold text-brut-ink">{r.note}</span>
-                    <span className="font-medium text-brut-ink/40">
+                    <span className="font-bold text-foreground">{r.note}</span>
+                    <span className="font-medium text-muted-foreground">
                       {r.company} · {r.job_title}
                     </span>
-                    <button onClick={() => complete(r.id)} className="btn-brut-sm ml-auto">
+                    <Button size="sm" variant="outline" onClick={() => complete(r.id)} className="ml-auto">
                       Done
-                    </button>
+                    </Button>
                   </li>
                 );
               })}
@@ -191,11 +192,11 @@ function WeeklyBars({ weekly }: { weekly: Stats["weekly"] }) {
       </svg>
       {hover !== null && (
         <div
-          className="pointer-events-none absolute -top-1 border-2 border-brut-ink bg-brut-surface px-2.5 py-1.5 text-xs"
+          className="pointer-events-none absolute -top-1 border-2 border-brut-ink bg-card px-2.5 py-1.5 text-xs"
           style={{ left: `${((pad.left + hover * step + step / 2) / W) * 100}%`, transform: "translateX(-50%)" }}
         >
-          <span className="font-extrabold text-brut-ink">{weekly[hover].count}</span>{" "}
-          <span className="font-bold text-brut-ink/50">
+          <span className="font-extrabold text-foreground">{weekly[hover].count}</span>{" "}
+          <span className="font-bold text-muted-foreground">
             application{weekly[hover].count === 1 ? "" : "s"} · wk of {weekLabel(weekly[hover].weekStart)}
           </span>
         </div>
@@ -219,7 +220,7 @@ function Funnel({ funnel }: { funnel: Stats["funnel"] }) {
               style={{ width: `${(funnel[s] / max) * 100}%`, minWidth: funnel[s] ? "4px" : 0 }}
             />
           </div>
-          <span className="w-6 text-right text-sm font-extrabold tabular-nums text-brut-ink">{funnel[s]}</span>
+          <span className="w-6 text-right text-sm font-extrabold tabular-nums text-foreground">{funnel[s]}</span>
         </div>
       ))}
     </div>

@@ -26,7 +26,7 @@ const AVATAR_COLORS = [
   "bg-brut-interview",
   "bg-brut-offer",
   "bg-brut-rejected",
-  "bg-brut-yellow",
+  "bg-primary",
 ];
 
 export default function App() {
@@ -39,7 +39,7 @@ export default function App() {
 
   if (loading) {
     return (
-      <div className="flex h-full items-center justify-center bg-brut-paper text-sm font-bold uppercase tracking-wider text-brut-ink/50">
+      <div className="flex h-full items-center justify-center bg-brut-paper text-sm font-bold uppercase tracking-wider text-muted-foreground">
         Loading…
       </div>
     );
@@ -60,7 +60,7 @@ export default function App() {
   return (
     <RemindersProvider>
     <div className="flex h-full flex-col bg-brut-paper">
-      <header className="flex items-center gap-5 border-b border-brut-ink/10 bg-brut-surface/90 backdrop-blur-sm px-5 py-2.5">
+      <header className="flex items-center gap-5 border-b-2 border-brut-ink bg-background/90 backdrop-blur-sm px-5 py-2.5">
         <Logo size={20} />
         <nav className="flex gap-1">
           {tabs.map((t) => (
@@ -71,8 +71,8 @@ export default function App() {
               className={({ isActive }) =>
                 `flex items-center gap-1.5 px-3 py-2 text-xs font-bold uppercase tracking-wider transition-colors ${
                   isActive
-                    ? "text-brut-ink border-b-2 border-brut-ink"
-                    : "text-brut-ink/50 hover:text-brut-ink border-b-2 border-transparent"
+                    ? "text-foreground border-b-2 border-foreground"
+                    : "text-muted-foreground hover:text-foreground border-b-2 border-transparent"
                 }`
               }
             >
@@ -85,7 +85,7 @@ export default function App() {
         <div className="ml-auto relative" ref={menuRef}>
           <button
             onClick={() => setMenuOpen(!menuOpen)}
-            className="flex items-center gap-2 px-2 py-1.5 text-xs font-bold uppercase tracking-wider text-brut-ink/60 hover:text-brut-ink transition-colors"
+            className="flex items-center gap-2 px-2 py-1.5 text-xs font-bold uppercase tracking-wider text-muted-foreground hover:text-foreground transition-colors"
           >
             <span className={`flex size-7 items-center justify-center text-sm font-bold text-white ${AVATAR_COLORS[colorIndex]}`}>
               {initial}
@@ -94,25 +94,25 @@ export default function App() {
           </button>
 
           {menuOpen && (
-            <div className="absolute right-0 top-full mt-2 w-56 bg-brut-surface border border-brut-ink/10 shadow-lg z-50">
-              <div className="px-4 py-3 border-b border-brut-ink/5">
-                <p className="text-[11px] font-bold uppercase tracking-wider text-brut-ink/40">Signed in as</p>
-                <p className="text-sm font-semibold text-brut-ink mt-0.5 truncate">{user.email}</p>
+            <div className="absolute right-0 top-full mt-2 w-56 border-2 border-brut-ink bg-card z-50">
+              <div className="px-4 py-3 border-b-2 border-brut-ink/5">
+                <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">Signed in as</p>
+                <p className="text-sm font-semibold text-foreground mt-0.5 truncate">{user.email}</p>
               </div>
               <div className="py-1">
                 <button onClick={() => { setChangingPassword(true); setMenuOpen(false); }}
-                  className="flex w-full items-center gap-3 px-4 py-2.5 text-xs font-semibold text-brut-ink/70 hover:text-brut-ink hover:bg-brut-paper transition-colors">
+                  className="flex w-full items-center gap-3 px-4 py-2.5 text-xs font-semibold text-muted-foreground hover:text-foreground hover:bg-brut-paper transition-colors">
                   <KeyRound size={14} strokeWidth={2} />
                   Change password
                 </button>
                 <button onClick={() => { logout(); setMenuOpen(false); }}
-                  className="flex w-full items-center gap-3 px-4 py-2.5 text-xs font-semibold text-brut-ink/70 hover:text-brut-ink hover:bg-brut-paper transition-colors">
+                  className="flex w-full items-center gap-3 px-4 py-2.5 text-xs font-semibold text-muted-foreground hover:text-foreground hover:bg-brut-paper transition-colors">
                   <LogOut size={14} strokeWidth={2} />
                   Sign out
                 </button>
-                <div className="mx-3 my-1 border-t border-brut-ink/5" />
+                <div className="mx-3 my-1 border-t-2 border-brut-ink/5" />
                 <button onClick={() => { setDeletingAccount(true); setMenuOpen(false); }}
-                  className="flex w-full items-center gap-3 px-4 py-2.5 text-xs font-semibold text-brut-rejected/70 hover:text-brut-rejected hover:bg-brut-paper transition-colors">
+                  className="flex w-full items-center gap-3 px-4 py-2.5 text-xs font-semibold text-destructive/70 hover:text-destructive hover:bg-brut-paper transition-colors">
                   <Trash2 size={14} strokeWidth={2} />
                   Delete account
                 </button>

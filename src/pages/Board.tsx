@@ -47,8 +47,6 @@ export default function Board() {
 
   const onDragStart = (e: DragStartEvent) => setActiveId(String(e.active.id));
 
-  // Cross-column hover: adopt the target column (and a rough position) so the
-  // card renders where it will drop; exact ordering is settled on drag end.
   const onDragOver = (e: DragOverEvent) => {
     const { active, over } = e;
     if (!over) return;
@@ -76,8 +74,6 @@ export default function Board() {
     const to = columnOf(String(over.id));
     if (!job || !to) return;
 
-    // Order the target column, then slot the dragged card next to `over`.
-    // The backend pins it at this integer index and renumbers the column.
     const col = jobs
       .filter((j) => j.status === to && j.id !== activeIdStr)
       .sort((a, b) => a.sort_order - b.sort_order);
@@ -94,8 +90,6 @@ export default function Board() {
     api
       .patch<Job[]>(`/jobs/${activeIdStr}/move`, { status: to, index })
       .then((rows) => {
-        // Replace the renumbered destination column wholesale so integer
-        // spacing stays consistent across clients.
         const ids = new Set(rows.map((r) => r.id));
         setJobs((js) => [...js.filter((j) => !ids.has(j.id)), ...rows]);
       })
@@ -106,7 +100,7 @@ export default function Board() {
   const openJob = openJobId ? (jobs.find((j) => j.id === openJobId) ?? null) : null;
 
   if (loading) {
-    return <div className="flex h-full items-center justify-center text-slate-400">Loading…</div>;
+    return <div className="flex h-full items-center justify-center text-muted-foreground text-sm font-bold uppercase tracking-wider">Loading…</div>;
   }
 
   return (

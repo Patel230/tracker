@@ -8,10 +8,10 @@ export default function RemindersBanner() {
   if (!overdue.length) return null;
 
   return (
-    <div className="border-b border-brut-ink/10 bg-gradient-to-r from-brut-yellow/80 via-brut-yellow/50 to-brut-wishlist/20 px-6 py-2.5">
+    <div className="border-b-2 border-brut-ink bg-gradient-to-r from-primary/80 via-primary/50 to-brut-wishlist/20 px-6 py-2.5">
       <div className="flex items-center gap-2 mb-1">
-        <Bell size={13} strokeWidth={2.5} className="text-brut-rejected" />
-        <span className="text-xs font-bold uppercase tracking-wider text-brut-ink">Overdue reminders</span>
+        <Bell size={13} strokeWidth={2.5} className="text-destructive" />
+        <span className="text-xs font-bold uppercase tracking-wider text-foreground">Overdue reminders</span>
       </div>
       <div className="space-y-1">
         {overdue.map((r, i) => (
@@ -20,9 +20,9 @@ export default function RemindersBanner() {
               <AlertTriangle size={11} strokeWidth={2.5} />
               Overdue
             </span>
-            <span className="font-bold text-sm text-brut-ink">{r.note}</span>
-            <span className="font-medium text-sm text-brut-ink/50">— {r.company} · {r.job_title}</span>
-            <button onClick={() => complete(r.id)} className="btn-brut-sm ml-auto">
+            <span className="font-bold text-sm text-foreground">{r.note}</span>
+            <span className="font-medium text-sm text-foreground/60">— {r.company} · {r.job_title}</span>
+            <button onClick={() => complete(r.id)} className="ml-auto inline-flex items-center justify-center gap-1.5 border-2 border-brut-ink bg-card px-3 py-1.5 text-xs font-bold uppercase tracking-wider text-foreground shadow-[2px_2px_0_0_hsl(0_0%_0%)] hover:-translate-y-0.5 hover:shadow-[3px_3px_0_0_hsl(0_0%_0%)] active:translate-x-[1px] active:translate-y-[1px] active:shadow-[1px_1px_0_0_hsl(0_0%_0%)] transition-all duration-150">
               <Check size={13} strokeWidth={2.5} />
               Done
             </button>
