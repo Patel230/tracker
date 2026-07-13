@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import { z } from "zod";
-import bcrypt from "bcryptjs";
 import { createSession, clearSession, verifySession, type AppEnv } from "../lib/auth";
+import { hashPassword, verifyPassword, isLegacyHash } from "../lib/password";
 
 const credentials = z.object({
   email: z.string().email().max(254),
@@ -29,7 +29,7 @@ auth.post("/register", async (c) => {
   if (existing) return c.json({ error: "Account already exists" }, 409);
 
   const id = crypto.randomUUID();
-  const hash = await bcrypt.hash(password, 10);
+  const hash = await hashPassword(password);
   await c.env.DB.prepare("INSERT INTO users (id, email, password_hash) VALUES (?, ?, ?)")
     .bind(id, email.toLowerCase(), hash)
     .run();
@@ -45,8 +45,15 @@ auth.post("/login", async (c) => {
   const user = await c.env.DB.prepare("SELECT id, email, password_hash FROM users WHERE email = ?")
     .bind(email.toLowerCase())
     .first<{ id: string; email: string; password_hash: string }>();
-  const ok = user && (await bcrypt.compare(password, user.password_hash));
+  const ok = user && (await verifyPassword(password, user.password_hash));
   if (!ok) return c.json({ error: "Invalid email or password" }, 401);
+
+  // Upgrade the account off bcrypt the first time it logs in successfully.
+  if (isLegacyHash(user.password_hash)) {
+    await c.env.DB.prepare("UPDATE users SET password_hash = ? WHERE id = ?")
+      .bind(await hashPassword(password), user.id)
+      .run();
+  }
 
   await createSession(c, user.id);
   return c.json({ id: user.id, email: user.email });
@@ -77,11 +84,11 @@ auth.post("/change-password", async (c) => {
   const user = await c.env.DB.prepare("SELECT password_hash FROM users WHERE id = ?")
     .bind(userId)
     .first<{ password_hash: string }>();
-  if (!user || !(await bcrypt.compare(currentPassword, user.password_hash))) {
+  if (!user || !(await verifyPassword(currentPassword, user.password_hash))) {
     return c.json({ error: "Current password is incorrect" }, 401);
   }
 
-  const hash = await bcrypt.hash(newPassword, 10);
+  const hash = await hashPassword(newPassword);
   await c.env.DB.prepare("UPDATE users SET password_hash = ? WHERE id = ?").bind(hash, userId).run();
   return c.json({ ok: true });
 });

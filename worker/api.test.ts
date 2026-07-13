@@ -1,5 +1,6 @@
 import { beforeAll, afterAll, describe, expect, it } from "vitest";
 import { readFileSync } from "node:fs";
+import bcrypt from "bcryptjs";
 import { getPlatformProxy } from "wrangler";
 import app from "./index";
 import type { Job, Activity, Stats } from "../shared/types";
@@ -89,6 +90,30 @@ describe("auth", () => {
       );
       expect(res.status).toBe(500);
     }
+  });
+
+  it("verifies a legacy bcrypt hash and upgrades it to pbkdf2 on login", async () => {
+    // Simulates an account created before the PBKDF2 switch.
+    const legacy = bcrypt.hashSync("legacypw1", 10);
+    await env.DB.prepare("INSERT INTO users (id, email, password_hash) VALUES (?, ?, ?)")
+      .bind(crypto.randomUUID(), "legacy@test.dev", legacy)
+      .run();
+
+    const c = client();
+    expect((await c.fetch("/api/auth/login", json({ email: "legacy@test.dev", password: "legacypw1" }))).status).toBe(
+      200
+    );
+
+    const stored = await env.DB.prepare("SELECT password_hash FROM users WHERE email = ?")
+      .bind("legacy@test.dev")
+      .first<{ password_hash: string }>();
+    expect(stored!.password_hash.startsWith("pbkdf2$")).toBe(true);
+
+    // The upgraded hash still authenticates the same password, and only that one.
+    expect((await client().fetch("/api/auth/login", json({ email: "legacy@test.dev", password: "legacypw1" }))).status)
+      .toBe(200);
+    expect((await client().fetch("/api/auth/login", json({ email: "legacy@test.dev", password: "wrongpw123" }))).status)
+      .toBe(401);
   });
 
   it("rejects bad credentials and unauthenticated API access", async () => {
