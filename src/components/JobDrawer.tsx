@@ -239,7 +239,7 @@ function DetailsTab({ job, onSave }: { job: Job; onSave: (f: Partial<Job>) => Pr
           rows={5}
           value={form.description}
           onChange={set("description")}
-          className="w-full border-[3px] border-brut-ink bg-input px-3 py-2.5 text-sm font-medium text-foreground placeholder:text-muted-foreground/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background transition-all duration-150"
+          className="w-full border-[3px] border-brut-ink bg-input px-3 py-2.5 text-sm font-medium text-foreground placeholder:text-muted-foreground/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background transition-all duration-150"
         />
       </Field>
       <Field label="Notes">
@@ -247,7 +247,7 @@ function DetailsTab({ job, onSave }: { job: Job; onSave: (f: Partial<Job>) => Pr
           rows={4}
           value={form.notes}
           onChange={set("notes")}
-          className="w-full border-[3px] border-brut-ink bg-input px-3 py-2.5 text-sm font-medium text-foreground placeholder:text-muted-foreground/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background transition-all duration-150"
+          className="w-full border-[3px] border-brut-ink bg-input px-3 py-2.5 text-sm font-medium text-foreground placeholder:text-muted-foreground/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background transition-all duration-150"
           placeholder="Interview prep, impressions, next steps…"
         />
       </Field>
@@ -320,7 +320,7 @@ function TimelineTab({ jobId }: { jobId: string }) {
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
           placeholder="Details (optional)"
-          className="w-full border-[3px] border-brut-ink bg-input px-3 py-2 text-sm font-medium text-foreground placeholder:text-muted-foreground/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background transition-all"
+          className="w-full border-[3px] border-brut-ink bg-input px-3 py-2 text-sm font-medium text-foreground placeholder:text-muted-foreground/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background transition-all"
         />
         <Button size="sm" type="submit">
           <Plus size={13} strokeWidth={2.5} />
