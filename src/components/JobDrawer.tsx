@@ -502,7 +502,7 @@ function RemindersTab({ jobId }: { jobId: string }) {
                   checked={!!r.completed_at}
                   disabled={!!r.completed_at}
                   onChange={() => complete(r.id)}
-                  className="size-4 accent-foreground"
+                  className="size-4 accent-primary"
                 />
                 <div className={r.completed_at ? "text-sm font-medium text-muted-foreground line-through" : "text-sm font-bold text-foreground"}>
                   {r.note}

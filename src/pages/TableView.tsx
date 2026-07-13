@@ -85,7 +85,7 @@ export default function TableView() {
             type="checkbox"
             checked={showArchived}
             onChange={(e) => setShowArchived(e.target.checked)}
-            className="size-4 accent-foreground"
+            className="size-4 accent-primary"
           />
           <ArchiveRestore size={13} strokeWidth={2.5} className="text-brut-offer" />
           Include archived
