@@ -311,6 +311,30 @@ describe("jobs", () => {
     expect((await c.fetch("/api/jobs", json({ company: "X", title: "Y", status: "nope" }))).status).toBe(400);
   });
 
+  it("rejects non-http(s) URLs on job.url and contact.linkedin", async () => {
+    const c = client();
+    await c.fetch("/api/auth/register", json({ email: "urls@test.dev", password: "password1" }));
+
+    // These all satisfy `new URL()`, which is the only thing zod's .url()
+    // checks, and all become executable script in an <a href>.
+    const dangerous = ["javascript:alert(document.cookie)", "data:text/html,<script>alert(1)</script>", "vbscript:msgbox"];
+
+    for (const url of dangerous) {
+      expect((await c.fetch("/api/jobs", json({ company: "X", title: "Y", url }))).status).toBe(400);
+    }
+
+    const job = (await (await c.fetch("/api/jobs", json({ company: "Ok", title: "Role" }))).json()) as Job;
+    for (const linkedin of dangerous) {
+      expect((await c.fetch(`/api/jobs/${job.id}/contacts`, json({ name: "N", linkedin }))).status).toBe(400);
+    }
+
+    // Genuine URLs still go through, and PATCH is guarded too.
+    expect((await c.fetch("/api/jobs", json({ company: "X", title: "Y", url: "https://ok.dev/job" }))).status).toBe(201);
+    expect(
+      (await c.fetch(`/api/jobs/${job.id}`, { method: "PATCH", body: JSON.stringify({ url: dangerous[0] }) })).status
+    ).toBe(400);
+  });
+
   it("isolates users from each other", async () => {
     const alice = client();
     await alice.fetch("/api/auth/register", json({ email: "alice@test.dev", password: "password1" }));

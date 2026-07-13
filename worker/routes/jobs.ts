@@ -6,15 +6,25 @@ import {
   STATUS_LABELS,
   CURRENCIES,
   PERIODS,
+  safeExternalUrl,
   type Job,
   type JobStatus,
 } from "../../shared/types";
 import type { AppEnv } from "../lib/auth";
 
+// Only http(s). See safeExternalUrl: zod's .url() alone would let a
+// javascript: scheme through to an href.
+const httpUrl = (max: number) =>
+  z
+    .string()
+    .trim()
+    .max(max)
+    .refine((u) => safeExternalUrl(u) !== null, "Must be an http:// or https:// URL");
+
 const jobFields = z.object({
   company: z.string().trim().min(1).max(200),
   title: z.string().trim().min(1).max(200),
-  url: z.string().trim().url().max(2000).nullish().or(z.literal("").transform(() => null)),
+  url: httpUrl(2000).nullish().or(z.literal("").transform(() => null)),
   location: z.string().trim().max(200).nullish(),
   salary_min: z.number().int().nonnegative().nullish(),
   salary_max: z.number().int().nonnegative().nullish(),
@@ -37,7 +47,9 @@ const contactFields = z.object({
   role: z.string().trim().max(200).nullish(),
   email: z.string().trim().email().max(254).nullish(),
   phone: z.string().trim().max(50).nullish(),
-  linkedin: z.string().trim().max(500).nullish(),
+  linkedin: httpUrl(500)
+    .nullish()
+    .or(z.literal("").transform(() => null)),
   notes: z.string().max(5000).nullish(),
 });
 

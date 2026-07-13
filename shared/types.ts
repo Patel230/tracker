@@ -1,3 +1,17 @@
+// `new URL()` — which is all zod's .url() checks — happily accepts
+// "javascript:alert(1)" and "data:text/html,…". Both of those become live
+// script when dropped into an <a href>, so every user-supplied URL is checked
+// against this before it is stored OR rendered. Rendering is checked too, not
+// just writing: rows saved before this existed may already hold a bad scheme.
+export function safeExternalUrl(url: string | null | undefined): string | null {
+  if (!url) return null;
+  try {
+    return /^https?:$/.test(new URL(url).protocol) ? url : null;
+  } catch {
+    return null; // not a parseable absolute URL
+  }
+}
+
 export const JOB_STATUSES = ["wishlist", "applied", "interview", "offer", "rejected"] as const;
 export type JobStatus = (typeof JOB_STATUSES)[number];
 

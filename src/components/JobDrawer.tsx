@@ -23,6 +23,7 @@ import {
   JOB_STATUSES,
   PERIODS,
   STATUS_LABELS,
+  safeExternalUrl,
   type Activity,
   type Contact,
   type Job,
@@ -102,9 +103,9 @@ export default function JobDrawer({ job, onClose, onChange, onDelete }: Props) {
                 </option>
               ))}
             </select>
-            {job.url && (
+            {safeExternalUrl(job.url) && (
               <a
-                href={job.url}
+                href={safeExternalUrl(job.url)!}
                 target="_blank"
                 rel="noreferrer"
                 className="flex items-center gap-1 text-xs font-bold uppercase tracking-wider text-brut-applied underline decoration-2 underline-offset-2"
@@ -426,8 +427,8 @@ function ContactsTab({ jobId }: { jobId: string }) {
                     {ct.email}
                   </a>
                 )}
-                {ct.linkedin && (
-                  <a href={ct.linkedin} target="_blank" rel="noreferrer" className="flex items-center gap-1 text-brut-applied underline decoration-2 underline-offset-2">
+                {safeExternalUrl(ct.linkedin) && (
+                  <a href={safeExternalUrl(ct.linkedin)!} target="_blank" rel="noreferrer" className="flex items-center gap-1 text-brut-applied underline decoration-2 underline-offset-2">
                     LinkedIn
                     <ExternalLink size={11} strokeWidth={2.5} />
                   </a>
