@@ -31,16 +31,23 @@ auth.post("/register", async (c) => {
   if (!parsed.success) return c.json({ error: "Valid email and password (min 8 chars) required" }, 400);
   const { email, password } = parsed.data;
 
-  const existing = await c.env.DB.prepare("SELECT id FROM users WHERE email = ?")
-    .bind(email.toLowerCase())
-    .first();
-  if (existing) return c.json({ error: "Account already exists" }, 409);
-
   const id = crypto.randomUUID();
   const hash = await hashPassword(password);
-  await c.env.DB.prepare("INSERT INTO users (id, email, password_hash) VALUES (?, ?, ?)")
-    .bind(id, email.toLowerCase(), hash)
-    .run();
+
+  // Let the UNIQUE(email) constraint decide, rather than checking first and
+  // then inserting: two concurrent signups for the same address both passed
+  // the check and the loser hit the constraint, surfacing as a 500.
+  try {
+    await c.env.DB.prepare("INSERT INTO users (id, email, password_hash) VALUES (?, ?, ?)")
+      .bind(id, email.toLowerCase(), hash)
+      .run();
+  } catch (err) {
+    if (String(err).includes("UNIQUE constraint failed")) {
+      return c.json({ error: "Account already exists" }, 409);
+    }
+    throw err;
+  }
+
   await createSession(c, id, 0);
   return c.json({ id, email: email.toLowerCase() }, 201);
 });

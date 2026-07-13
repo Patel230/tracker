@@ -71,6 +71,36 @@ describe("auth", () => {
     expect((await c.fetch("/api/auth/me")).status).toBe(401);
   });
 
+  it("returns 409, not 500, when the same email registers twice or races itself", async () => {
+    const register = () =>
+      app.request(
+        "/api/auth/register",
+        { ...json({ email: "dupe@test.dev", password: "password1" }), headers: { "Content-Type": "application/json" } },
+        env
+      );
+
+    // Sequential: the second is a plain duplicate.
+    expect((await register()).status).toBe(201);
+    expect((await register()).status).toBe(409);
+
+    // Concurrent: both pass a check-then-insert, and the loser used to hit the
+    // UNIQUE constraint and fall through to onError as a 500.
+    const raced = await Promise.all([
+      app.request(
+        "/api/auth/register",
+        { ...json({ email: "race@test.dev", password: "password1" }), headers: { "Content-Type": "application/json" } },
+        env
+      ),
+      app.request(
+        "/api/auth/register",
+        { ...json({ email: "race@test.dev", password: "password1" }), headers: { "Content-Type": "application/json" } },
+        env
+      ),
+    ]);
+    const codes = raced.map((r) => r.status).sort();
+    expect(codes).toEqual([201, 409]);
+  });
+
   it("rejects registration when closed", async () => {
     const closed = { ...env, ALLOW_REGISTRATION: "false" };
     const res = await app.request(
