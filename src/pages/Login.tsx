@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from "react";
-import { AlertCircle, ArrowRight, Eye, EyeOff, Loader2, Lock, Mail, UserPlus } from "lucide-react";
+import { ArrowRight, Eye, EyeOff, Loader2, Lock, Mail, UserPlus } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../lib/auth";
 import Logo from "../components/Logo";
@@ -168,16 +168,13 @@ export default function Login() {
 
               {error && (
                 <div className="border-2 border-brut-rejected bg-brut-rejected/10 px-3 py-2">
-                  <div className="flex items-center gap-2">
-                    <AlertCircle size={14} strokeWidth={2.5} className="shrink-0 text-brut-rejected" />
-                    <span className="text-xs font-bold uppercase tracking-wide text-brut-rejected">{error}</span>
-                  </div>
-                  {error.includes("fork") && (
+                  <span className="text-xs font-bold uppercase tracking-wide text-brut-rejected">{error}</span>
+                  {error.includes("private") && (
                     <a
                       href="https://github.com/Patel230/tracker"
                       target="_blank"
                       rel="noreferrer"
-                      className="mt-1.5 flex items-center gap-1 text-xs font-bold uppercase tracking-wide text-brut-ink underline decoration-2 underline-offset-2"
+                      className="mt-2 flex items-center gap-1 text-xs font-bold uppercase tracking-wide text-brut-ink underline decoration-2 underline-offset-2"
                     >
                       Fork on GitHub →
                     </a>
