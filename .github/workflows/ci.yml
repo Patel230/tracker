@@ -23,3 +23,7 @@ jobs:
         run: npm run typecheck
       - name: Tests
         run: npm test
+      # typecheck and tests both pass on a tree that fails to bundle, so main
+      # could break the deploy without CI noticing.
+      - name: Build
+        run: npm run build
