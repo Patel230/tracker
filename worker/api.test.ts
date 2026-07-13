@@ -400,11 +400,20 @@ describe("jobs", () => {
     expect(ids.every((id) => applied.some((j) => j.id === id))).toBe(true);
   });
 
-  it("validates input", async () => {
+  it("validates input and names the field that actually failed", async () => {
     const c = client();
     await c.fetch("/api/auth/register", json({ email: "val@test.dev", password: "password1" }));
     expect((await c.fetch("/api/jobs", json({ company: "" }))).status).toBe(400);
     expect((await c.fetch("/api/jobs", json({ company: "X", title: "Y", status: "nope" }))).status).toBe(400);
+
+    // Every 400 used to read "Company and title are required", so a rejected
+    // URL blamed the wrong field entirely.
+    const badUrl = await c.fetch("/api/jobs", json({ company: "X", title: "Y", url: "javascript:alert(1)" }));
+    expect(badUrl.status).toBe(400);
+    expect(((await badUrl.json()) as { error: string }).error).toBe("Job URL must start with http:// or https://");
+
+    const noCompany = await c.fetch("/api/jobs", json({ company: "", title: "Y" }));
+    expect(((await noCompany.json()) as { error: string }).error).toBe("Company is required");
   });
 
   it("rejects non-http(s) URLs on job.url and contact.linkedin", async () => {

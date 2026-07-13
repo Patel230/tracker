@@ -14,17 +14,23 @@ import type { AppEnv } from "../lib/auth";
 
 // Only http(s). See safeExternalUrl: zod's .url() alone would let a
 // javascript: scheme through to an href.
-const httpUrl = (max: number) =>
+const httpUrl = (label: string, max: number) =>
   z
     .string()
     .trim()
     .max(max)
-    .refine((u) => safeExternalUrl(u) !== null, "Must be an http:// or https:// URL");
+    .refine((u) => safeExternalUrl(u) !== null, `${label} must start with http:// or https://`);
+
+// Surfaces the field that actually failed. Every 400 used to say "Company and
+// title are required", so pasting a bad URL reported the wrong problem.
+const firstIssue = (error: z.ZodError) => error.issues[0]?.message ?? "Invalid fields";
 
 const jobFields = z.object({
-  company: z.string().trim().min(1).max(200),
-  title: z.string().trim().min(1).max(200),
-  url: httpUrl(2000).nullish().or(z.literal("").transform(() => null)),
+  company: z.string().trim().min(1, "Company is required").max(200),
+  title: z.string().trim().min(1, "Title is required").max(200),
+  url: httpUrl("Job URL", 2000)
+    .nullish()
+    .or(z.literal("").transform(() => null)),
   location: z.string().trim().max(200).nullish(),
   salary_min: z.number().int().nonnegative().nullish(),
   salary_max: z.number().int().nonnegative().nullish(),
@@ -47,7 +53,7 @@ const contactFields = z.object({
   role: z.string().trim().max(200).nullish(),
   email: z.string().trim().email().max(254).nullish(),
   phone: z.string().trim().max(50).nullish(),
-  linkedin: httpUrl(500)
+  linkedin: httpUrl("LinkedIn URL", 500)
     .nullish()
     .or(z.literal("").transform(() => null)),
   notes: z.string().max(5000).nullish(),
@@ -124,7 +130,7 @@ jobs.get("/", async (c) => {
 
 jobs.post("/", async (c) => {
   const parsed = jobFields.safeParse(await c.req.json().catch(() => null));
-  if (!parsed.success) return c.json({ error: "Company and title are required" }, 400);
+  if (!parsed.success) return c.json({ error: firstIssue(parsed.error) }, 400);
   const f = parsed.data;
   const id = crypto.randomUUID();
   const status: JobStatus = f.status ?? "wishlist";
@@ -178,7 +184,7 @@ jobs.patch("/:id", async (c) => {
     .partial()
     .extend({ archived: z.union([z.literal(0), z.literal(1)]).optional() })
     .safeParse(await c.req.json().catch(() => null));
-  if (!parsed.success) return c.json({ error: "Invalid fields" }, 400);
+  if (!parsed.success) return c.json({ error: firstIssue(parsed.error) }, 400);
   const f = parsed.data;
 
   const merged = { ...job, ...Object.fromEntries(Object.entries(f).filter(([, v]) => v !== undefined)) };
@@ -285,7 +291,7 @@ function childRoutes<T extends z.ZodTypeAny>(opts: {
     const job = await ownedJob(c, c.get("userId"), c.req.param("id"));
     if (!job) return c.json({ error: "Not found" }, 404);
     const parsed = opts.schema.safeParse(await c.req.json().catch(() => null));
-    if (!parsed.success) return c.json({ error: "Invalid fields" }, 400);
+    if (!parsed.success) return c.json({ error: firstIssue(parsed.error) }, 400);
     const data = parsed.data as Record<string, unknown>;
     const id = crypto.randomUUID();
     const cols = opts.columns.filter((col) => data[col] !== undefined);
