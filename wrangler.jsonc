@@ -27,6 +27,9 @@
     // to create the one account, then back (postly pattern).
     "ALLOW_REGISTRATION": "false"
   },
+  "routes": [
+    { "pattern": "tracker.lakshmanp.com", "custom_domain": true }
+  ],
   "observability": { "enabled": true }
   // Secrets — set with `wrangler secret put <NAME>`, never in this file:
   //   JWT_SECRET   signs the auth cookie JWT
