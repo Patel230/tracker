@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import { z } from "zod";
 import { createSession, clearSession, authenticate, type AppEnv } from "../lib/auth";
-import { hashPassword, verifyPassword, isLegacyHash } from "../lib/password";
+import { hashPassword, verifyPassword, isLegacyHash, dummyVerify } from "../lib/password";
 
 const credentials = z.object({
   email: z.string().email().max(254),
@@ -47,8 +47,16 @@ auth.post("/login", async (c) => {
   )
     .bind(email.toLowerCase())
     .first<{ id: string; email: string; password_hash: string; token_version: number }>();
-  const ok = user && (await verifyPassword(password, user.password_hash));
-  if (!ok) return c.json({ error: "Invalid email or password" }, 401);
+  const invalid = () => c.json({ error: "Invalid email or password" }, 401);
+
+  // An unknown email must cost the same as a known one. Skipping the hash here
+  // made a miss ~6ms faster than a hit, which is a reliable oracle for
+  // enumerating which addresses have accounts.
+  if (!user) {
+    await dummyVerify(password);
+    return invalid();
+  }
+  if (!(await verifyPassword(password, user.password_hash))) return invalid();
 
   // Upgrade the account off bcrypt the first time it logs in successfully.
   if (isLegacyHash(user.password_hash)) {

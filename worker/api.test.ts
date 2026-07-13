@@ -119,6 +119,32 @@ describe("auth", () => {
       .toBe(401);
   });
 
+  it("takes comparable time for an unknown email as for a wrong password", async () => {
+    await client().fetch("/api/auth/register", json({ email: "timing@test.dev", password: "originalpw1" }));
+
+    const median = async (email: string) => {
+      const runs: number[] = [];
+      for (let i = 0; i < 7; i++) {
+        const t = performance.now();
+        await client().fetch("/api/auth/login", json({ email, password: "wrongpassword" }));
+        runs.push(performance.now() - t);
+      }
+      return runs.sort((a, b) => a - b)[3];
+    };
+
+    // Warm the lazily-built dummy hash so it isn't charged to the first sample.
+    await client().fetch("/api/auth/login", json({ email: "nobody@test.dev", password: "wrongpassword" }));
+
+    const known = await median("timing@test.dev");
+    const unknown = await median("nobody@test.dev");
+
+    // Before the fix an unknown email skipped hashing entirely and returned in
+    // a fraction of the time. They should now be within the same ballpark;
+    // the bound is loose because CI timing is noisy, but a regression would
+    // show up as unknown being many times faster, not marginally so.
+    expect(unknown).toBeGreaterThan(known * 0.5);
+  });
+
   it("rejects bad credentials and unauthenticated API access", async () => {
     const c = client();
     const bad = await c.fetch("/api/auth/login", json({ email: "a@test.dev", password: "wrongpass1" }));
