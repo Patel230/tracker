@@ -334,6 +334,27 @@ describe("jobs", () => {
     expect((await c.fetch(`/api/jobs/${job.id}`)).status).toBe(404);
   });
 
+  it("excludes archived jobs from every stat, not just the funnel", async () => {
+    const c = client();
+    await c.fetch("/api/auth/register", json({ email: "arch@test.dev", password: "password1" }));
+
+    // Two applied jobs, neither of which ever got a response.
+    for (const company of ["Ghosted A", "Ghosted B"]) {
+      const j = (await (await c.fetch("/api/jobs", json({ company, title: "Role", status: "applied" }))).json()) as Job;
+      if (company === "Ghosted B") {
+        await c.fetch(`/api/jobs/${j.id}`, { method: "PATCH", body: JSON.stringify({ archived: 1 }) });
+      }
+    }
+
+    const stats = (await (await c.fetch("/api/stats")).json()) as Stats;
+    // The archived one is out of the funnel...
+    expect(stats.funnel.applied).toBe(1);
+    // ...and must also be out of the denominator behind the response rate,
+    // which previously still counted it.
+    expect(stats.responseRate).toBe(0);
+    expect(stats.weekly.reduce((n, w) => n + w.count, 0)).toBe(1);
+  });
+
   it("validates input", async () => {
     const c = client();
     await c.fetch("/api/auth/register", json({ email: "val@test.dev", password: "password1" }));

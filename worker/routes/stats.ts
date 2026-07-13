@@ -4,6 +4,11 @@ import type { AppEnv } from "../lib/auth";
 
 const INTERVIEW_TYPES = "('phone_screen', 'interview', 'onsite', 'offer')";
 
+// Every query here filters archived = 0. The funnel already did, but the rate,
+// average and weekly queries did not, so archiving a job removed it from the
+// funnel while it kept dragging on the response rate — the numbers on one
+// screen disagreed with each other.
+
 const stats = new Hono<AppEnv>();
 
 stats.get("/", async (c) => {
@@ -25,7 +30,7 @@ stats.get("/", async (c) => {
                     OR EXISTS (SELECT 1 FROM activities a
                                WHERE a.job_id = jobs.id AND a.type IN ${INTERVIEW_TYPES})
                   THEN 1 ELSE 0 END) AS responded
-       FROM jobs WHERE user_id = ? AND applied_at IS NOT NULL`
+       FROM jobs WHERE user_id = ? AND archived = 0 AND applied_at IS NOT NULL`
     )
       .bind(userId)
       .first<{ applied: number; responded: number | null }>(),
@@ -36,14 +41,15 @@ stats.get("/", async (c) => {
          SELECT j.applied_at,
                 (SELECT MIN(a.happened_at) FROM activities a
                  WHERE a.job_id = j.id AND a.type IN ${INTERVIEW_TYPES}) AS first_iv
-         FROM jobs j WHERE j.user_id = ? AND j.applied_at IS NOT NULL
+         FROM jobs j WHERE j.user_id = ? AND j.archived = 0 AND j.applied_at IS NOT NULL
        ) WHERE first_iv IS NOT NULL`
     )
       .bind(userId)
       .first<{ avg_days: number | null }>(),
 
     c.env.DB.prepare(
-      "SELECT applied_at FROM jobs WHERE user_id = ? AND applied_at >= datetime('now', '-84 days')"
+      `SELECT applied_at FROM jobs
+       WHERE user_id = ? AND archived = 0 AND applied_at >= datetime('now', '-84 days')`
     )
       .bind(userId)
       .all<{ applied_at: string }>(),
