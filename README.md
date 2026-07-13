@@ -1,83 +1,68 @@
 <div align="center">
-  <h1> Tracker</h1>
-  <p><strong>Free kanban-style job application tracker for students</strong></p>
-  <p>
-    <img src="https://img.shields.io/badge/React-20232A?logo=react&logoColor=61DAFB" alt="React"/>
-    <img src="https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=white" alt="TypeScript"/>
-    <img src="https://img.shields.io/badge/Cloudflare%20Workers-F38020?logo=cloudflare&logoColor=white" alt="Cloudflare Workers"/>
-    <img src="https://img.shields.io/badge/D1-FF9E00?logo=cloudflare&logoColor=white" alt="D1"/>
-    <img src="https://img.shields.io/badge/Tailwind_CSS-06B6D4?logo=tailwindcss&logoColor=white" alt="Tailwind CSS"/>
-    <img src="https://img.shields.io/badge/Vite-646CFF?logo=vite&logoColor=white" alt="Vite"/>
-  </p>
+  <br/>
+  <img src="https://img.shields.io/badge/license-MIT-blue?style=flat-square" alt="MIT"/>
+  <img src="https://img.shields.io/github/actions/workflow/status/Patel230/tracker/ci.yml?branch=main&style=flat-square" alt="CI"/>
+  <img src="https://img.shields.io/badge/React-19-61DAFB?logo=react&style=flat-square" alt="React"/>
+  <img src="https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&style=flat-square" alt="TypeScript"/>
+  <img src="https://img.shields.io/badge/Cloudflare%20Workers-F38020?logo=cloudflare&style=flat-square" alt="Cloudflare Workers"/>
+  <br/>
+  <br/>
+
+  **Tracker** — Free kanban-style job application tracker for students.
+
+  *Run your job hunt like a pipeline, not a pile of tabs.*
+
+  <br/>
 </div>
 
-##  Overview
+---
 
-Tracker replaces scattered tabs and spreadsheets with a single organized board for your job search. Drag applications through your pipeline, log contacts and activities, track salary data, and view analytics — all in one place.
+## Features
 
-##  Features
-
-- **Kanban Board** — Drag jobs across pipeline stages (Wishlist → Applied → Interview → Offer → Rejected)
-- **Table View** — Sort, filter, and search all your jobs in a grid
+- **Kanban Board** — Drag jobs across Wishlist → Applied → Interview → Offer → Rejected
+- **Table View** — Sort, filter, and search all jobs in a sortable grid
 - **Analytics Dashboard** — Pipeline funnel, response rate, weekly volume, avg days to interview
 - **Job Drawer** — Four-tab detail panel: details, timeline, contacts, reminders
 - **Salary Tracking** — Multi-currency with hourly/daily/weekly/monthly/yearly periods
 - **Reminders** — Per-job and global upcoming reminders with completion tracking
-- **Authentication** — Email/password with JWT sessions, change password, account deletion
+- **Auth** — Email/password with JWT sessions, change password, account deletion
+- **Colorblind-safe** — Pipeline stage colors validated against Okabe-Ito palette
 
-## 󰒲 Architecture
+## Docs
 
-```
-                           Cloudflare Worker
-                           ┌──────────────────────────┐
-  /api/*  ────────────────►  Hono API Router          │
-                           │  ├── /api/auth/*         │
-                           │  ├── /api/jobs/*         │
-                           │  ├── /api/stats          │
-                           │  └── /api/reminders/*    │
-                           │                          │
-  /* (non-API) ──────────►  ASSETS binding ──► SPA    │
-                           └──────────────────────────┘
-```
+| Document | What you'll find |
+|---|---|
+| [📦 Setup Guide](./docs/SETUP.md) | Local dev, Docker-free, production deploy, CI/CD |
+| [⚙ Config Reference](./docs/CONFIG.md) | Environment variables, secrets, D1 setup, wrangler |
+| [📡 API Reference](./docs/API.md) | All endpoints, auth, request/response shapes |
+| [🏗 Architecture](./docs/ARCHITECTURE.md) | How the pieces fit together |
 
-## 󰚰 Quick Start
+## Quick start
 
 ```bash
-# Install
-cd tracker && npm install
-
-# Local secrets
-cp .dev.vars.example .dev.vars
-# Edit JWT_SECRET and set ALLOW_REGISTRATION=true
-
-# Database
+npm install
+cp .dev.vars.example .dev.vars      # edit JWT_SECRET + ALLOW_REGISTRATION
 npm run db:migrate:local
-
-# Dev server
-npm run dev        # → http://localhost:5173
+npm run dev                          # → http://localhost:5173
 ```
 
-## 󰮫 Scripts
+## Scripts
 
 | Script | Description |
 |---|---|
-| `npm run dev` | Local dev server with HMR |
-| `npm run build` | TypeScript check + Vite build |
+| `npm run dev` | Development server with HMR |
+| `npm run build` | TypeScript check + Vite production build |
 | `npm run deploy` | Build + deploy to Cloudflare Workers |
-| `npm run test` | Integration tests (Vitest + Miniflare D1) |
+| `npm run test` | Run integration tests |
 | `npm run typecheck` | TypeScript type checking |
 | `npm run db:migrate:local` | Apply D1 migrations locally |
 | `npm run db:migrate:remote` | Apply D1 migrations to production |
 | `npm run logs` | Tail live Worker logs |
 
-##  Deployment
+## Tech stack
 
-```bash
-npm run deploy
-npm run db:migrate:remote
-npx wrangler secret put JWT_SECRET
-```
+React 19 · TypeScript · Vite · Tailwind CSS v4 · dnd-kit · Hono · Cloudflare Workers · D1 (SQLite) · bcryptjs · jose · Zod
 
-##  License
+## License
 
 MIT — see [LICENSE](./LICENSE).
