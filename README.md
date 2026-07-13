@@ -61,7 +61,7 @@ npm run dev                          # → http://localhost:5173
 
 ## Tech stack
 
-React 19 · TypeScript · Vite · Tailwind CSS v4 · dnd-kit · Hono · Cloudflare Workers · D1 (SQLite) · bcryptjs · jose · Zod
+React 19 · TypeScript · Vite · Tailwind CSS v4 · dnd-kit · Hono · Cloudflare Workers · D1 (SQLite) · WebCrypto PBKDF2 · jose · Zod
 
 ## License
 

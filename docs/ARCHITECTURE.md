@@ -86,9 +86,16 @@ Request → Worker (fetch handler)
 
 ### Authentication
 
-1. **Registration/Login** — validates with Zod, hashes password (bcryptjs, cost 10), signs JWT (HS256, jose), sets httpOnly cookie `tracker_auth`
-2. **Verification** — `requireAuth` middleware reads cookie, verifies JWT, sets `c.set("userId", userId)`
+1. **Registration/Login** — validates with Zod, hashes the password (PBKDF2-HMAC-SHA256 via WebCrypto), signs a JWT (HS256, jose), sets the httpOnly cookie `tracker_auth`
+2. **Verification** — `requireAuth` reads the cookie, verifies the JWT, checks the token version against the database, then sets `c.set("userId", userId)`
 3. **Logout** — clears the cookie server-side
+4. **Password change** — increments `users.token_version`, which invalidates every session issued before it
+
+Notes:
+
+- **Why PBKDF2 and not bcrypt.** `bcryptjs` is pure JS and costs ~74ms of CPU per hash. The Workers **Free** plan allows 10ms per request, so login hard-failed there. PBKDF2 runs natively. See `worker/lib/password.ts` for the iteration count and the strength/cost trade-off behind it — it is a deliberate compromise, not a default.
+- **Legacy hashes.** Accounts created under bcrypt still log in and are transparently re-hashed to PBKDF2 on their next successful login.
+- **Rate limiting.** The credential endpoints are throttled per-IP via Cloudflare's rate-limit binding. The binding is optional: without it the endpoints still work and log a warning.
 
 ### Database
 
