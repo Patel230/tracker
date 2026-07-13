@@ -167,14 +167,14 @@ export default function Login() {
               )}
 
               {error && (
-                <div className="border-2 border-brut-rejected bg-brut-rejected/10 px-3 py-2">
-                  <span className="text-xs font-bold uppercase tracking-wide text-brut-rejected">{error}</span>
+                <div className="border-2 border-brut-rejected bg-brut-rejected/10 px-3 py-3">
+                  <p className="text-sm font-bold leading-snug text-brut-rejected">{error}</p>
                   {error.includes("private") && (
                     <a
                       href="https://github.com/Patel230/tracker"
                       target="_blank"
                       rel="noreferrer"
-                      className="mt-2 flex items-center gap-1 text-xs font-bold uppercase tracking-wide text-brut-ink underline decoration-2 underline-offset-2"
+                      className="mt-2 inline-flex items-center gap-1 border-2 border-brut-ink bg-brut-surface px-2.5 py-1 text-xs font-bold uppercase tracking-wide text-brut-ink shadow-[2px_2px_0_var(--color-brut-ink)] transition-all hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0_var(--color-brut-ink)]"
                     >
                       Fork on GitHub →
                     </a>
