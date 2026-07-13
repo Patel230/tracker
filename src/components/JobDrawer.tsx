@@ -75,16 +75,16 @@ export default function JobDrawer({ job, onClose, onChange, onDelete }: Props) {
   return (
     <>
       <div className="fixed inset-0 z-40 bg-foreground/40" onClick={onClose} />
-      <aside ref={asideRef} tabIndex={-1} className="fixed inset-y-0 right-0 z-50 flex w-full max-w-lg flex-col border-l-4 border-brut-ink bg-card focus:outline-none">
-        <header className="border-b-2 border-brut-ink px-5 py-4">
+      <aside ref={asideRef} tabIndex={-1} className="fixed inset-y-0 right-0 z-50 flex w-full max-w-lg flex-col border-l-[6px] border-brut-ink bg-card focus:outline-none">
+        <header className="border-b-[3px] border-brut-ink px-5 py-4">
           <div className="flex items-start justify-between gap-3">
             <div>
-              <h2 className="text-lg font-extrabold uppercase tracking-tight text-foreground">{job.company}</h2>
+              <h2 className="text-lg font-black uppercase tracking-tight text-foreground">{job.company}</h2>
               <p className="text-sm font-medium text-muted-foreground">{job.title}</p>
             </div>
             <button
               onClick={onClose}
-              className="border-2 border-brut-ink px-2 py-1 text-foreground hover:bg-brut-paper transition-colors"
+              className="border-[3px] border-brut-ink px-2 py-1 text-foreground hover:bg-brut-paper transition-colors"
               aria-label="Close"
             >
               <X size={16} strokeWidth={2.5} />
@@ -94,7 +94,7 @@ export default function JobDrawer({ job, onClose, onChange, onDelete }: Props) {
             <select
               value={job.status}
               onChange={(e) => patch({ status: e.target.value as Job["status"] })}
-              className="border-2 border-brut-ink bg-input px-3 py-1.5 text-xs font-bold uppercase tracking-wider text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background transition-all"
+              className="border-[3px] border-brut-ink bg-input px-3 py-1.5 text-xs font-bold uppercase tracking-wider text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background transition-all"
             >
               {JOB_STATUSES.map((s) => (
                 <option key={s} value={s}>
@@ -131,7 +131,7 @@ export default function JobDrawer({ job, onClose, onChange, onDelete }: Props) {
                 <button
                   key={t}
                   onClick={() => setTab(t)}
-                  className={`flex items-center gap-1.5 border-2 border-brut-ink px-3 py-1 text-xs font-bold uppercase tracking-wider transition-colors ${
+                  className={`flex items-center gap-1.5 border-[3px] border-brut-ink px-3 py-1 text-xs font-bold uppercase tracking-wider transition-colors ${
                     tab === t ? "bg-primary text-primary-foreground" : "bg-card text-muted-foreground hover:bg-brut-paper"
                   }`}
                 >
@@ -218,22 +218,18 @@ function DetailsTab({ job, onSave }: { job: Job; onSave: (f: Partial<Job>) => Pr
           <Input type="number" min="0" value={form.salary_max} onChange={set("salary_max")} />
         </Field>
         <Field label="Currency">
-          <select value={form.salary_currency} onChange={set("salary_currency")} className="w-full border-2 border-brut-ink bg-input px-3 py-2.5 text-sm font-medium text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background">
+          <select value={form.salary_currency} onChange={set("salary_currency")} className="w-full border-[3px] border-brut-ink bg-input px-3 py-2.5 text-sm font-medium text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background">
             <option value="">—</option>
             {CURRENCIES.map((c) => (
-              <option key={c} value={c}>
-                {c}
-              </option>
+              <option key={c} value={c}>{c}</option>
             ))}
           </select>
         </Field>
         <Field label="Per">
-          <select value={form.salary_period} onChange={set("salary_period")} className="w-full border-2 border-brut-ink bg-input px-3 py-2.5 text-sm font-medium text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background">
+          <select value={form.salary_period} onChange={set("salary_period")} className="w-full border-[3px] border-brut-ink bg-input px-3 py-2.5 text-sm font-medium text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background">
             <option value="">—</option>
             {PERIODS.map((p) => (
-              <option key={p} value={p}>
-                {p}
-              </option>
+              <option key={p} value={p}>{p}</option>
             ))}
           </select>
         </Field>
@@ -243,7 +239,7 @@ function DetailsTab({ job, onSave }: { job: Job; onSave: (f: Partial<Job>) => Pr
           rows={5}
           value={form.description}
           onChange={set("description")}
-          className="w-full border-2 border-brut-ink bg-input px-3 py-2.5 text-sm font-medium text-foreground placeholder:text-muted-foreground/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background transition-all duration-150"
+          className="w-full border-[3px] border-brut-ink bg-input px-3 py-2.5 text-sm font-medium text-foreground placeholder:text-muted-foreground/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background transition-all duration-150"
         />
       </Field>
       <Field label="Notes">
@@ -251,12 +247,12 @@ function DetailsTab({ job, onSave }: { job: Job; onSave: (f: Partial<Job>) => Pr
           rows={4}
           value={form.notes}
           onChange={set("notes")}
-          className="w-full border-2 border-brut-ink bg-input px-3 py-2.5 text-sm font-medium text-foreground placeholder:text-muted-foreground/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background transition-all duration-150"
+          className="w-full border-[3px] border-brut-ink bg-input px-3 py-2.5 text-sm font-medium text-foreground placeholder:text-muted-foreground/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background transition-all duration-150"
           placeholder="Interview prep, impressions, next steps…"
         />
       </Field>
       {error && (
-        <p className="border-2 border-destructive bg-destructive/5 px-2 py-1 text-sm font-bold text-destructive">
+        <p className="border-[3px] border-destructive bg-destructive/5 px-2 py-1 text-sm font-bold text-destructive">
           {error}
         </p>
       )}
@@ -306,17 +302,15 @@ function TimelineTab({ jobId }: { jobId: string }) {
 
   return (
     <div className="space-y-4">
-      <form onSubmit={add} className="border-2 border-brut-ink bg-card space-y-2 p-3">
+      <form onSubmit={add} className="border-[3px] border-brut-ink bg-card space-y-2 p-3">
         <div className="flex gap-2">
           <select
             value={type}
             onChange={(e) => setType(e.target.value as Activity["type"])}
-            className="border-2 border-brut-ink bg-input px-3 py-2 text-sm font-medium text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+            className="border-[3px] border-brut-ink bg-input px-3 py-2 text-sm font-medium text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background"
           >
             {ACTIVITY_TYPES.filter((t) => t !== "status_change").map((t) => (
-              <option key={t} value={t}>
-                {ACTIVITY_LABELS[t]}
-              </option>
+              <option key={t} value={t}>{ACTIVITY_LABELS[t]}</option>
             ))}
           </select>
           <Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="What happened?" />
@@ -326,7 +320,7 @@ function TimelineTab({ jobId }: { jobId: string }) {
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
           placeholder="Details (optional)"
-          className="w-full border-2 border-brut-ink bg-input px-3 py-2 text-sm font-medium text-foreground placeholder:text-muted-foreground/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background transition-all"
+          className="w-full border-[3px] border-brut-ink bg-input px-3 py-2 text-sm font-medium text-foreground placeholder:text-muted-foreground/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background transition-all"
         />
         <Button size="sm" type="submit">
           <Plus size={13} strokeWidth={2.5} />
@@ -341,9 +335,9 @@ function TimelineTab({ jobId }: { jobId: string }) {
       ) : (
         <ol className="space-y-3">
           {items.map((a) => (
-            <li key={a.id} className="group relative border-l-4 border-brut-ink pl-4">
+            <li key={a.id} className="group relative border-l-[6px] border-brut-ink pl-4">
               <div className="flex items-baseline gap-2">
-                <Badge variant="secondary" className="bg-foreground text-background border-brut-ink">
+                <Badge variant="solid" className="bg-foreground text-background border-brut-ink">
                   {ACTIVITY_LABELS[a.type]}
                 </Badge>
                 <span className="text-xs font-bold text-muted-foreground">{new Date(a.happened_at).toLocaleString()}</span>
@@ -396,7 +390,7 @@ function ContactsTab({ jobId }: { jobId: string }) {
 
   return (
     <div className="space-y-4">
-      <form onSubmit={add} className="border-2 border-brut-ink bg-card grid grid-cols-2 gap-2 p-3">
+      <form onSubmit={add} className="border-[3px] border-brut-ink bg-card grid grid-cols-2 gap-2 p-3">
         <Input placeholder="Name *" value={form.name} onChange={set("name")} />
         <Input placeholder="Role (recruiter, hiring manager…)" value={form.role} onChange={set("role")} />
         <Input placeholder="Email" type="email" value={form.email} onChange={set("email")} />
@@ -414,9 +408,9 @@ function ContactsTab({ jobId }: { jobId: string }) {
       ) : (
         <ul className="space-y-2">
           {items.map((ct) => (
-            <li key={ct.id} className="border-2 border-brut-ink bg-card group p-3">
+            <li key={ct.id} className="border-[3px] border-brut-ink bg-card group p-3">
               <div className="flex items-baseline gap-2">
-                <span className="text-sm font-extrabold text-foreground">{ct.name}</span>
+                <span className="text-sm font-black text-foreground">{ct.name}</span>
                 {ct.role && <Badge variant="outline" className="text-muted-foreground border-brut-ink/40">{ct.role}</Badge>}
                 <button
                   onClick={() => remove(ct.id)}
@@ -428,20 +422,12 @@ function ContactsTab({ jobId }: { jobId: string }) {
               </div>
               <div className="mt-1 flex flex-wrap gap-3 text-xs font-bold">
                 {ct.email && (
-                  <a
-                    href={`mailto:${ct.email}`}
-                    className="text-brut-applied underline decoration-2 underline-offset-2"
-                  >
+                  <a href={`mailto:${ct.email}`} className="text-brut-applied underline decoration-2 underline-offset-2">
                     {ct.email}
                   </a>
                 )}
                 {ct.linkedin && (
-                  <a
-                    href={ct.linkedin}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="flex items-center gap-1 text-brut-applied underline decoration-2 underline-offset-2"
-                  >
+                  <a href={ct.linkedin} target="_blank" rel="noreferrer" className="flex items-center gap-1 text-brut-applied underline decoration-2 underline-offset-2">
                     LinkedIn
                     <ExternalLink size={11} strokeWidth={2.5} />
                   </a>
@@ -490,7 +476,7 @@ function RemindersTab({ jobId }: { jobId: string }) {
 
   return (
     <div className="space-y-4">
-      <form onSubmit={add} className="border-2 border-brut-ink bg-card space-y-2 p-3">
+      <form onSubmit={add} className="border-[3px] border-brut-ink bg-card space-y-2 p-3">
         <Input placeholder="Follow up with recruiter…" value={note} onChange={(e) => setNote(e.target.value)} />
         <div className="flex gap-2">
           <Input type="datetime-local" value={dueAt} onChange={(e) => setDueAt(e.target.value)} />
@@ -510,7 +496,7 @@ function RemindersTab({ jobId }: { jobId: string }) {
           {items.map((r) => {
             const overdue = !r.completed_at && new Date(r.due_at) <= new Date();
             return (
-              <li key={r.id} className="border-2 border-brut-ink bg-card group flex items-center gap-3 p-3">
+              <li key={r.id} className="border-[3px] border-brut-ink bg-card group flex items-center gap-3 p-3">
                 <input
                   type="checkbox"
                   checked={!!r.completed_at}

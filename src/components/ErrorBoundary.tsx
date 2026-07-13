@@ -25,8 +25,8 @@ export default class ErrorBoundary extends Component<Props, State> {
     if (this.state.hasError) {
       return (
         <div className="flex h-full items-center justify-center bg-brut-paper p-6">
-          <div className="border-2 border-brut-ink bg-card p-6 w-full max-w-md text-center">
-            <div className="mx-auto flex w-fit items-center gap-2 border-2 border-brut-ink bg-primary px-3 py-1.5">
+          <div className="border-[3px] border-brut-ink bg-card p-6 w-full max-w-md text-center">
+            <div className="mx-auto flex w-fit items-center gap-2 border-[3px] border-brut-ink bg-primary px-3 py-1.5">
               <AlertTriangle size={16} strokeWidth={2.5} />
               <span className="text-xs font-bold uppercase tracking-wider text-primary-foreground">
                 Something broke

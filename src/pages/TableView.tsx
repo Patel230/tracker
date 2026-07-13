@@ -73,7 +73,7 @@ export default function TableView() {
         </div>
         <div className="flex items-center gap-1">
           <ListFilter size={14} strokeWidth={2.5} className="text-brut-wishlist" />
-          <select value={status} onChange={(e) => setStatus(e.target.value as JobStatus | "all")} className="flex w-auto border-2 border-brut-ink bg-input px-3 py-2.5 text-sm font-medium text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background">
+          <select value={status} onChange={(e) => setStatus(e.target.value as JobStatus | "all")} className="flex w-auto border-[3px] border-brut-ink bg-input px-3 py-2.5 text-sm font-medium text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background">
             <option value="all">All statuses</option>
             {JOB_STATUSES.map((s) => (
               <option key={s} value={s}>{STATUS_LABELS[s]}</option>
@@ -93,7 +93,7 @@ export default function TableView() {
         <span className="ml-auto text-xs font-bold uppercase tracking-wider text-muted-foreground">{rows.length} jobs</span>
       </div>
 
-      <div className="border-2 border-brut-ink bg-card overflow-x-auto">
+      <div className="border-[3px] border-brut-ink bg-card overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
             <tr>
@@ -111,9 +111,9 @@ export default function TableView() {
               <tr
                 key={j.id}
                 onClick={() => setOpenJobId(j.id)}
-                className="cursor-pointer border-b-2 border-brut-ink/5 last:border-0 hover:bg-brut-paper/80 transition-colors"
+                className="cursor-pointer border-b-[3px] border-brut-ink/5 last:border-0 hover:bg-brut-paper/80 transition-colors"
               >
-                <td className="px-4 py-2.5 font-extrabold text-foreground border-l-4"
+                <td className="px-4 py-2.5 font-black text-foreground border-l-[6px]"
                   style={{ borderLeftColor: `var(--color-brut-${j.status})` }}>
                   {j.company}
                   {!!j.archived && <span className="ml-2 text-xs font-bold text-muted-foreground">(archived)</span>}

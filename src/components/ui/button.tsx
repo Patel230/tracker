@@ -7,16 +7,16 @@ export const buttonVariants = cva(
     variants: {
       variant: {
         default:
-          "border-2 border-brut-ink bg-primary text-primary-foreground shadow-[3px_3px_0_0_hsl(0_0%_0%)] hover:-translate-y-0.5 hover:shadow-[4px_4px_0_0_hsl(0_0%_0%)] active:translate-x-[2px] active:translate-y-[2px] active:shadow-[1px_1px_0_0_hsl(0_0%_0%)]",
+          "border-[3px] border-brut-ink bg-primary text-primary-foreground shadow-[4px_4px_0_0_hsl(0_0%_0%)] hover:-translate-y-0.5 hover:shadow-[5px_5px_0_0_hsl(0_0%_0%)] active:translate-x-[2px] active:translate-y-[2px] active:shadow-[2px_2px_0_0_hsl(0_0%_0%)]",
         secondary:
-          "border-2 border-brut-ink bg-muted text-muted-foreground shadow-[3px_3px_0_0_hsl(0_0%_0%)] hover:-translate-y-0.5 hover:shadow-[4px_4px_0_0_hsl(0_0%_0%)] active:translate-x-[2px] active:translate-y-[2px] active:shadow-[1px_1px_0_0_hsl(0_0%_0%)]",
+          "border-[3px] border-brut-ink bg-muted text-muted-foreground shadow-[4px_4px_0_0_hsl(0_0%_0%)] hover:-translate-y-0.5 hover:shadow-[5px_5px_0_0_hsl(0_0%_0%)] active:translate-x-[2px] active:translate-y-[2px] active:shadow-[2px_2px_0_0_hsl(0_0%_0%)]",
         outline:
-          "border-2 border-brut-ink bg-transparent text-foreground shadow-[3px_3px_0_0_hsl(0_0%_0%)] hover:-translate-y-0.5 hover:shadow-[4px_4px_0_0_hsl(0_0%_0%)] active:translate-x-[2px] active:translate-y-[2px] active:shadow-[1px_1px_0_0_hsl(0_0%_0%)]",
+          "border-[3px] border-brut-ink bg-transparent text-foreground shadow-[4px_4px_0_0_hsl(0_0%_0%)] hover:-translate-y-0.5 hover:shadow-[5px_5px_0_0_hsl(0_0%_0%)] active:translate-x-[2px] active:translate-y-[2px] active:shadow-[2px_2px_0_0_hsl(0_0%_0%)]",
         ghost:
           "text-foreground hover:bg-accent hover:text-accent-foreground",
         link: "text-foreground underline-offset-4 hover:underline",
         destructive:
-          "border-2 border-brut-ink bg-destructive text-destructive-foreground shadow-[3px_3px_0_0_hsl(0_0%_0%)] hover:-translate-y-0.5 hover:shadow-[4px_4px_0_0_hsl(0_0%_0%)] active:translate-x-[2px] active:translate-y-[2px] active:shadow-[1px_1px_0_0_hsl(0_0%_0%)]",
+          "border-[3px] border-brut-ink bg-destructive text-destructive-foreground shadow-[4px_4px_0_0_hsl(0_0%_0%)] hover:-translate-y-0.5 hover:shadow-[5px_5px_0_0_hsl(0_0%_0%)] active:translate-x-[2px] active:translate-y-[2px] active:shadow-[2px_2px_0_0_hsl(0_0%_0%)]",
       },
       size: {
         sm: "px-3 py-1.5 text-xs",

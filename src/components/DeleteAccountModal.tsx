@@ -33,14 +33,14 @@ export default function DeleteAccountModal({ onClose }: { onClose: () => void })
     <>
       <div className="fixed inset-0 z-40 bg-foreground/40" onClick={onClose} />
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-        <div ref={panelRef} tabIndex={-1} className="border-2 border-brut-ink bg-card p-6 w-full max-w-sm focus:outline-none">
+        <div ref={panelRef} tabIndex={-1} className="border-[3px] border-brut-ink bg-card p-6 w-full max-w-sm focus:outline-none">
           <div className="flex items-start justify-between">
-            <h2 className="text-lg font-extrabold uppercase tracking-tight text-destructive">
+            <h2 className="text-lg font-black uppercase tracking-tight text-destructive">
               Delete account
             </h2>
             <button
               onClick={onClose}
-              className="border-2 border-brut-ink px-2 py-1 text-foreground hover:bg-brut-paper transition-colors"
+              className="border-[3px] border-brut-ink px-2 py-1 text-foreground hover:bg-brut-paper transition-colors"
               aria-label="Close"
             >
               <X size={16} strokeWidth={2.5} />
@@ -64,7 +64,7 @@ export default function DeleteAccountModal({ onClose }: { onClose: () => void })
             </label>
 
             {error && (
-              <p className="flex items-center gap-1.5 border-2 border-destructive bg-destructive/5 px-2 py-1 text-sm font-bold text-destructive">
+              <p className="flex items-center gap-1.5 border-[3px] border-destructive bg-destructive/5 px-2 py-1 text-sm font-bold text-destructive">
                 <AlertCircle size={14} strokeWidth={2.5} />
                 {error}
               </p>

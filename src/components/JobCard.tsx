@@ -47,7 +47,7 @@ export default function JobCard({ job, onOpen, overlay }: Props) {
     : {
         transform: CSS.Transform.toString(sortable.transform),
         transition: sortable.transition,
-        opacity: sortable.isDragging ? 0.3 : 1,
+        opacity: sortable.isDragging ? 0.25 : 1,
       };
 
   const salary = salaryLabel(job);
@@ -59,21 +59,21 @@ export default function JobCard({ job, onOpen, overlay }: Props) {
       style={style}
       {...(overlay ? {} : { ...sortable.attributes, ...sortable.listeners })}
       onClick={() => onOpen?.(job.id)}
-      className={`border-2 border-brut-ink border-l-4 bg-card cursor-grab p-3 transition-all ${borderColor} ${
-        overlay ? "rotate-2 shadow-[6px_6px_0_0_hsl(0_0%_0%)]" : "hover:shadow-[2px_2px_0_0_hsl(0_0%_0%)] hover:-translate-y-0.5"
+      className={`border-[3px] border-brut-ink border-l-[6px] bg-card cursor-grab p-3 transition-all ${borderColor} ${
+        overlay ? "rotate-2 shadow-[6px_6px_0_0_hsl(0_0%_0%)]" : "hover:shadow-[3px_3px_0_0_hsl(0_0%_0%)] hover:-translate-y-0.5"
       }`}
     >
-      <div className="text-sm font-extrabold text-foreground">{job.company}</div>
+      <div className="text-sm font-black text-foreground">{job.company}</div>
       <div className="mt-0.5 text-sm font-medium text-foreground/70">{job.title}</div>
       <div className="mt-2 flex flex-wrap items-center gap-1.5">
         {job.location && (
-          <span className="flex items-center gap-1 border-2 border-brut-ink/30 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+          <span className="flex items-center gap-1 border-[3px] border-brut-ink/30 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
             <MapPin size={10} strokeWidth={2.5} />
             {job.location}
           </span>
         )}
         {salary && (
-          <span className={`flex items-center gap-1 border-2 border-brut-ink px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider ${STATUS_BG[job.status]} text-white`}>
+          <span className={`flex items-center gap-1 border-[3px] border-brut-ink px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider ${STATUS_BG[job.status]} text-white`}>
             <Wallet size={10} strokeWidth={2.5} />
             {salary}
           </span>

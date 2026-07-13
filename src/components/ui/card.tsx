@@ -3,7 +3,10 @@ import { cn } from "../../lib/utils"
 export function Card({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
   return (
     <div
-      className={cn("border-2 border-brut-ink bg-card shadow-[4px_4px_0_0_hsl(0_0%_0%)] transition-all hover:shadow-[6px_6px_0_0_hsl(0_0%_0%)] hover:-translate-y-0.5", className)}
+      className={cn(
+        "border-[3px] border-brut-ink bg-card shadow-[5px_5px_0_0_hsl(0_0%_0%)] transition-all hover:shadow-[7px_7px_0_0_hsl(0_0%_0%)] hover:-translate-y-0.5",
+        className,
+      )}
       {...props}
     />
   )
@@ -31,6 +34,6 @@ export function CardContent({ className, ...props }: React.HTMLAttributes<HTMLDi
 
 export function CardFooter({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
   return (
-    <div className={cn("flex items-center border-t-2 border-brut-ink px-5 py-3", className)} {...props} />
+    <div className={cn("flex items-center border-t-[3px] border-brut-ink px-5 py-3", className)} {...props} />
   )
 }

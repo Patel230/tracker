@@ -7,11 +7,18 @@ import { useReminders } from "../components/RemindersProvider";
 import { Button } from "../components/ui/button";
 
 const TILE_STYLES = [
-  { bg: "bg-brut-wishlist", text: "text-brut-ink" },
-  { bg: "bg-brut-applied", text: "text-white" },
-  { bg: "bg-brut-interview", text: "text-white" },
-  { bg: "bg-brut-offer", text: "text-brut-ink" },
+  { top: "bg-brut-wishlist" },
+  { top: "bg-brut-applied" },
+  { top: "bg-brut-interview" },
+  { top: "bg-brut-offer" },
 ];
+
+const TILE_ICONS: Record<string, string> = {
+  "Active applications": "text-brut-wishlist",
+  "Response rate": "text-brut-applied",
+  "Offers": "text-brut-interview",
+  "Avg days to interview": "text-brut-offer",
+};
 
 const BAR_COLORS = [STATUS_HEX.wishlist, STATUS_HEX.applied, STATUS_HEX.interview, STATUS_HEX.offer, STATUS_HEX.rejected];
 
@@ -51,75 +58,88 @@ export default function Dashboard() {
   return (
     <div className="h-full overflow-y-auto p-6">
       <div className="mx-auto max-w-5xl space-y-6">
+        {/* Stat tiles with colored top borders — defolio style */}
         <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
           {tiles.map((t, i) => {
             const s = TILE_STYLES[i];
             return (
-              <div key={t.label} className={`border-2 border-brut-ink ${s.bg} p-4`}>
-                <div className={`flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider ${s.text}/70`}>
-                  <t.icon size={13} strokeWidth={2.5} />
-                  {t.label}
+              <div key={t.label} className="border-[3px] border-brut-ink bg-card">
+                <div className={`h-1.5 ${s.top}`} />
+                <div className="p-4">
+                  <div className={`flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider ${TILE_ICONS[t.label] || "text-muted-foreground"}`}>
+                    <t.icon size={13} strokeWidth={2.5} />
+                    {t.label}
+                  </div>
+                  <div className="mt-1 text-3xl font-black tabular-nums text-foreground">{t.value}</div>
+                  {t.hint && <div className="mt-1 text-xs font-medium text-muted-foreground">{t.hint}</div>}
                 </div>
-                <div className={`mt-1 text-3xl font-extrabold tabular-nums ${s.text}`}>{t.value}</div>
-                {t.hint && <div className={`mt-1 text-xs font-medium ${s.text}/50`}>{t.hint}</div>}
               </div>
             );
           })}
         </div>
 
         <div className="grid gap-6 lg:grid-cols-2">
-          <div className="border-2 border-brut-ink bg-card p-5">
-            <h2 className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-foreground">
-              <Briefcase size={13} strokeWidth={2.5} className="text-brut-applied" />
-              Applications per week
-            </h2>
-            <p className="text-xs font-medium text-muted-foreground">last 12 weeks</p>
-            <WeeklyBars weekly={stats.weekly} />
+          <div className="border-[3px] border-brut-ink bg-card">
+            <div className="h-1.5 bg-brut-applied" />
+            <div className="p-5">
+              <h2 className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-foreground">
+                <Briefcase size={13} strokeWidth={2.5} className="text-brut-applied" />
+                Applications per week
+              </h2>
+              <p className="text-xs font-medium text-muted-foreground">last 12 weeks</p>
+              <WeeklyBars weekly={stats.weekly} />
+            </div>
           </div>
 
-          <div className="border-2 border-brut-ink bg-card p-5">
-            <h2 className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-foreground">
-              <Timer size={13} strokeWidth={2.5} className="text-brut-interview" />
-              Pipeline
-            </h2>
-            <p className="text-xs font-medium text-muted-foreground">jobs by stage (active)</p>
-            <Funnel funnel={stats.funnel} />
+          <div className="border-[3px] border-brut-ink bg-card">
+            <div className="h-1.5 bg-brut-interview" />
+            <div className="p-5">
+              <h2 className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-foreground">
+                <Timer size={13} strokeWidth={2.5} className="text-brut-interview" />
+                Pipeline
+              </h2>
+              <p className="text-xs font-medium text-muted-foreground">jobs by stage (active)</p>
+              <Funnel funnel={stats.funnel} />
+            </div>
           </div>
         </div>
 
-        <div className="border-2 border-brut-ink bg-card p-5">
-          <h2 className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-foreground">
-            <Bell size={13} strokeWidth={2.5} className="text-brut-wishlist" />
-            Upcoming reminders
-          </h2>
-          {reminders.length === 0 ? (
-            <p className="mt-3 text-sm font-bold uppercase tracking-wider text-muted-foreground">
-              Nothing due in the next 7 days.
-            </p>
-          ) : (
-            <ul className="mt-3 space-y-2">
-              {reminders.map((r) => {
-                const overdue = new Date(r.due_at) <= new Date();
-                return (
-                  <li key={r.id} className="flex items-center gap-3 py-2 text-sm border-t-2 border-brut-ink/10 first:border-0">
-                    <span
-                      title={new Date(r.due_at).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" })}
-                      className={`font-bold shrink-0 ${overdue ? "text-destructive" : "text-muted-foreground"}`}
-                    >
-                      {new Date(r.due_at).toLocaleDateString(undefined, { month: "short", day: "numeric" })}
-                    </span>
-                    <span className="font-bold text-foreground">{r.note}</span>
-                    <span className="font-medium text-muted-foreground">
-                      {r.company} · {r.job_title}
-                    </span>
-                    <Button size="sm" variant="outline" onClick={() => complete(r.id)} className="ml-auto">
-                      Done
-                    </Button>
-                  </li>
-                );
-              })}
-            </ul>
-          )}
+        <div className="border-[3px] border-brut-ink bg-card">
+          <div className="h-1.5 bg-brut-wishlist" />
+          <div className="p-5">
+            <h2 className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-foreground">
+              <Bell size={13} strokeWidth={2.5} className="text-brut-wishlist" />
+              Upcoming reminders
+            </h2>
+            {reminders.length === 0 ? (
+              <p className="mt-3 text-sm font-bold uppercase tracking-wider text-muted-foreground">
+                Nothing due in the next 7 days.
+              </p>
+            ) : (
+              <ul className="mt-3 space-y-2">
+                {reminders.map((r) => {
+                  const overdue = new Date(r.due_at) <= new Date();
+                  return (
+                    <li key={r.id} className="flex items-center gap-3 py-2 text-sm border-t-[3px] border-brut-ink/10 first:border-0">
+                      <span
+                        title={new Date(r.due_at).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" })}
+                        className={`font-bold shrink-0 ${overdue ? "text-destructive" : "text-muted-foreground"}`}
+                      >
+                        {new Date(r.due_at).toLocaleDateString(undefined, { month: "short", day: "numeric" })}
+                      </span>
+                      <span className="font-bold text-foreground">{r.note}</span>
+                      <span className="font-medium text-muted-foreground">
+                        {r.company} · {r.job_title}
+                      </span>
+                      <Button size="sm" variant="outline" onClick={() => complete(r.id)} className="ml-auto">
+                        Done
+                      </Button>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+          </div>
         </div>
       </div>
     </div>
@@ -168,7 +188,7 @@ function WeeklyBars({ weekly }: { weekly: Stats["weekly"] }) {
                   height={barH}
                   fill={color}
                   stroke={INK_HEX}
-                  strokeWidth="2"
+                  strokeWidth="2.5"
                   opacity={hover === null || hover === i ? 1 : 0.3}
                 />
               )}
@@ -192,10 +212,10 @@ function WeeklyBars({ weekly }: { weekly: Stats["weekly"] }) {
       </svg>
       {hover !== null && (
         <div
-          className="pointer-events-none absolute -top-1 border-2 border-brut-ink bg-card px-2.5 py-1.5 text-xs"
+          className="pointer-events-none absolute -top-1 border-[3px] border-brut-ink bg-card px-2.5 py-1.5 text-xs"
           style={{ left: `${((pad.left + hover * step + step / 2) / W) * 100}%`, transform: "translateX(-50%)" }}
         >
-          <span className="font-extrabold text-foreground">{weekly[hover].count}</span>{" "}
+          <span className="font-black text-foreground">{weekly[hover].count}</span>{" "}
           <span className="font-bold text-muted-foreground">
             application{weekly[hover].count === 1 ? "" : "s"} · wk of {weekLabel(weekly[hover].weekStart)}
           </span>
@@ -214,13 +234,13 @@ function Funnel({ funnel }: { funnel: Stats["funnel"] }) {
           <span className="w-20 shrink-0 text-right text-xs font-bold uppercase tracking-wider" style={{ color: `var(--color-brut-${s})` }}>
             {STATUS_LABELS[s]}
           </span>
-          <div className="h-4 flex-1 border-2 border-brut-ink/10 bg-brut-paper">
+          <div className="h-4 flex-1 border-[3px] border-brut-ink/10 bg-brut-paper">
             <div
-              className={`h-full border-r-2 border-brut-ink ${STATUS_BG[s]}`}
+              className={`h-full border-r-[3px] border-brut-ink ${STATUS_BG[s]}`}
               style={{ width: `${(funnel[s] / max) * 100}%`, minWidth: funnel[s] ? "4px" : 0 }}
             />
           </div>
-          <span className="w-6 text-right text-sm font-extrabold tabular-nums text-foreground">{funnel[s]}</span>
+          <span className="w-6 text-right text-sm font-black tabular-nums text-foreground">{funnel[s]}</span>
         </div>
       ))}
     </div>

@@ -39,12 +39,12 @@ export default function Login() {
   return (
     <div className="flex min-h-full bg-brut-paper">
       {/* Left panel */}
-      <div className="hidden flex-1 flex-col justify-between border-r-2 border-brut-ink bg-primary p-12 lg:flex">
+      <div className="hidden flex-1 flex-col justify-between border-r-[3px] border-brut-ink bg-primary p-12 lg:flex">
         <Link to="/">
           <Logo />
         </Link>
         <div>
-          <blockquote className="text-2xl font-extrabold uppercase leading-[0.95] tracking-tight text-foreground">
+          <blockquote className="text-2xl font-black uppercase leading-[0.95] tracking-tight text-foreground">
             "The best time to organize your job search
             <br />
             <span className="text-destructive">was yesterday.</span>
@@ -65,9 +65,9 @@ export default function Login() {
             <Logo />
           </Link>
 
-          <div className="border-2 border-brut-ink bg-card p-8">
+          <div className="border-[3px] border-brut-ink bg-card p-8">
             {/* Mode tabs */}
-            <div className="flex border-2 border-brut-ink">
+            <div className="flex border-[3px] border-brut-ink">
               <button
                 type="button"
                 onClick={() => { setMode("login"); setConfirmPassword(""); setError(null); }}
@@ -159,14 +159,14 @@ export default function Login() {
               )}
 
               {error && (
-                <div className="border-2 border-destructive bg-destructive/5 px-4 py-3">
+                <div className="border-[3px] border-destructive bg-destructive/5 px-4 py-3">
                   <p className="text-sm font-bold leading-snug text-destructive">{error}</p>
                   {error.includes("private") && (
                     <a
                       href="https://github.com/Patel230/tracker"
                       target="_blank"
                       rel="noreferrer"
-                      className="mt-2 inline-flex items-center gap-1 border-2 border-brut-ink bg-card px-2.5 py-1.5 text-xs font-bold uppercase tracking-wider text-foreground"
+                      className="mt-2 inline-flex items-center gap-1 border-[3px] border-brut-ink bg-card px-2.5 py-1.5 text-xs font-bold uppercase tracking-wider text-foreground"
                     >
                       Fork on GitHub →
                     </a>

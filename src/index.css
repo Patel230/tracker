@@ -4,7 +4,7 @@
   --font-sans: "Space Grotesk", ui-sans-serif, system-ui, -apple-system, sans-serif;
   --font-head: "Space Grotesk", ui-sans-serif, system-ui, -apple-system, sans-serif;
 
-  /* RetroUI theme */
+  /* RetroUI / Defolio theme */
   --color-background: hsl(0 0% 100%);
   --color-foreground: hsl(0 0% 0%);
   --color-card: hsl(0 0% 100%);
@@ -20,16 +20,16 @@
   --color-border: hsl(0 0% 0%);
   --color-input: hsl(0 0% 100%);
 
-  /* Shadows */
-  --shadow-xs: 1px 1px 0 0 hsl(0 0% 0%);
-  --shadow-sm: 2px 2px 0 0 hsl(0 0% 0%);
-  --shadow: 3px 3px 0 0 hsl(0 0% 0%);
-  --shadow-md: 4px 4px 0 0 hsl(0 0% 0%);
+  /* Hard shadows - defolio uses 4px offset consistently */
+  --shadow-xs: 2px 2px 0 0 hsl(0 0% 0%);
+  --shadow-sm: 3px 3px 0 0 hsl(0 0% 0%);
+  --shadow: 4px 4px 0 0 hsl(0 0% 0%);
+  --shadow-md: 5px 5px 0 0 hsl(0 0% 0%);
   --shadow-lg: 6px 6px 0 0 hsl(0 0% 0%);
-  --shadow-xl: 10px 10px 0 1px hsl(0 0% 0%);
-  --shadow-2xl: 16px 16px 0 1px hsl(0 0% 0%);
+  --shadow-xl: 8px 8px 0 1px hsl(0 0% 0%);
+  --shadow-2xl: 10px 10px 0 1px hsl(0 0% 0%);
 
-  /* Pipeline stage colors */
+  /* Pipeline stage colors (Okabe-Ito) */
   --color-brut-ink: #111111;
   --color-brut-paper: #f2eee3;
   --color-brut-surface: #ffffff;
@@ -60,13 +60,9 @@ body {
   color: var(--color-primary-foreground);
 }
 
-/*
-  RetroUI base layer
-  Rounded corners on everything is a key retroui aesthetic.
-  Remove the old `border-radius: 0 !important` in favor of sensible defaults.
-*/
+/* Thick borders — defolio style */
 * {
-  border-radius: 2px;
+  border-radius: 3px;
 }
 
 button:not(:disabled),
