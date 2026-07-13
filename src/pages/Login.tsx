@@ -167,9 +167,21 @@ export default function Login() {
               )}
 
               {error && (
-                <div className="flex items-center gap-2 border-2 border-brut-rejected bg-brut-rejected/10 px-3 py-2">
-                  <AlertCircle size={14} strokeWidth={2.5} className="shrink-0 text-brut-rejected" />
-                  <span className="text-xs font-bold uppercase tracking-wide text-brut-rejected">{error}</span>
+                <div className="border-2 border-brut-rejected bg-brut-rejected/10 px-3 py-2">
+                  <div className="flex items-center gap-2">
+                    <AlertCircle size={14} strokeWidth={2.5} className="shrink-0 text-brut-rejected" />
+                    <span className="text-xs font-bold uppercase tracking-wide text-brut-rejected">{error}</span>
+                  </div>
+                  {error.includes("fork") && (
+                    <a
+                      href="https://github.com/Patel230/tracker"
+                      target="_blank"
+                      rel="noreferrer"
+                      className="mt-1.5 flex items-center gap-1 text-xs font-bold uppercase tracking-wide text-brut-ink underline decoration-2 underline-offset-2"
+                    >
+                      Fork on GitHub →
+                    </a>
+                  )}
                 </div>
               )}
 

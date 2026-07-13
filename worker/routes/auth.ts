@@ -17,7 +17,7 @@ const auth = new Hono<AppEnv>();
 
 auth.post("/register", async (c) => {
   if (c.env.ALLOW_REGISTRATION !== "true") {
-    return c.json({ error: "Registration is closed" }, 403);
+    return c.json({ error: "This instance is private — fork and deploy your own at github.com/Patel230/tracker" }, 403);
   }
   const parsed = credentials.safeParse(await c.req.json().catch(() => null));
   if (!parsed.success) return c.json({ error: "Valid email and password (min 8 chars) required" }, 400);
