@@ -5,6 +5,13 @@ import { STATUS_LABELS, JOB_STATUSES, type Stats } from "../../shared/types";
 import { INK_HEX, STATUS_BG, STATUS_HEX } from "../lib/theme";
 import { useReminders } from "../components/RemindersProvider";
 
+const TILE_STYLES = [
+  { bg: "bg-brut-wishlist", border: "border-brut-wishlist", text: "text-brut-ink" },
+  { bg: "bg-brut-applied", border: "border-brut-applied", text: "text-white" },
+  { bg: "bg-brut-interview", border: "border-brut-interview", text: "text-white" },
+  { bg: "bg-brut-offer", border: "border-brut-offer", text: "text-brut-ink" },
+];
+
 export default function Dashboard() {
   const [stats, setStats] = useState<Stats | null>(null);
   const { reminders, complete } = useReminders();
@@ -42,16 +49,19 @@ export default function Dashboard() {
     <div className="h-full overflow-y-auto p-6">
       <div className="mx-auto max-w-5xl space-y-6">
         <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-          {tiles.map((t) => (
-            <div key={t.label} className="card-brut p-4">
-              <div className="flex items-center gap-1.5 text-xs font-extrabold uppercase tracking-wide text-brut-ink/60">
-                <t.icon size={13} strokeWidth={2.5} />
-                {t.label}
+          {tiles.map((t, i) => {
+            const s = TILE_STYLES[i];
+            return (
+              <div key={t.label} className={`border-2 ${s.border} ${s.bg} shadow-[4px_4px_0_var(--color-brut-ink)] p-4`}>
+                <div className={`flex items-center gap-1.5 text-xs font-extrabold uppercase tracking-wide ${s.text}/70`}>
+                  <t.icon size={13} strokeWidth={2.5} />
+                  {t.label}
+                </div>
+                <div className={`mt-1 text-3xl font-extrabold tabular-nums ${s.text}`}>{t.value}</div>
+                {t.hint && <div className={`mt-1 text-xs font-medium ${s.text}/50`}>{t.hint}</div>}
               </div>
-              <div className="mt-1 text-3xl font-extrabold tabular-nums text-brut-ink">{t.value}</div>
-              {t.hint && <div className="mt-1 text-xs font-medium text-brut-ink/40">{t.hint}</div>}
-            </div>
-          ))}
+            );
+          })}
         </div>
 
         <div className="grid gap-6 lg:grid-cols-2">

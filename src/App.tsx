@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Navigate, NavLink, Route, Routes } from "react-router-dom";
-import { KeyRound, Kanban, LayoutDashboard, LogOut, Rows3, Trash2 } from "lucide-react";
+import { Kanban, KeyRound, LayoutDashboard, LogOut, Rows3, Trash2, ChevronDown } from "lucide-react";
 import { useAuth } from "./lib/auth";
 import Logo from "./components/Logo";
 import Landing from "./pages/Landing";
@@ -12,6 +12,7 @@ import RemindersBanner from "./components/RemindersBanner";
 import { RemindersProvider } from "./components/RemindersProvider";
 import ChangePasswordModal from "./components/ChangePasswordModal";
 import DeleteAccountModal from "./components/DeleteAccountModal";
+import { useClickOutside } from "./lib/useClickOutside";
 
 const tabs = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard },
@@ -19,10 +20,22 @@ const tabs = [
   { to: "/table", label: "Table", icon: Rows3 },
 ];
 
+const AVATAR_COLORS = [
+  "bg-brut-wishlist",
+  "bg-brut-applied",
+  "bg-brut-interview",
+  "bg-brut-offer",
+  "bg-brut-rejected",
+  "bg-brut-yellow",
+];
+
 export default function App() {
   const { user, loading, logout } = useAuth();
   const [changingPassword, setChangingPassword] = useState(false);
   const [deletingAccount, setDeletingAccount] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+  useClickOutside(menuRef, () => setMenuOpen(false));
 
   if (loading) {
     return (
@@ -40,6 +53,9 @@ export default function App() {
       </Routes>
     );
   }
+
+  const initial = user.email.charAt(0).toUpperCase();
+  const colorIndex = initial.charCodeAt(0) % AVATAR_COLORS.length;
 
   return (
     <RemindersProvider>
@@ -63,20 +79,50 @@ export default function App() {
             </NavLink>
           ))}
         </nav>
-        <div className="ml-auto flex items-center gap-3 text-sm">
-          <span className="hidden font-bold text-brut-ink/70 sm:inline">{user.email}</span>
-          <button onClick={() => setChangingPassword(true)} className="btn-brut-sm">
-            <KeyRound size={13} strokeWidth={2.5} />
-            Change password
+
+        <div className="ml-auto relative" ref={menuRef}>
+          <button
+            onClick={() => setMenuOpen(!menuOpen)}
+            className="flex items-center gap-2 border-2 border-brut-ink bg-brut-surface px-2 py-1.5 text-xs font-bold uppercase tracking-wide text-brut-ink hover:bg-brut-paper transition-colors"
+          >
+            <span className={`flex size-7 items-center justify-center border-2 border-brut-ink text-sm font-extrabold text-brut-ink ${AVATAR_COLORS[colorIndex]}`}>
+              {initial}
+            </span>
+            <ChevronDown size={12} strokeWidth={3} className={`transition-transform ${menuOpen ? "rotate-180" : ""}`} />
           </button>
-          <button onClick={logout} className="btn-brut-sm">
-            <LogOut size={13} strokeWidth={2.5} />
-            Log out
-          </button>
-          <button onClick={() => setDeletingAccount(true)} className="btn-brut-sm">
-            <Trash2 size={13} strokeWidth={2.5} />
-            Delete account
-          </button>
+
+          {menuOpen && (
+            <div className="absolute right-0 top-full mt-1.5 w-52 border-2 border-brut-ink bg-brut-surface shadow-[4px_4px_0_var(--color-brut-ink)] z-50">
+              <div className="border-b-2 border-brut-ink px-4 py-2.5">
+                <p className="text-xs font-bold uppercase tracking-wide text-brut-ink/50">Signed in as</p>
+                <p className="text-sm font-bold text-brut-ink truncate">{user.email}</p>
+              </div>
+              <div className="py-1">
+                <button
+                  onClick={() => { setChangingPassword(true); setMenuOpen(false); }}
+                  className="flex w-full items-center gap-3 px-4 py-2.5 text-xs font-bold uppercase tracking-wide text-brut-ink hover:bg-brut-paper transition-colors"
+                >
+                  <KeyRound size={14} strokeWidth={2.5} />
+                  Change password
+                </button>
+                <button
+                  onClick={() => { logout(); setMenuOpen(false); }}
+                  className="flex w-full items-center gap-3 px-4 py-2.5 text-xs font-bold uppercase tracking-wide text-brut-ink hover:bg-brut-paper transition-colors"
+                >
+                  <LogOut size={14} strokeWidth={2.5} />
+                  Log out
+                </button>
+                <div className="mx-3 my-1 border-t-2 border-brut-ink/10" />
+                <button
+                  onClick={() => { setDeletingAccount(true); setMenuOpen(false); }}
+                  className="flex w-full items-center gap-3 px-4 py-2.5 text-xs font-bold uppercase tracking-wide text-brut-rejected hover:bg-brut-paper transition-colors"
+                >
+                  <Trash2 size={14} strokeWidth={2.5} />
+                  Delete account
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </header>
       {changingPassword && <ChangePasswordModal onClose={() => setChangingPassword(false)} />}
