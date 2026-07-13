@@ -13,26 +13,6 @@
   --color-brut-interview: #009e73;
   --color-brut-offer: #cc79a7;
   --color-brut-rejected: #d55e00;
-
-  --animate-float: float 3s ease-in-out infinite;
-  --animate-wiggle: wiggle 1s ease-in-out infinite;
-  --animate-pulse-dot: pulse-dot 2s ease-in-out infinite;
-}
-
-@keyframes float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-8px); }
-}
-
-@keyframes wiggle {
-  0%, 100% { transform: rotate(0deg); }
-  25% { transform: rotate(-3deg); }
-  75% { transform: rotate(3deg); }
-}
-
-@keyframes pulse-dot {
-  0%, 100% { opacity: 0.3; }
-  50% { opacity: 1; }
 }
 
 html,
@@ -44,41 +24,38 @@ body,
 body {
   background-color: var(--color-brut-paper);
   color: var(--color-brut-ink);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-* {
-  border-radius: 0 !important;
-}
-
-@layer utilities {
-  .decoration-dot {
-    @apply inline-block size-2 bg-brut-ink;
-  }
+::selection {
+  background-color: var(--color-brut-yellow);
+  color: var(--color-brut-ink);
 }
 
 @layer components {
   .btn-brut {
-    @apply inline-flex items-center justify-center gap-2 border-2 border-brut-ink bg-brut-yellow px-4 py-2 text-sm font-bold uppercase tracking-wide text-brut-ink shadow-[4px_4px_0_var(--color-brut-ink)] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0_var(--color-brut-ink)] active:translate-x-[4px] active:translate-y-[4px] active:shadow-none disabled:pointer-events-none disabled:opacity-50;
+    @apply inline-flex items-center justify-center gap-2 border-2 border-brut-ink bg-brut-yellow px-5 py-2.5 text-sm font-bold uppercase tracking-wider text-brut-ink shadow-[3px_3px_0_var(--color-brut-ink)] transition-all duration-150 hover:-translate-y-0.5 hover:shadow-[4px_4px_0_var(--color-brut-ink)] active:translate-x-[2px] active:translate-y-[2px] active:shadow-[1px_1px_0_var(--color-brut-ink)] disabled:pointer-events-none disabled:opacity-50;
   }
   .btn-brut-ghost {
-    @apply inline-flex items-center justify-center gap-2 border-2 border-brut-ink bg-brut-surface px-4 py-2 text-sm font-bold uppercase tracking-wide text-brut-ink shadow-[4px_4px_0_var(--color-brut-ink)] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0_var(--color-brut-ink)] active:translate-x-[4px] active:translate-y-[4px] active:shadow-none disabled:pointer-events-none disabled:opacity-50;
+    @apply inline-flex items-center justify-center gap-2 border-2 border-brut-ink bg-brut-surface px-5 py-2.5 text-sm font-bold uppercase tracking-wider text-brut-ink shadow-[3px_3px_0_var(--color-brut-ink)] transition-all duration-150 hover:-translate-y-0.5 hover:shadow-[4px_4px_0_var(--color-brut-ink)] active:translate-x-[2px] active:translate-y-[2px] active:shadow-[1px_1px_0_var(--color-brut-ink)] disabled:pointer-events-none disabled:opacity-50;
   }
   .btn-brut-sm {
-    @apply inline-flex items-center justify-center gap-1 border-2 border-brut-ink bg-brut-surface px-2.5 py-1 text-xs font-bold uppercase tracking-wide text-brut-ink shadow-[2px_2px_0_var(--color-brut-ink)] transition-all hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0_var(--color-brut-ink)] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none disabled:pointer-events-none disabled:opacity-50;
+    @apply inline-flex items-center justify-center gap-1.5 border-2 border-brut-ink bg-brut-surface px-3 py-1.5 text-xs font-bold uppercase tracking-wider text-brut-ink shadow-[2px_2px_0_var(--color-brut-ink)] transition-all duration-150 hover:-translate-y-0.5 hover:shadow-[3px_3px_0_var(--color-brut-ink)] active:translate-x-[1px] active:translate-y-[1px] active:shadow-[1px_1px_0_var(--color-brut-ink)] disabled:pointer-events-none disabled:opacity-50;
   }
   .btn-brut-danger {
-    @apply inline-flex items-center justify-center gap-1 border-2 border-brut-ink bg-brut-rejected px-2.5 py-1 text-xs font-bold uppercase tracking-wide text-white shadow-[2px_2px_0_var(--color-brut-ink)] transition-all hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0_var(--color-brut-ink)] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none;
+    @apply inline-flex items-center justify-center gap-1.5 border-2 border-brut-ink bg-brut-rejected px-3 py-1.5 text-xs font-bold uppercase tracking-wider text-white shadow-[2px_2px_0_var(--color-brut-ink)] transition-all duration-150 hover:-translate-y-0.5 hover:shadow-[3px_3px_0_var(--color-brut-ink)] active:translate-x-[1px] active:translate-y-[1px] active:shadow-[1px_1px_0_var(--color-brut-ink)] disabled:pointer-events-none disabled:opacity-50;
   }
   .input-brut {
-    @apply w-full border-2 border-brut-ink bg-brut-surface px-3 py-2 text-sm font-medium text-brut-ink placeholder:text-brut-ink/40 focus:outline-none focus:shadow-[3px_3px_0_var(--color-brut-ink)] transition-shadow;
+    @apply w-full border-2 border-brut-ink bg-brut-surface px-3 py-2.5 text-sm font-medium text-brut-ink placeholder:text-brut-ink/40 focus:outline-none focus:ring-2 focus:ring-brut-yellow focus:ring-offset-2 focus:ring-offset-brut-paper transition-all duration-150;
   }
   .card-brut {
-    @apply border-2 border-brut-ink bg-brut-surface shadow-[4px_4px_0_var(--color-brut-ink)];
+    @apply border-2 border-brut-ink bg-brut-surface shadow-[3px_3px_0_var(--color-brut-ink)];
   }
   .panel-brut {
-    @apply border-2 border-brut-ink bg-brut-surface shadow-[8px_8px_0_var(--color-brut-ink)];
+    @apply border-2 border-brut-ink bg-brut-surface shadow-[6px_6px_0_var(--color-brut-ink)];
   }
   .badge-brut {
-    @apply inline-block border-2 border-brut-ink px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide;
+    @apply inline-flex items-center border-2 border-brut-ink px-2 py-0.5 text-[11px] font-bold uppercase tracking-wider;
   }
 }

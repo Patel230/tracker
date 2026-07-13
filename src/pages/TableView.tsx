@@ -47,7 +47,7 @@ export default function TableView() {
         if (sortKey === key) setSortAsc(!sortAsc);
         else { setSortKey(key); setSortAsc(true); }
       }}
-      className={`cursor-pointer select-none px-4 py-2.5 text-left text-xs font-extrabold uppercase tracking-wide text-white hover:opacity-80 ${color}`}
+      className={`cursor-pointer select-none px-4 py-2.5 text-left text-xs font-bold uppercase tracking-wider text-white hover:opacity-80 transition-opacity ${color}`}
     >
       <span className="flex items-center gap-1">
         {label}
@@ -59,9 +59,9 @@ export default function TableView() {
 
   return (
     <div className="h-full overflow-y-auto p-6">
-      <div className="mb-4 flex flex-wrap items-center gap-3">
+      <div className="mb-5 flex flex-wrap items-center gap-3">
         <div className="relative">
-          <Search size={14} strokeWidth={2.5} className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-brut-interview" />
+          <Search size={14} strokeWidth={2.5} className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-brut-ink/30" />
           <input
             placeholder="Search company, title, location…"
             value={query}
@@ -78,7 +78,7 @@ export default function TableView() {
             ))}
           </select>
         </div>
-        <label className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wide text-brut-ink">
+        <label className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-brut-ink">
           <input
             type="checkbox"
             checked={showArchived}
@@ -88,18 +88,18 @@ export default function TableView() {
           <ArchiveRestore size={13} strokeWidth={2.5} className="text-brut-offer" />
           Include archived
         </label>
-        <span className="ml-auto text-xs font-bold uppercase tracking-wide text-brut-ink/40">{rows.length} jobs</span>
+        <span className="ml-auto text-xs font-bold uppercase tracking-wider text-brut-ink/30">{rows.length} jobs</span>
       </div>
 
-      <div className="card-brut overflow-x-auto">
+      <div className="border-2 border-brut-ink bg-brut-surface overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
             <tr>
               {header("company", "Company", "bg-brut-wishlist")}
               {header("title", "Title", "bg-brut-applied")}
               {header("status", "Status", "bg-brut-interview")}
-              <th className="bg-brut-wishlist px-4 py-2.5 text-left text-xs font-extrabold uppercase tracking-wide text-white">Location</th>
-              <th className="bg-brut-offer px-4 py-2.5 text-left text-xs font-extrabold uppercase tracking-wide text-white">Salary</th>
+              <th className="bg-brut-wishlist px-4 py-2.5 text-left text-xs font-bold uppercase tracking-wider text-white">Location</th>
+              <th className="bg-brut-offer px-4 py-2.5 text-left text-xs font-bold uppercase tracking-wider text-white">Salary</th>
               {header("applied_at", "Applied", "bg-brut-applied")}
               {header("created_at", "Added", "bg-brut-ink")}
             </tr>
@@ -109,37 +109,37 @@ export default function TableView() {
               <tr
                 key={j.id}
                 onClick={() => setOpenJobId(j.id)}
-                className={`cursor-pointer border-b-2 border-brut-ink/10 last:border-0 transition-colors hover:${STATUS_BG[j.status]}/10`}
+                className="cursor-pointer border-b border-brut-ink/5 last:border-0 hover:bg-brut-paper/80 transition-colors"
               >
                 <td className="px-4 py-2.5 font-extrabold text-brut-ink border-l-4"
                   style={{ borderLeftColor: `var(--color-brut-${j.status})` }}>
                   {j.company}
-                  {!!j.archived && <span className="ml-2 text-xs font-bold text-brut-ink/40">(archived)</span>}
+                  {!!j.archived && <span className="ml-2 text-xs font-bold text-brut-ink/30">(archived)</span>}
                 </td>
-                <td className="px-4 py-2.5 font-medium text-brut-ink/80">{j.title}</td>
+                <td className="px-4 py-2.5 font-medium text-brut-ink/70">{j.title}</td>
                 <td className="px-4 py-2.5">
-                  <span className={`badge-brut border-brut-ink ${STATUS_BG[j.status]} ${STATUS_TEXT[j.status]}`}>
+                  <span className={`border-2 border-brut-ink px-2 py-0.5 text-[11px] font-bold uppercase tracking-wider ${STATUS_BG[j.status]} ${STATUS_TEXT[j.status]}`}>
                     {STATUS_LABELS[j.status]}
                   </span>
                 </td>
-                <td className="px-4 py-2.5 font-medium text-brut-ink/60">{j.location ?? "—"}</td>
+                <td className="px-4 py-2.5 font-medium text-brut-ink/50">{j.location ?? "—"}</td>
                 <td className="px-4 py-2.5 font-medium">
                   <span className="font-bold text-brut-offer">{salaryLabel(j) ?? "—"}</span>
                 </td>
                 <td
                   title={j.applied_at ? exactTimestamp(j.applied_at) : undefined}
-                  className="px-4 py-2.5 font-medium text-brut-applied/70"
+                  className="px-4 py-2.5 font-medium text-brut-applied/60"
                 >
                   {j.applied_at ? daysAgo(j.applied_at) : "—"}
                 </td>
-                <td title={exactTimestamp(j.created_at)} className="px-4 py-2.5 font-medium text-brut-ink/60">
+                <td title={exactTimestamp(j.created_at)} className="px-4 py-2.5 font-medium text-brut-ink/50">
                   {daysAgo(j.created_at)}
                 </td>
               </tr>
             ))}
             {rows.length === 0 && (
               <tr>
-                <td colSpan={7} className="px-4 py-10 text-center text-sm font-bold uppercase tracking-wide text-brut-ink/40">
+                <td colSpan={7} className="px-4 py-10 text-center text-sm font-bold uppercase tracking-wider text-brut-ink/30">
                   No jobs match.
                 </td>
               </tr>

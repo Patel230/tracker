@@ -16,11 +16,11 @@ interface Props {
 }
 
 const COLUMN_COLORS: Record<JobStatus, { headerBg: string; badge: string }> = {
-  wishlist: { headerBg: "bg-brut-wishlist/20", badge: "bg-brut-wishlist text-brut-ink" },
-  applied: { headerBg: "bg-brut-applied/20", badge: "bg-brut-applied text-white" },
-  interview: { headerBg: "bg-brut-interview/20", badge: "bg-brut-interview text-white" },
-  offer: { headerBg: "bg-brut-offer/20", badge: "bg-brut-offer text-brut-ink" },
-  rejected: { headerBg: "bg-brut-rejected/20", badge: "bg-brut-rejected text-white" },
+  wishlist: { headerBg: "bg-brut-wishlist/15", badge: "bg-brut-wishlist text-brut-ink" },
+  applied: { headerBg: "bg-brut-applied/15", badge: "bg-brut-applied text-white" },
+  interview: { headerBg: "bg-brut-interview/15", badge: "bg-brut-interview text-white" },
+  offer: { headerBg: "bg-brut-offer/15", badge: "bg-brut-offer text-brut-ink" },
+  rejected: { headerBg: "bg-brut-rejected/15", badge: "bg-brut-rejected text-white" },
 };
 
 export default function KanbanColumn({ status, droppableId, jobs, onOpen, onCreated }: Props) {
@@ -43,17 +43,17 @@ export default function KanbanColumn({ status, droppableId, jobs, onOpen, onCrea
 
   return (
     <section className="flex h-full w-72 flex-col border-2 border-brut-ink bg-brut-surface">
-      <div className={`h-2 ${STATUS_BG[status]}`} />
+      <div className={`h-1.5 ${STATUS_BG[status]}`} />
       <header className={`flex items-center justify-between border-b-2 border-brut-ink px-3 py-2.5 ${cc.headerBg}`}>
-        <h2 className="text-xs font-extrabold uppercase tracking-wide text-brut-ink">{STATUS_LABELS[status]}</h2>
-        <span className={`badge-brut border-brut-ink ${cc.badge}`}>
+        <h2 className="text-xs font-bold uppercase tracking-wider text-brut-ink">{STATUS_LABELS[status]}</h2>
+        <span className={`border-2 border-brut-ink px-2 py-0.5 text-[11px] font-bold uppercase tracking-wider ${cc.badge}`}>
           {jobs.length}
         </span>
       </header>
 
       <div
         ref={setNodeRef}
-        className={`min-h-0 flex-1 space-y-2 overflow-y-auto p-2 ${isOver ? "bg-brut-yellow/30" : "bg-brut-paper/40"}`}
+        className={`min-h-0 flex-1 space-y-2 overflow-y-auto p-2 ${isOver ? "bg-brut-yellow/20" : "bg-brut-paper/30"}`}
       >
         <SortableContext items={jobs.map((j) => j.id)} strategy={verticalListSortingStrategy}>
           {jobs.map((job) => (
@@ -92,10 +92,10 @@ export default function KanbanColumn({ status, droppableId, jobs, onOpen, onCrea
         ) : (
           <button
             onClick={() => setAdding(true)}
-            className={`flex w-full items-center justify-center gap-1.5 border-2 border-dashed py-1.5 text-xs font-bold uppercase tracking-wide transition-colors ${
+            className={`flex w-full items-center justify-center gap-1.5 border-2 border-dashed py-1.5 text-xs font-bold uppercase tracking-wider transition-colors ${
               isOver
                 ? `${STATUS_BG[status]} border-brut-ink text-white`
-                : "border-brut-ink/40 text-brut-ink/50 hover:border-brut-ink hover:text-brut-ink"
+                : "border-brut-ink/30 text-brut-ink/40 hover:border-brut-ink hover:text-brut-ink"
             }`}
           >
             <Plus size={13} strokeWidth={2.5} />

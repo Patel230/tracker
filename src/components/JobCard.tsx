@@ -47,7 +47,7 @@ export default function JobCard({ job, onOpen, overlay }: Props) {
     : {
         transform: CSS.Transform.toString(sortable.transform),
         transition: sortable.transition,
-        opacity: sortable.isDragging ? 0.4 : 1,
+        opacity: sortable.isDragging ? 0.3 : 1,
       };
 
   const salary = salaryLabel(job);
@@ -59,28 +59,28 @@ export default function JobCard({ job, onOpen, overlay }: Props) {
       style={style}
       {...(overlay ? {} : { ...sortable.attributes, ...sortable.listeners })}
       onClick={() => onOpen?.(job.id)}
-      className={`border-2 border-brut-ink border-l-4 bg-brut-surface cursor-grab p-3 hover:shadow-[2px_2px_0_var(--color-brut-ink)] hover:translate-x-[2px] hover:translate-y-[2px] transition-all ${borderColor} ${
-        overlay ? "rotate-2 shadow-[6px_6px_0_var(--color-brut-ink)]" : "shadow-[4px_4px_0_var(--color-brut-ink)]"
+      className={`border-2 border-brut-ink border-l-4 bg-brut-surface cursor-grab p-3 transition-all ${borderColor} ${
+        overlay ? "rotate-2" : "hover:shadow-[2px_2px_0_var(--color-brut-ink)] hover:-translate-y-0.5"
       }`}
     >
       <div className="text-sm font-extrabold text-brut-ink">{job.company}</div>
-      <div className="mt-0.5 text-sm font-medium text-brut-ink/80">{job.title}</div>
+      <div className="mt-0.5 text-sm font-medium text-brut-ink/70">{job.title}</div>
       <div className="mt-2 flex flex-wrap items-center gap-1.5">
         {job.location && (
-          <span className="badge-brut flex items-center gap-1 border-brut-ink/40 text-brut-ink/70">
+          <span className="flex items-center gap-1 border-2 border-brut-ink/30 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-brut-ink/60">
             <MapPin size={10} strokeWidth={2.5} />
             {job.location}
           </span>
         )}
         {salary && (
-          <span className={`badge-brut flex items-center gap-1 ${STATUS_BG[job.status]} border-brut-ink text-white`}>
+          <span className={`flex items-center gap-1 border-2 border-brut-ink px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider ${STATUS_BG[job.status]} text-white`}>
             <Wallet size={10} strokeWidth={2.5} />
             {salary}
           </span>
         )}
         <span
           title={exactTimestamp(job.applied_at ?? job.created_at)}
-          className="ml-auto flex items-center gap-1 text-[10px] font-bold uppercase tracking-wide text-brut-ink/40"
+          className="ml-auto flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-brut-ink/30"
         >
           <Clock size={10} strokeWidth={2.5} />
           {daysAgo(job.applied_at ?? job.created_at)}
