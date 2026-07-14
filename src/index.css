@@ -18,38 +18,38 @@
   --font-sans: "Space Grotesk", ui-sans-serif, system-ui, -apple-system, sans-serif;
   --font-head: "Space Grotesk", ui-sans-serif, system-ui, -apple-system, sans-serif;
 
-  /* Neo Brutalism light theme */
-  --color-background: #f5f0eb;
-  --color-foreground: #1a1a1a;
-  --color-card: #ffffff;
-  --color-card-foreground: #1a1a1a;
+  /* Neo Brutalism theme */
+  --color-background: #0a0a0a;
+  --color-foreground: #ffffff;
+  --color-card: #1a1a1a;
+  --color-card-foreground: #ffffff;
   --color-primary: #ffd23f;
   --color-primary-foreground: #000000;
-  --color-muted: #1a1a1a;
-  --color-muted-foreground: #666666;
+  --color-muted: #ffffff;
+  --color-muted-foreground: #d4d4d4;
   --color-accent: #ff6b6b;
-  --color-accent-foreground: #ffffff;
+  --color-accent-foreground: #000000;
   --color-destructive: #ef4444;
   --color-destructive-foreground: #ffffff;
-  --color-border: #1a1a1a;
-  --color-input: #ffffff;
+  --color-border: #ffffff;
+  --color-input: #1a1a1a;
 
   /* Neo Brutalist hard shadows */
-  --shadow-xs: 3px 3px 0 0 #1a1a1a;
-  --shadow-sm: 5px 5px 0 0 #1a1a1a;
-  --shadow: 5px 5px 0 0 #1a1a1a;
-  --shadow-md: 7px 7px 0 0 #1a1a1a;
-  --shadow-lg: 9px 9px 0 0 #1a1a1a;
-  --shadow-xl: 12px 12px 0 0 #1a1a1a;
-  --shadow-2xl: 15px 15px 0 0 #1a1a1a;
+  --shadow-xs: 3px 3px 0 0 #000000;
+  --shadow-sm: 5px 5px 0 0 #000000;
+  --shadow: 5px 5px 0 0 #000000;
+  --shadow-md: 7px 7px 0 0 #000000;
+  --shadow-lg: 9px 9px 0 0 #000000;
+  --shadow-xl: 12px 12px 0 0 #000000;
+  --shadow-2xl: 15px 15px 0 0 #000000;
 
   /* Pipeline stage colors */
-  --color-brut-ink: #1a1a1a;
-  --color-brut-paper: #f5f0eb;
-  --color-brut-surface: #ffffff;
+  --color-brut-ink: #ffffff;
+  --color-brut-paper: #0a0a0a;
+  --color-brut-surface: #1a1a1a;
   --color-brut-yellow: #ffd23f;
   --color-brut-wishlist: #eab308;
-  --color-brut-applied: #3b82f6;
+  --color-brut-applied: #eab308;
   --color-brut-interview: #84cc16;
   --color-brut-offer: #ec4899;
   --color-brut-rejected: #f97316;
@@ -91,10 +91,10 @@ body::before {
   inset: 0;
   pointer-events: none;
   background-image: 
-    linear-gradient(rgba(0,0,0,0.06) 1px 0,
-                   rgba(0,0,0,0.06) 0 1px),
-    linear-gradient(90deg, rgba(0,0,0,0.04) 1px, transparent 1px),
-    linear-gradient(transparent 0, transparent calc(100% - 1px), rgba(0,0,0,0.04) calc(100% - 1px));
+    linear-gradient(rgba(255,255,255,0.08) 1px 0,
+                   rgba(255,255,255,0.08) 0 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px),
+    linear-gradient(transparent 0, transparent calc(100% - 1px), rgba(255,255,255,0.05) calc(100% - 1px));
   background-size: 32px 32px, 16px 16px, 16px 16px;
   z-index: -1;
 }

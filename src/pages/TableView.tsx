@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
-import { ArchiveRestore, ChevronDown, ChevronUp, RotateCcw, Search, ListFilter, ExternalLink } from "lucide-react";
+import { ArchiveRestore, ChevronDown, ChevronUp, RotateCcw, Search, ListFilter } from "lucide-react";
 import { useFetch } from "../lib/useFetch";
-import { JOB_STATUSES, STATUS_LABELS, safeExternalUrl, type Job, type JobStatus } from "../../shared/types";
+import { JOB_STATUSES, STATUS_LABELS, type Job, type JobStatus } from "../../shared/types";
 import { salaryLabel, daysAgo, exactTimestamp } from "../components/JobCard";
 import { STATUS_BG, STATUS_TEXT } from "../lib/theme";
 import JobDrawer from "../components/JobDrawer";
@@ -130,7 +130,6 @@ export default function TableView() {
               {header("title", "Title", "bg-brut-applied")}
               {header("status", "Status", "bg-brut-interview")}
               <th className="bg-brut-wishlist px-4 py-2.5 text-left text-xs font-bold uppercase tracking-wider text-white">Location</th>
-              <th className="bg-brut-ink px-4 py-2.5 text-left text-xs font-bold uppercase tracking-wider text-white">Website</th>
               <th className="bg-brut-offer px-4 py-2.5 text-left text-xs font-bold uppercase tracking-wider text-white">Salary</th>
               {header("applied_at", "Applied", "bg-brut-applied")}
               {header("created_at", "Added", "bg-brut-ink")}
@@ -155,16 +154,6 @@ export default function TableView() {
                   </Badge>
                 </td>
                 <td className="px-4 py-2.5 font-medium text-muted-foreground">{j.location ?? "—"}</td>
-                <td className="px-4 py-2.5">
-                  {safeExternalUrl(j.official_website) ? (
-                    <a href={safeExternalUrl(j.official_website)!} target="_blank" rel="noreferrer" className="flex items-center gap-1 text-brut-applied underline decoration-2 underline-offset-2">
-                      Open
-                      <ExternalLink size={11} strokeWidth={2.5} />
-                    </a>
-                  ) : (
-                    <span className="text-muted-foreground">—</span>
-                  )}
-                </td>
                 <td className="px-4 py-2.5 font-medium">
                   <span className="font-bold text-brut-offer">{salaryLabel(j) ?? "—"}</span>
                 </td>
@@ -181,7 +170,7 @@ export default function TableView() {
             ))}
             {rows.length === 0 && (
               <tr>
-                <td colSpan={8} className="px-4 py-10 text-center text-sm font-bold uppercase tracking-wider text-muted-foreground">
+                <td colSpan={7} className="px-4 py-10 text-center text-sm font-bold uppercase tracking-wider text-muted-foreground">
                   No jobs match.
                 </td>
               </tr>

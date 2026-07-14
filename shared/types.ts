@@ -72,7 +72,6 @@ export interface Job {
   id: string;
   user_id: string;
   company: string;
-  official_website: string | null;
   title: string;
   url: string | null;
   location: string | null;

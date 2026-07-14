@@ -1,6 +1,6 @@
 import { useRef, useState } from "react";
 import { Navigate, NavLink, Route, Routes } from "react-router-dom";
-import { Kanban, KeyRound, LayoutDashboard, LogOut, Rows3, Building2, Trash2, ChevronDown } from "lucide-react";
+import { Kanban, KeyRound, LayoutDashboard, LogOut, Rows3, Trash2, ChevronDown } from "lucide-react";
 import { useAuth } from "./lib/auth";
 import Logo from "./components/Logo";
 import Landing from "./pages/Landing";
@@ -8,7 +8,6 @@ import Login from "./pages/Login";
 import Board from "./pages/Board";
 import TableView from "./pages/TableView";
 import Dashboard from "./pages/Dashboard";
-import CompanyView from "./pages/CompanyView";
 import RemindersBanner from "./components/RemindersBanner";
 import { RemindersProvider } from "./components/RemindersProvider";
 import ChangePasswordModal from "./components/ChangePasswordModal";
@@ -19,7 +18,6 @@ const tabs = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard },
   { to: "/board", label: "Board", icon: Kanban },
   { to: "/table", label: "Table", icon: Rows3 },
-  { to: "/companies", label: "Companies", icon: Building2 },
 ];
 
 const AVATAR_COLORS = [
@@ -131,7 +129,6 @@ export default function App() {
           <Route path="/" element={<Dashboard />} />
           <Route path="/board" element={<Board />} />
           <Route path="/table" element={<TableView />} />
-          <Route path="/companies" element={<CompanyView />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>

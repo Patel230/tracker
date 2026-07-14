@@ -26,4 +26,4 @@ export const STATUS_TEXT: Record<JobStatus, string> = {
   rejected: "text-white",
 };
 
-export const INK_HEX = "#1a1a1a";
+export const INK_HEX = "#ffffff";

@@ -66,13 +66,13 @@ export default function Dashboard() {
 
   return (
     <div className="h-full overflow-y-auto p-6">
-      <div className="space-y-6">
+      <div className="mx-auto max-w-5xl space-y-6">
         {/* Stat tiles with colored top borders — defolio style */}
         <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
           {tiles.map((t, i) => {
             const s = TILE_STYLES[i];
             return (
-              <div key={t.label} className="border-[3px] border-brut-ink bg-card transition-all hover:-translate-y-0.5 hover:shadow-[3px_3px_0_0_#000]">
+              <div key={t.label} className="border-[3px] border-brut-ink bg-card">
                 <div className={`h-1.5 ${s.top}`} />
                 <div className="p-4">
                   <div className={`flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider ${TILE_ICONS[t.label] || "text-muted-foreground"}`}>
@@ -88,44 +88,38 @@ export default function Dashboard() {
         </div>
 
         <div className="grid gap-6 lg:grid-cols-2">
-          <div className="border-[3px] border-brut-ink bg-card transition-all hover:-translate-y-0.5 hover:shadow-[3px_3px_0_0_#000]">
+          <div className="border-[3px] border-brut-ink bg-card">
             <div className="h-1.5 bg-brut-applied" />
-            <div className="bg-brut-applied/15 border-b-[3px] border-brut-ink px-5 py-2.5">
+            <div className="p-5">
               <h2 className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-foreground">
                 <Briefcase size={13} strokeWidth={2.5} className="text-brut-applied" />
                 Applications per week
               </h2>
               <p className="text-xs font-medium text-muted-foreground">last 12 weeks</p>
-            </div>
-            <div className="p-5">
               <WeeklyBars weekly={stats.weekly} />
             </div>
           </div>
 
-          <div className="border-[3px] border-brut-ink bg-card transition-all hover:-translate-y-0.5 hover:shadow-[3px_3px_0_0_#000]">
+          <div className="border-[3px] border-brut-ink bg-card">
             <div className="h-1.5 bg-brut-interview" />
-            <div className="bg-brut-interview/15 border-b-[3px] border-brut-ink px-5 py-2.5">
+            <div className="p-5">
               <h2 className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-foreground">
                 <Timer size={13} strokeWidth={2.5} className="text-brut-interview" />
                 Pipeline
               </h2>
               <p className="text-xs font-medium text-muted-foreground">jobs by stage (active)</p>
-            </div>
-            <div className="p-5">
               <Funnel funnel={stats.funnel} />
             </div>
           </div>
         </div>
 
-        <div className="border-[3px] border-brut-ink bg-card transition-all hover:-translate-y-0.5 hover:shadow-[3px_3px_0_0_#000]">
+        <div className="border-[3px] border-brut-ink bg-card">
           <div className="h-1.5 bg-brut-wishlist" />
-          <div className="bg-brut-wishlist/15 border-b-[3px] border-brut-ink px-5 py-2.5">
+          <div className="p-5">
             <h2 className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-foreground">
               <Bell size={13} strokeWidth={2.5} className="text-brut-wishlist" />
               Upcoming reminders
             </h2>
-          </div>
-          <div className="p-5">
             {reminders.length === 0 ? (
               <p className="mt-3 text-sm font-bold uppercase tracking-wider text-muted-foreground">
                 Nothing due in the next 7 days.

@@ -27,9 +27,6 @@ const firstIssue = (error: z.ZodError) => error.issues[0]?.message ?? "Invalid f
 
 const jobFields = z.object({
   company: z.string().trim().min(1, "Company is required").max(200),
-  official_website: httpUrl("Official website", 2000)
-    .nullish()
-    .or(z.literal("").transform(() => null)),
   title: z.string().trim().min(1, "Title is required").max(200),
   url: httpUrl("Job URL", 2000)
     .nullish()
@@ -148,15 +145,14 @@ jobs.post("/", async (c) => {
   const sortOrder = (min?.m ?? 1) - 1;
 
   await c.env.DB.prepare(
-    `INSERT INTO jobs (id, user_id, company, official_website, title, url, location, salary_min, salary_max,
+    `INSERT INTO jobs (id, user_id, company, title, url, location, salary_min, salary_max,
        salary_currency, salary_period, description, notes, status, sort_order, applied_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
   )
     .bind(
       id,
       c.get("userId"),
       f.company,
-      f.official_website ?? null,
       f.title,
       f.url ?? null,
       f.location ?? null,
@@ -195,15 +191,13 @@ jobs.patch("/:id", async (c) => {
   const appliedAt =
     merged.status === "applied" && !job.applied_at ? now() : merged.applied_at;
   await c.env.DB.prepare(
-    `UPDATE jobs SET company=?, official_website=?, title=?, url=?, location=?,
-       salary_min=?, salary_max=?,
+    `UPDATE jobs SET company=?, title=?, url=?, location=?, salary_min=?, salary_max=?,
        salary_currency=?, salary_period=?, description=?, notes=?, status=?, archived=?,
        applied_at=?, updated_at=?
      WHERE id = ? AND user_id = ?`
   )
     .bind(
       merged.company,
-      merged.official_website ?? null,
       merged.title,
       merged.url ?? null,
       merged.location ?? null,
