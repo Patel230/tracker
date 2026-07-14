@@ -73,7 +73,7 @@ export default function Login() {
                 onClick={() => { setMode("login"); setConfirmPassword(""); setError(null); }}
                 className={`flex-1 py-2.5 text-xs font-bold uppercase tracking-wider transition-colors ${
                   mode === "login"
-                    ? "bg-foreground text-primary"
+                    ? "bg-foreground text-background"
                     : "bg-card text-muted-foreground hover:text-foreground"
                 }`}
               >
@@ -84,7 +84,7 @@ export default function Login() {
                 onClick={() => { setMode("register"); setConfirmPassword(""); setError(null); }}
                 className={`flex-1 py-2.5 text-xs font-bold uppercase tracking-wider transition-colors ${
                   mode === "register"
-                    ? "bg-foreground text-primary"
+                    ? "bg-foreground text-background"
                     : "bg-card text-muted-foreground hover:text-foreground"
                 }`}
               >

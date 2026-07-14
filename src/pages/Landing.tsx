@@ -172,7 +172,7 @@ export default function Landing() {
           {FEATURES.map((f) => (
             <div key={f.title} className="border-[3px] border-brut-ink bg-card border-l-[6px] border-l-primary transition-all hover:-translate-y-1 hover:shadow-[7px_7px_0_0_#000]">
               <div className="p-5">
-                <div className="flex size-9 items-center justify-center border-[3px] border-brut-ink bg-primary">
+                <div className="flex size-9 items-center justify-center border-[3px] border-brut-ink bg-primary text-primary-foreground">
                   <f.icon size={16} strokeWidth={2.5} />
                 </div>
                 <h3 className="mt-3 text-sm font-black uppercase tracking-wider text-foreground">{f.title}</h3>
@@ -195,7 +195,7 @@ export default function Landing() {
           {STEPS.map((s) => (
             <div key={s.n} className="border-[3px] border-brut-ink bg-card p-5">
               <div className="flex items-center gap-3">
-                <span className="flex size-10 items-center justify-center border-[3px] border-brut-ink bg-primary text-sm font-black">
+                <span className="flex size-10 items-center justify-center border-[3px] border-brut-ink bg-primary text-sm font-black text-primary-foreground">
                   {s.n}
                 </span>
                 <h3 className="text-sm font-black uppercase tracking-wider text-foreground">{s.title}</h3>
