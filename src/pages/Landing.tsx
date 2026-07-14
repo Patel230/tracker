@@ -4,38 +4,44 @@ import Logo from "../components/Logo";
 import { Button } from "../components/ui/button";
 import { Badge } from "../components/ui/badge";
 
-// These 6 cards are decorative feature callouts, not tied to job status, so
-// they all get the same accent instead of borrowing 5 different status
-// colors + ink by position (which implied a status meaning none of them has).
+// Decorative variety, by explicit choice — these 6 cards cycle through the
+// 5 status colors + ink so each one reads distinctly, even though none of
+// them is actually about that job status.
 const FEATURES = [
   {
     title: "Kanban pipeline",
     body: "Drag jobs through Wishlist, Applied, Interview, Offer, Rejected. Every move logs itself to the timeline automatically.",
+    accent: "border-l-brut-wishlist",
     icon: Kanban,
   },
   {
     title: "Contacts & timeline",
     body: "Every job gets its own contact list and activity log — recruiter calls, phone screens, onsites — so the history lives with it.",
+    accent: "border-l-brut-interview",
     icon: Users,
   },
   {
     title: "Follow-up reminders",
     body: "Set a due date on any job. Overdue items surface the moment you log in so nothing goes cold silently.",
+    accent: "border-l-brut-offer",
     icon: Bell,
   },
   {
     title: "Dashboard & analytics",
     body: "Response rate, weekly volume, days-to-interview, and a funnel across all five stages — computed from your own data.",
+    accent: "border-l-brut-applied",
     icon: LayoutDashboard,
   },
   {
     title: "Table view & search",
     body: "Every job in a sortable, filterable table when the board gets big. Search by company, title, or location.",
+    accent: "border-l-brut-rejected",
     icon: Rows3,
   },
   {
     title: "Free, stays free",
     body: "No tier that hides the board behind a paywall. Sign up, add every application, keep every contact and reminder on the house.",
+    accent: "border-l-brut-ink",
     icon: Sparkles,
   },
 ];
@@ -45,18 +51,21 @@ const STEPS = [
     n: "01",
     title: "Drop roles on your board",
     body: "Add applications as you find them. One field for the company, one for the title.",
+    accentBg: "bg-brut-wishlist",
     icon: PlusCircle,
   },
   {
     n: "02",
     title: "Track every touchpoint",
     body: "Log calls, interviews, contacts, and follow-ups. The timeline keeps the full story with the job.",
+    accentBg: "bg-brut-applied",
     icon: Rows3,
   },
   {
     n: "03",
     title: "Watch your numbers grow",
     body: "Response rate, pipeline shape, days to interview — see what's actually working.",
+    accentBg: "bg-brut-interview",
     icon: LayoutDashboard,
   },
 ];
@@ -170,7 +179,7 @@ export default function Landing() {
 
         <div className="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {FEATURES.map((f) => (
-            <div key={f.title} className="border-[3px] border-brut-ink bg-card border-l-[6px] border-l-primary transition-all hover:-translate-y-1 hover:shadow-[7px_7px_0_0_#000]">
+            <div key={f.title} className={`border-[3px] border-brut-ink bg-card border-l-[6px] ${f.accent} transition-all hover:-translate-y-1 hover:shadow-[7px_7px_0_0_#000]`}>
               <div className="p-5">
                 <div className="flex size-9 items-center justify-center border-[3px] border-brut-ink bg-primary text-primary-foreground">
                   <f.icon size={16} strokeWidth={2.5} />
@@ -195,7 +204,7 @@ export default function Landing() {
           {STEPS.map((s) => (
             <div key={s.n} className="border-[3px] border-brut-ink bg-card p-5">
               <div className="flex items-center gap-3">
-                <span className="flex size-10 items-center justify-center border-[3px] border-brut-ink bg-primary text-sm font-black text-primary-foreground">
+                <span className={`flex size-10 items-center justify-center border-[3px] border-brut-ink ${s.accentBg} text-sm font-black text-primary-foreground`}>
                   {s.n}
                 </span>
                 <h3 className="text-sm font-black uppercase tracking-wider text-foreground">{s.title}</h3>

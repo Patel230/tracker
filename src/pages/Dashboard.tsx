@@ -6,9 +6,23 @@ import { INK_HEX, PRIMARY_HEX, STATUS_BG } from "../lib/theme";
 import { useReminders } from "../components/RemindersProvider";
 import { Button } from "../components/ui/button";
 
-// These 4 tiles are generic KPI cards, not tied to any job status — they all
-// get the identical accent instead of borrowing 4 of the 5 status colors by
-// array position (which implied a status meaning none of them actually has).
+// Decorative variety, by explicit choice: these 4 tiles aren't tied to a job
+// status, but each gets a distinct status color anyway so they read apart at
+// a glance. Bright color on the card's own dark bg-card background (not the
+// status color itself), so contrast is safe regardless of which is picked.
+const TILE_STYLES = [
+  { top: "bg-brut-wishlist" },
+  { top: "bg-brut-applied" },
+  { top: "bg-brut-interview" },
+  { top: "bg-brut-offer" },
+];
+
+const TILE_ICONS: Record<string, string> = {
+  "Active applications": "text-brut-wishlist",
+  "Response rate": "text-brut-applied",
+  "Offers": "text-brut-interview",
+  "Avg days to interview": "text-brut-offer",
+};
 
 export default function Dashboard() {
   const { data: stats, error, loading, reload } = useFetch<Stats>("/stats");
@@ -57,27 +71,30 @@ export default function Dashboard() {
       <div className="mx-auto max-w-5xl space-y-6">
         {/* Stat tiles with colored top borders — defolio style */}
         <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-          {tiles.map((t) => (
-            <div key={t.label} className="border-[3px] border-brut-ink bg-card">
-              <div className="h-1.5 bg-primary" />
-              <div className="p-4">
-                <div className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-foreground">
-                  <t.icon size={13} strokeWidth={2.5} />
-                  {t.label}
+          {tiles.map((t, i) => {
+            const s = TILE_STYLES[i];
+            return (
+              <div key={t.label} className="border-[3px] border-brut-ink bg-card">
+                <div className={`h-1.5 ${s.top}`} />
+                <div className="p-4">
+                  <div className={`flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider ${TILE_ICONS[t.label] || "text-muted-foreground"}`}>
+                    <t.icon size={13} strokeWidth={2.5} />
+                    {t.label}
+                  </div>
+                  <div className="mt-1 text-3xl font-black tabular-nums text-foreground">{t.value}</div>
+                  {t.hint && <div className="mt-1 text-xs font-medium text-muted-foreground">{t.hint}</div>}
                 </div>
-                <div className="mt-1 text-3xl font-black tabular-nums text-foreground">{t.value}</div>
-                {t.hint && <div className="mt-1 text-xs font-medium text-muted-foreground">{t.hint}</div>}
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
 
         <div className="grid gap-6 lg:grid-cols-2">
           <div className="border-[3px] border-brut-ink bg-card">
-            <div className="h-1.5 bg-primary" />
+            <div className="h-1.5 bg-brut-applied" />
             <div className="p-5">
               <h2 className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-foreground">
-                <Briefcase size={13} strokeWidth={2.5} className="text-foreground" />
+                <Briefcase size={13} strokeWidth={2.5} className="text-brut-applied" />
                 Applications per week
               </h2>
               <p className="text-xs font-medium text-muted-foreground">last 12 weeks</p>
@@ -86,10 +103,10 @@ export default function Dashboard() {
           </div>
 
           <div className="border-[3px] border-brut-ink bg-card">
-            <div className="h-1.5 bg-primary" />
+            <div className="h-1.5 bg-brut-interview" />
             <div className="p-5">
               <h2 className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-foreground">
-                <Timer size={13} strokeWidth={2.5} className="text-foreground" />
+                <Timer size={13} strokeWidth={2.5} className="text-brut-interview" />
                 Pipeline
               </h2>
               <p className="text-xs font-medium text-muted-foreground">jobs by stage (active)</p>
@@ -99,10 +116,10 @@ export default function Dashboard() {
         </div>
 
         <div className="border-[3px] border-brut-ink bg-card">
-          <div className="h-1.5 bg-primary" />
+          <div className="h-1.5 bg-brut-wishlist" />
           <div className="p-5">
             <h2 className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-foreground">
-              <Bell size={13} strokeWidth={2.5} className="text-foreground" />
+              <Bell size={13} strokeWidth={2.5} className="text-brut-wishlist" />
               Upcoming reminders
             </h2>
             {reminders.length === 0 ? (
