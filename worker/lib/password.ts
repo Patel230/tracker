@@ -22,9 +22,22 @@ import bcrypt from "bcryptjs";
 // weaker factor. The iteration count is stored inside each hash, so raising it
 // later costs nothing: verification reads the stored value, and any account can
 // be re-hashed on its next successful login.
-const ITERATIONS = 50_000;
+export const DEFAULT_ITERATIONS = 50_000;
 const SALT_BYTES = 16;
 const KEY_BITS = 256;
+
+// Raise the work factor without touching code: set PBKDF2_ITERATIONS. Worth
+// doing on the Workers Paid plan, where the 10ms cap doesn't apply and OWASP's
+// 600_000 costs ~72ms — comfortably inside the 30s budget there.
+//
+// Existing hashes keep working: each one stores the iteration count it was made
+// with, verification reads that value, and an account is re-hashed at the
+// current setting on its next successful login.
+export function configuredIterations(env: Env): number {
+  const n = Number(env.PBKDF2_ITERATIONS);
+  // Below the default is never an improvement, so treat it as unset.
+  return Number.isInteger(n) && n > DEFAULT_ITERATIONS ? n : DEFAULT_ITERATIONS;
+}
 
 const b64 = (bytes: Uint8Array) => btoa(String.fromCharCode(...bytes));
 const unb64 = (s: string) => Uint8Array.from(atob(s), (ch) => ch.charCodeAt(0));
@@ -51,14 +64,23 @@ function timingSafeEqual(a: Uint8Array, b: Uint8Array): boolean {
   return diff === 0;
 }
 
-export async function hashPassword(password: string): Promise<string> {
+export async function hashPassword(password: string, iterations = DEFAULT_ITERATIONS): Promise<string> {
   const salt = crypto.getRandomValues(new Uint8Array(SALT_BYTES));
-  const derived = await derive(password, salt, ITERATIONS);
-  return `pbkdf2$sha256$${ITERATIONS}$${b64(salt)}$${b64(derived)}`;
+  const derived = await derive(password, salt, iterations);
+  return `pbkdf2$sha256$${iterations}$${b64(salt)}$${b64(derived)}`;
 }
 
 export function isLegacyHash(stored: string): boolean {
   return stored.startsWith("$2");
+}
+
+// True for a bcrypt hash, or a PBKDF2 hash weaker than the current setting.
+// Lets a raised PBKDF2_ITERATIONS roll out across accounts as they log in,
+// rather than only applying to new ones.
+export function needsRehash(stored: string, iterations: number): boolean {
+  if (isLegacyHash(stored)) return true;
+  const stored_iters = Number(stored.split("$")[2]);
+  return !Number.isInteger(stored_iters) || stored_iters < iterations;
 }
 
 export async function verifyPassword(password: string, stored: string): Promise<boolean> {

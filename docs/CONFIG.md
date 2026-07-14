@@ -8,6 +8,19 @@ These go in `.dev.vars` for local development and are set via `wrangler secret p
 |---|---|---|
 | `JWT_SECRET` | Yes | Signs the auth cookie. Must be at least 32 characters — enforced at runtime, not merely advised. Generate with `openssl rand -base64 32`. |
 | `ALLOW_REGISTRATION` | No | Set to `"true"` to allow new account signups. Defaults to `"false"`. |
+| `PBKDF2_ITERATIONS` | No | Password-hash work factor. Defaults to `50000`, chosen to fit the Workers **Free** plan's 10ms CPU cap. Values below the default are ignored. |
+
+### Hardening the password hash on the Paid plan
+
+The default of 50,000 iterations is a deliberate compromise: the Workers Free plan allows 10ms of CPU per request, and no password hash is both OWASP-grade and that cheap — being slow is the entire point of one. The default keeps a free-tier fork deployable, at roughly 12x below OWASP's guidance for PBKDF2-SHA256.
+
+On the **Paid** plan that cap doesn't apply (30s default), so raise it:
+
+```bash
+npx wrangler secret put PBKDF2_ITERATIONS   # e.g. 600000 (OWASP), ~72ms per login
+```
+
+Existing accounts are not invalidated. Each hash records the iteration count it was created with, verification reads that value, and an account is re-hashed at the current setting on its next successful login.
 
 > **If `JWT_SECRET` is missing or too short the app refuses to issue a session and returns a 500.** That is deliberate: an empty key still produces JWTs that verify, so a deploy that forgot the secret would silently accept forged sessions for any account. Failing loudly is the safe behaviour.
 

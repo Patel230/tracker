@@ -88,7 +88,7 @@ Request → Worker (fetch handler)
 
 1. **Registration/Login** — validates with Zod, hashes the password (PBKDF2-HMAC-SHA256 via WebCrypto), signs a JWT (HS256, jose), sets the httpOnly cookie `tracker_auth`
 2. **Verification** — `requireAuth` reads the cookie, verifies the JWT, checks the token version against the database, then sets `c.set("userId", userId)`
-3. **Logout** — clears the cookie server-side
+3. **Logout** — clears the auth cookie in the response. It does **not** revoke the JWT: the token stays valid until it expires, so logout protects the browser it ran in, not a token that has already been stolen. Revocation is what `token_version` is for.
 4. **Password change** — increments `users.token_version`, which invalidates every session issued before it
 
 Notes:

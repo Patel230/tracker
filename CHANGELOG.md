@@ -12,7 +12,9 @@ All notable changes to this project are documented in this file.
 - **Closed a user-enumeration timing leak on login** — an unknown email skipped hashing and answered measurably faster than a real account.
 - **Rate limited the credential endpoints** (10/min/IP).
 - **Rejected `javascript:` and `data:` URLs** on `job.url` and `contact.linkedin`, both of which are rendered into an `<a href>`. `contact.linkedin` had no URL validation at all.
-- **Added a CSP** and security headers, and self-hosted the font so the app makes no third-party request.
+- **Added a CSP** and security headers, on both static assets and `/api/*` responses, and self-hosted the font so the app makes no third-party request.
+- **Registration no longer creates an orphan account when `JWT_SECRET` is broken.** It hashed and INSERTed the user, then threw while signing the session — leaving a row behind that turned the retry into a `409` for an account nobody could log into. Session config is now validated before any handler writes.
+- **`PBKDF2_ITERATIONS` is configurable**, so a Paid deployment can run OWASP's 600k. Existing hashes upgrade on next login rather than needing a reset.
 
 ### Fixed
 

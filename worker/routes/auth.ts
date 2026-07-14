@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import { z } from "zod";
-import { createSession, clearSession, authenticate, type AppEnv } from "../lib/auth";
-import { hashPassword, verifyPassword, isLegacyHash, dummyVerify } from "../lib/password";
+import { createSession, clearSession, authenticate, requireSessionConfig, type AppEnv } from "../lib/auth";
+import { hashPassword, verifyPassword, needsRehash, configuredIterations, dummyVerify } from "../lib/password";
 import { rateLimitByIp } from "../lib/ratelimit";
 
 const credentials = z.object({
@@ -15,6 +15,10 @@ const changePasswordBody = z.object({
 });
 
 const auth = new Hono<AppEnv>();
+
+// Before anything else: a broken JWT_SECRET must stop the request before a
+// handler can write to the database.
+auth.use("*", requireSessionConfig);
 
 // Guessing a password is a game of volume; these are the only endpoints where
 // volume is the attack. change-password is included because it accepts the
@@ -32,7 +36,7 @@ auth.post("/register", async (c) => {
   const { email, password } = parsed.data;
 
   const id = crypto.randomUUID();
-  const hash = await hashPassword(password);
+  const hash = await hashPassword(password, configuredIterations(c.env));
 
   // Let the UNIQUE(email) constraint decide, rather than checking first and
   // then inserting: two concurrent signups for the same address both passed
@@ -73,10 +77,12 @@ auth.post("/login", async (c) => {
   }
   if (!(await verifyPassword(password, user.password_hash))) return invalid();
 
-  // Upgrade the account off bcrypt the first time it logs in successfully.
-  if (isLegacyHash(user.password_hash)) {
+  // Upgrade the stored hash on the way through: off bcrypt, or up to a raised
+  // PBKDF2_ITERATIONS. Costs one extra hash on the login that does it.
+  const iterations = configuredIterations(c.env);
+  if (needsRehash(user.password_hash, iterations)) {
     await c.env.DB.prepare("UPDATE users SET password_hash = ? WHERE id = ?")
-      .bind(await hashPassword(password), user.id)
+      .bind(await hashPassword(password, iterations), user.id)
       .run();
   }
 
@@ -115,7 +121,7 @@ auth.post("/change-password", async (c) => {
 
   // Bumping token_version revokes every session issued before this change —
   // the point of changing a password is that a leaked one stops working.
-  const hash = await hashPassword(newPassword);
+  const hash = await hashPassword(newPassword, configuredIterations(c.env));
   const updated = await c.env.DB.prepare(
     "UPDATE users SET password_hash = ?, token_version = token_version + 1 WHERE id = ? RETURNING token_version"
   )

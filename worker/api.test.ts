@@ -114,18 +114,24 @@ describe("auth", () => {
   it("refuses to issue a session when JWT_SECRET is missing or too short", async () => {
     // A zero-length key is one jose will sign and verify with, so a deploy that
     // forgot the secret would accept forged sessions. It must fail loudly.
-    // Distinct emails: the row is inserted before createSession throws, so
-    // reusing one address would make the second case a 409 rather than a 500.
-    for (const [i, secret] of [undefined, "too-short"].entries()) {
+    for (const secret of [undefined, "too-short"]) {
       const res = await app.request(
         "/api/auth/register",
         {
-          ...json({ email: `weak${i}@test.dev`, password: "password1" }),
+          ...json({ email: "weak@test.dev", password: "password1" }),
           headers: { "Content-Type": "application/json" },
         },
         { ...env, JWT_SECRET: secret } as Env
       );
       expect(res.status).toBe(500);
+
+      // And it must fail *before* writing. Registration used to hash, INSERT,
+      // and only then throw when signing the session, leaving an orphan account
+      // that made the retry a 409 for an account nobody could log into. The
+      // same email is reused deliberately: it is the second iteration that
+      // would expose a leftover row.
+      const row = await env.DB.prepare("SELECT id FROM users WHERE email = ?").bind("weak@test.dev").first();
+      expect(row).toBeNull();
     }
   });
 
@@ -207,6 +213,44 @@ describe("auth", () => {
 
     // Absent binding (tests, local dev) must not break the endpoint.
     expect((await attempt(env)).status).toBe(401);
+  });
+
+  it("upgrades an existing hash when PBKDF2_ITERATIONS is raised", async () => {
+    const c = client();
+    await c.fetch("/api/auth/register", json({ email: "iters@test.dev", password: "password1" }));
+
+    const iterationsOf = async () => {
+      const row = await env.DB.prepare("SELECT password_hash FROM users WHERE email = ?")
+        .bind("iters@test.dev")
+        .first<{ password_hash: string }>();
+      return Number(row!.password_hash.split("$")[2]);
+    };
+    expect(await iterationsOf()).toBe(50_000); // free-tier-safe default
+
+    // A Paid deployment raises the work factor; existing accounts move up on
+    // their next login rather than needing a password reset.
+    const stronger: Env = { ...env, PBKDF2_ITERATIONS: "120000" };
+    const res = await app.request(
+      "/api/auth/login",
+      { ...json({ email: "iters@test.dev", password: "password1" }), headers: { "Content-Type": "application/json" } },
+      stronger
+    );
+    expect(res.status).toBe(200);
+    expect(await iterationsOf()).toBe(120_000);
+
+    // The re-hashed password still authenticates, and a wrong one still doesn't.
+    const again = await app.request(
+      "/api/auth/login",
+      { ...json({ email: "iters@test.dev", password: "password1" }), headers: { "Content-Type": "application/json" } },
+      stronger
+    );
+    expect(again.status).toBe(200);
+    const wrong = await app.request(
+      "/api/auth/login",
+      { ...json({ email: "iters@test.dev", password: "wrongpass1" }), headers: { "Content-Type": "application/json" } },
+      stronger
+    );
+    expect(wrong.status).toBe(401);
   });
 
   it("rejects bad credentials and unauthenticated API access", async () => {
@@ -353,20 +397,26 @@ describe("jobs", () => {
     const c = client();
     await c.fetch("/api/auth/register", json({ email: "arch@test.dev", password: "password1" }));
 
-    // Two applied jobs, neither of which ever got a response.
-    for (const company of ["Ghosted A", "Ghosted B"]) {
-      const j = (await (await c.fetch("/api/jobs", json({ company, title: "Role", status: "applied" }))).json()) as Job;
-      if (company === "Ghosted B") {
-        await c.fetch(`/api/jobs/${j.id}`, { method: "PATCH", body: JSON.stringify({ archived: 1 }) });
-      }
-    }
+    // One live application that DID get an interview, and one archived one that
+    // was ghosted. The responded job has to be non-zero: with no responses at
+    // all, the rate is 0 whether or not archived jobs sit in the denominator,
+    // and the test would pass without the fix.
+    const live = (await (
+      await c.fetch("/api/jobs", json({ company: "Replied", title: "Role", status: "applied" }))
+    ).json()) as Job;
+    await c.fetch(`/api/jobs/${live.id}/activities`, json({ type: "interview", title: "Phone screen" }));
+
+    const ghosted = (await (
+      await c.fetch("/api/jobs", json({ company: "Ghosted", title: "Role", status: "applied" }))
+    ).json()) as Job;
+    await c.fetch(`/api/jobs/${ghosted.id}`, { method: "PATCH", body: JSON.stringify({ archived: 1 }) });
 
     const stats = (await (await c.fetch("/api/stats")).json()) as Stats;
     // The archived one is out of the funnel...
     expect(stats.funnel.applied).toBe(1);
-    // ...and must also be out of the denominator behind the response rate,
-    // which previously still counted it.
-    expect(stats.responseRate).toBe(0);
+    // ...and out of the denominator too: 1 responded / 1 applied = 1.0.
+    // Before the fix the ghosted job still counted, giving 1/2 = 0.5.
+    expect(stats.responseRate).toBe(1);
     expect(stats.weekly.reduce((n, w) => n + w.count, 0)).toBe(1);
   });
 

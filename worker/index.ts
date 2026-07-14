@@ -7,6 +7,18 @@ import { requireAuth, type AppEnv } from "./lib/auth";
 
 const app = new Hono<AppEnv>();
 
+// public/_headers only decorates static asset responses — /api/* is generated
+// here and inherits none of it. JSON has no script context, so the CSP is a
+// lockdown rather than the page policy; nosniff is the one that actually
+// matters, stopping a JSON body from being re-interpreted as something else.
+app.use("/api/*", async (c, next) => {
+  await next();
+  c.header("Content-Security-Policy", "default-src 'none'; frame-ancestors 'none'");
+  c.header("X-Content-Type-Options", "nosniff");
+  c.header("Referrer-Policy", "strict-origin-when-cross-origin");
+  c.header("X-Frame-Options", "DENY");
+});
+
 // Two routers, so which routes are public is decided by the router a route is
 // mounted on rather than by where the line happens to sit. Previously /auth was
 // public only because it was written above `api.use("*", requireAuth)`, and a

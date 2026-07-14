@@ -75,6 +75,15 @@ export async function authenticate(c: Context<AppEnv>): Promise<string | null> {
   return userId;
 }
 
+// Fails the request before any handler runs a side effect. Without this,
+// register hashed the password and INSERTed the user, and only then threw on
+// the bad secret when issuing the session — leaving an orphan account behind
+// and answering the retry with a 409 for an account nobody can log into.
+export async function requireSessionConfig(c: Context<AppEnv>, next: Next) {
+  secretKey(c.env.JWT_SECRET); // throws → 500, before the handler touches the DB
+  await next();
+}
+
 export async function requireAuth(c: Context<AppEnv>, next: Next) {
   const userId = await authenticate(c);
   if (!userId) return c.json({ error: "Unauthorized" }, 401);
