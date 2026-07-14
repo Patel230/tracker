@@ -22,6 +22,16 @@
       "migrations_dir": "migrations"
     }
   ],
+  // Throttles the credential endpoints. `period` may only be 10 or 60.
+  // 10 attempts per minute per IP is generous for a human and useless for a
+  // brute-force run.
+  "ratelimits": [
+    {
+      "name": "AUTH_RATE_LIMITER",
+      "namespace_id": "1001",
+      "simple": { "limit": 10, "period": 60 }
+    }
+  ],
   "vars": {
     // Solo tool: registration closed by default. Flip to "true" temporarily
     // to create the one account, then back (postly pattern).

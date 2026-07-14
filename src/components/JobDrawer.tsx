@@ -23,9 +23,11 @@ import {
   JOB_STATUSES,
   PERIODS,
   STATUS_LABELS,
+  safeExternalUrl,
   type Activity,
   type Contact,
   type Job,
+  type JobStatus,
   type Reminder,
 } from "../../shared/types";
 import { Button } from "./ui/button";
@@ -44,7 +46,9 @@ const TAB_ICONS: Record<Tab, LucideIcon> = {
 interface Props {
   job: Job;
   onClose: () => void;
-  onChange: (job: Job) => void;
+  // Takes every job the server changed, not just this one: moving a card
+  // renumbers its whole destination column.
+  onChange: (jobs: Job[]) => void;
   onDelete: (id: string) => void;
 }
 
@@ -63,7 +67,16 @@ export default function JobDrawer({ job, onClose, onChange, onDelete }: Props) {
   useFocusTrap(asideRef, true, onClose);
 
   const patch = async (fields: Partial<Job>) => {
-    onChange(await api.patch<Job>(`/jobs/${job.id}`, fields));
+    onChange([await api.patch<Job>(`/jobs/${job.id}`, fields)]);
+  };
+
+  // Status has to go through /move, not PATCH. PATCH changes the status column
+  // but never touches sort_order, so the card kept the ordering value from the
+  // column it left and landed at an arbitrary slot in the one it joined.
+  // /move renumbers the destination column and returns all of its rows.
+  const changeStatus = async (status: JobStatus) => {
+    if (status === job.status) return;
+    onChange(await api.patch<Job[]>(`/jobs/${job.id}/move`, { status, index: 0 }));
   };
 
   const remove = async () => {
@@ -93,7 +106,7 @@ export default function JobDrawer({ job, onClose, onChange, onDelete }: Props) {
           <div className="mt-3 flex items-center gap-2">
             <select
               value={job.status}
-              onChange={(e) => patch({ status: e.target.value as Job["status"] })}
+              onChange={(e) => changeStatus(e.target.value as JobStatus)}
               className="border-[3px] border-brut-ink bg-input px-3 py-1.5 text-xs font-bold uppercase tracking-wider text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background transition-all"
             >
               {JOB_STATUSES.map((s) => (
@@ -102,9 +115,9 @@ export default function JobDrawer({ job, onClose, onChange, onDelete }: Props) {
                 </option>
               ))}
             </select>
-            {job.url && (
+            {safeExternalUrl(job.url) && (
               <a
-                href={job.url}
+                href={safeExternalUrl(job.url)!}
                 target="_blank"
                 rel="noreferrer"
                 className="flex items-center gap-1 text-xs font-bold uppercase tracking-wider text-brut-applied underline decoration-2 underline-offset-2"
@@ -426,8 +439,8 @@ function ContactsTab({ jobId }: { jobId: string }) {
                     {ct.email}
                   </a>
                 )}
-                {ct.linkedin && (
-                  <a href={ct.linkedin} target="_blank" rel="noreferrer" className="flex items-center gap-1 text-brut-applied underline decoration-2 underline-offset-2">
+                {safeExternalUrl(ct.linkedin) && (
+                  <a href={safeExternalUrl(ct.linkedin)!} target="_blank" rel="noreferrer" className="flex items-center gap-1 text-brut-applied underline decoration-2 underline-offset-2">
                     LinkedIn
                     <ExternalLink size={11} strokeWidth={2.5} />
                   </a>

@@ -92,7 +92,10 @@ npm run db:migrate:remote
 
 ```bash
 npx wrangler secret put JWT_SECRET
-# Paste your secret value when prompted (min 32 chars recommended)
+# Generate one with: openssl rand -base64 32
+# At least 32 characters — this is ENFORCED, not advisory. A missing or short
+# secret makes the app refuse to issue sessions (it would otherwise sign them
+# with an empty key, which anyone could forge).
 
 npx wrangler secret put ALLOW_REGISTRATION
 # Set to "true" initially, then "false" after creating your account

@@ -12,7 +12,7 @@ function itemRoutes(table: "contacts" | "activities" | "reminders", schema: z.Zo
     const parsed = (schema as z.ZodObject<z.ZodRawShape>).partial().safeParse(
       await c.req.json().catch(() => null)
     );
-    if (!parsed.success) return c.json({ error: "Invalid fields" }, 400);
+    if (!parsed.success) return c.json({ error: parsed.error.issues[0]?.message ?? "Invalid fields" }, 400);
     const data = parsed.data as Record<string, unknown>;
     const cols = columns.filter((col) => data[col] !== undefined);
     if (!cols.length) return c.json({ error: "Nothing to update" }, 400);
