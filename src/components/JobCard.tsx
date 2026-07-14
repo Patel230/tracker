@@ -1,9 +1,10 @@
 import { forwardRef, type ComponentPropsWithRef } from "react";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { Clock, MapPin, Wallet } from "lucide-react";
+import { Clock, ExternalLink, MapPin, Wallet } from "lucide-react";
 import { PERIOD_LABELS, type Job, type JobStatus } from "../../shared/types";
 import { STATUS_BG } from "../lib/theme";
+import { safeExternalUrl } from "../../shared/types";
 
 const BORDER_COLORS: Record<JobStatus, string> = {
   wishlist: "border-l-brut-wishlist",
@@ -82,6 +83,17 @@ export const JobCard = forwardRef<HTMLDivElement, JobCardProps>(function JobCard
             <Wallet size={10} strokeWidth={2.5} />
             {salary}
           </span>
+        )}
+        {safeExternalUrl(job.official_website) && (
+          <a
+            href={safeExternalUrl(job.official_website)!}
+            target="_blank"
+            rel="noreferrer"
+            className="flex items-center gap-1 border-[3px] border-brut-ink/30 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-brut-applied"
+          >
+            <ExternalLink size={10} strokeWidth={2.5} />
+            Website
+          </a>
         )}
         <span
           title={exactTimestamp(job.applied_at ?? job.created_at)}

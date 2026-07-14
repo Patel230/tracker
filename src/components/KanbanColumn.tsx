@@ -1,11 +1,13 @@
 import { useState, type FormEvent } from "react";
-import { Plus, X } from "lucide-react";
+import { AlertCircle, CheckCircle2, Plus, X } from "lucide-react";
 import { useDroppable } from "@dnd-kit/core";
 import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { api } from "../lib/api";
 import { STATUS_LABELS, type Job, type JobStatus } from "../../shared/types";
 import { STATUS_BG } from "../lib/theme";
 import { Badge } from "../components/ui/badge";
+import { Button } from "../components/ui/button";
+import { Input } from "../components/ui/input";
 import { SortableJobCard } from "./JobCard";
 
 interface Props {
@@ -28,16 +30,33 @@ export default function KanbanColumn({ status, droppableId, jobs, onOpen, onCrea
   const { setNodeRef, isOver } = useDroppable({ id: droppableId });
   const [adding, setAdding] = useState(false);
   const [company, setCompany] = useState("");
+  const [official_website, setOfficial_website] = useState("");
   const [title, setTitle] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [saved, setSaved] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const submit = async (e: FormEvent) => {
     e.preventDefault();
     if (!company.trim() || !title.trim()) return;
-    const job = await api.post<Job>("/jobs", { company: company.trim(), title: title.trim(), status });
-    onCreated(job);
-    setCompany("");
-    setTitle("");
-    setAdding(false);
+    setBusy(true);
+    setError(null);
+    try {
+      const job = await api.post<Job>("/jobs", { company: company.trim(), official_website: official_website.trim() || null, title: title.trim(), status });
+      onCreated(job);
+      setSaved(true);
+      setTimeout(() => {
+        setCompany("");
+        setOfficial_website("");
+        setTitle("");
+        setAdding(false);
+        setSaved(false);
+      }, 800);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to add job");
+    } finally {
+      setBusy(false);
+    }
   };
 
   const cc = COLUMN_COLORS[status];
@@ -65,29 +84,46 @@ export default function KanbanColumn({ status, droppableId, jobs, onOpen, onCrea
 
       <footer className="border-t-[3px] border-brut-ink p-2">
         {adding ? (
-          <form onSubmit={submit} className="space-y-2">
-            <input
+              <form onSubmit={submit} className="space-y-2">
+            <Input
               autoFocus
               placeholder="Company"
               value={company}
               onChange={(e) => setCompany(e.target.value)}
-              className="flex w-full border-[3px] border-brut-ink bg-input px-3 py-2 text-sm font-medium text-foreground placeholder:text-muted-foreground/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background transition-all duration-150"
+              disabled={busy || saved}
             />
-            <input
+            <Input
+              placeholder="Official website"
+              value={official_website}
+              onChange={(e) => setOfficial_website(e.target.value)}
+              disabled={busy || saved}
+              type="url"
+            />
+            <Input
               placeholder="Job title"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="flex w-full border-[3px] border-brut-ink bg-input px-3 py-2 text-sm font-medium text-foreground placeholder:text-muted-foreground/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background transition-all duration-150"
+              disabled={busy || saved}
             />
+            {saved ? (
+              <p className="flex items-center gap-1 border-[3px] border-brut-interview bg-brut-interview/10 px-2 py-1.5 text-xs font-bold text-brut-interview">
+                <CheckCircle2 size={13} strokeWidth={2.5} />
+                Added
+              </p>
+            ) : error ? (
+              <p className="flex items-center gap-1 border-[3px] border-destructive bg-destructive/20 px-2 py-1.5 text-xs font-bold text-destructive">
+                <AlertCircle size={13} strokeWidth={2.5} />
+                {error}
+              </p>
+            ) : null}
             <div className="flex gap-2">
-              <button type="submit" className="inline-flex items-center justify-center gap-1.5 border-[3px] border-brut-ink bg-primary px-3 py-1.5 text-xs font-bold uppercase tracking-wider text-primary-foreground shadow-[3px_3px_0_0_#000] hover:-translate-y-0.5 hover:shadow-[4px_4px_0_0_#000] active:translate-x-[1px] active:translate-y-[1px] active:shadow-[2px_2px_0_0_#000] transition-all duration-150">
-                <Plus size={13} strokeWidth={2.5} />
-                Add
-              </button>
-              <button type="button" onClick={() => setAdding(false)} className="inline-flex items-center justify-center gap-1.5 border-[3px] border-brut-ink bg-card px-3 py-1.5 text-xs font-bold uppercase tracking-wider text-foreground shadow-[3px_3px_0_0_#000] hover:-translate-y-0.5 hover:shadow-[4px_4px_0_0_#000] active:translate-x-[1px] active:translate-y-[1px] active:shadow-[2px_2px_0_0_#000] transition-all duration-150">
+              <Button type="submit" size="sm" disabled={busy || saved}>
+                {busy ? "Adding…" : <><Plus size={13} strokeWidth={2.5} />Add</>}
+              </Button>
+              <Button type="button" variant="secondary" size="sm" onClick={() => { setAdding(false); setOfficial_website(""); }} disabled={busy || saved}>
                 <X size={13} strokeWidth={2.5} />
                 Cancel
-              </button>
+              </Button>
             </div>
           </form>
         ) : (

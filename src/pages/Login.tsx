@@ -39,12 +39,13 @@ export default function Login() {
   return (
     <div className="flex min-h-full bg-background">
       {/* Left panel */}
-      <div className="hidden flex-1 flex-col justify-between border-r-[3px] border-brut-ink bg-primary p-12 lg:flex">
+      <div className="hidden flex-1 flex-col border-r-[3px] border-brut-ink bg-primary p-12 lg:flex">
         <Link to="/">
           <Logo />
         </Link>
-        <div>
-          <blockquote className="text-2xl font-black uppercase leading-[0.95] tracking-tight text-foreground">
+        <div className="flex flex-1 flex-col justify-center">
+          <div>
+            <blockquote className="text-2xl font-black uppercase leading-[0.95] tracking-tight text-foreground">
             "The best time to organize your job search
             <br />
             <span className="text-destructive">was yesterday.</span>
@@ -56,6 +57,7 @@ export default function Login() {
             Free for students · No time limit
           </p>
         </div>
+      </div>
       </div>
 
       {/* Right panel */}

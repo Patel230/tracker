@@ -33,6 +33,7 @@ import {
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Badge } from "./ui/badge";
+import ConfirmDialog from "./ConfirmDialog";
 
 type Tab = "details" | "timeline" | "contacts" | "reminders";
 
@@ -63,6 +64,8 @@ function Field({ label, children }: { label: string; children: ReactNode }) {
 
 export default function JobDrawer({ job, onClose, onChange, onDelete }: Props) {
   const [tab, setTab] = useState<Tab>("details");
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const asideRef = useRef<HTMLDivElement>(null);
   useFocusTrap(asideRef, true, onClose);
 
@@ -80,9 +83,14 @@ export default function JobDrawer({ job, onClose, onChange, onDelete }: Props) {
   };
 
   const remove = async () => {
-    if (!confirm(`Delete ${job.company} — ${job.title}? This also removes its contacts, timeline and reminders.`)) return;
-    await api.delete(`/jobs/${job.id}`);
-    onDelete(job.id);
+    setDeleting(true);
+    try {
+      await api.delete(`/jobs/${job.id}`);
+      onDelete(job.id);
+    } catch {
+      setDeleting(false);
+      setConfirmDelete(false);
+    }
   };
 
   return (
@@ -131,7 +139,7 @@ export default function JobDrawer({ job, onClose, onChange, onDelete }: Props) {
                 {job.archived ? <ArchiveRestore size={13} strokeWidth={2.5} /> : <Archive size={13} strokeWidth={2.5} />}
                 {job.archived ? "Unarchive" : "Archive"}
               </Button>
-              <Button size="sm" variant="destructive" onClick={remove}>
+              <Button size="sm" variant="destructive" onClick={() => setConfirmDelete(true)}>
                 <Trash2 size={13} strokeWidth={2.5} />
                 Delete
               </Button>
@@ -163,6 +171,16 @@ export default function JobDrawer({ job, onClose, onChange, onDelete }: Props) {
           {tab === "reminders" && <RemindersTab jobId={job.id} />}
         </div>
       </aside>
+
+      {confirmDelete && (
+        <ConfirmDialog
+          title="Delete job"
+          message={`Delete ${job.company} — ${job.title}? This also removes its contacts, timeline and reminders.`}
+          busy={deleting}
+          onConfirm={remove}
+          onCancel={() => { setConfirmDelete(false); setDeleting(false); }}
+        />
+      )}
     </>
   );
 }
@@ -170,6 +188,7 @@ export default function JobDrawer({ job, onClose, onChange, onDelete }: Props) {
 function DetailsTab({ job, onSave }: { job: Job; onSave: (f: Partial<Job>) => Promise<void> }) {
   const [form, setForm] = useState({
     company: job.company,
+    official_website: job.official_website ?? "",
     title: job.title,
     url: job.url ?? "",
     location: job.location ?? "",
@@ -190,6 +209,7 @@ function DetailsTab({ job, onSave }: { job: Job; onSave: (f: Partial<Job>) => Pr
     try {
       await onSave({
         company: form.company.trim(),
+        official_website: form.official_website.trim() || null,
         title: form.title.trim(),
         url: form.url.trim() || null,
         location: form.location.trim() || null,
@@ -214,6 +234,9 @@ function DetailsTab({ job, onSave }: { job: Job; onSave: (f: Partial<Job>) => Pr
       <div className="grid grid-cols-2 gap-3">
         <Field label="Company">
           <Input required value={form.company} onChange={set("company")} />
+        </Field>
+        <Field label="Official website">
+          <Input type="url" value={form.official_website} onChange={set("official_website")} placeholder="https://company.com" />
         </Field>
         <Field label="Job title">
           <Input required value={form.title} onChange={set("title")} />
