@@ -13,10 +13,10 @@ export const buttonVariants = cva(
         outline:
           "border-[3px] border-brut-ink bg-transparent text-foreground shadow-[5px_5px_0_0_#000] hover:-translate-y-0.5 hover:shadow-[7px_7px_0_0_#000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-[2px_2px_0_0_#000]",
         ghost:
-          "text-foreground hover:bg-accent hover:text-accent-foreground",
+          "text-foreground hover:bg-card",
         link: "text-foreground underline-offset-4 hover:underline",
         destructive:
-          "border-[3px] border-brut-ink bg-destructive text-destructive-foreground shadow-[5px_5px_0_0_#000] hover:-translate-y-0.5 hover:shadow-[7px_7px_0_0_#000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-[2px_2px_0_0_#000]",
+          "border-[3px] border-brut-ink bg-destructive text-primary-foreground shadow-[5px_5px_0_0_#000] hover:-translate-y-0.5 hover:shadow-[7px_7px_0_0_#000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-[2px_2px_0_0_#000]",
       },
       size: {
         sm: "px-3 py-1.5 text-xs",

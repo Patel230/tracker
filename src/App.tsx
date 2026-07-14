@@ -87,7 +87,7 @@ export default function App() {
             onClick={() => setMenuOpen(!menuOpen)}
             className="flex items-center gap-2 px-2 py-1.5 text-xs font-bold uppercase tracking-wider text-muted-foreground hover:text-foreground transition-colors"
           >
-            <span className={`flex size-7 items-center justify-center text-sm font-bold text-white ${AVATAR_COLORS[colorIndex]}`}>
+            <span className={`flex size-7 items-center justify-center text-sm font-bold text-primary-foreground ${AVATAR_COLORS[colorIndex]}`}>
               {initial}
             </span>
             <ChevronDown size={12} strokeWidth={2} className={`transition-transform duration-150 ${menuOpen ? "rotate-180" : ""}`} />

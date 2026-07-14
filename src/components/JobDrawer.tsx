@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { api } from "../lib/api";
 import { useFocusTrap } from "../lib/useFocusTrap";
+import { ACTIVITY_BG, ACTIVITY_TEXT } from "../lib/theme";
 import {
   ACTIVITY_LABELS,
   ACTIVITY_TYPES,
@@ -358,7 +359,7 @@ function TimelineTab({ jobId }: { jobId: string }) {
           {items.map((a) => (
             <li key={a.id} className="group relative border-l-[6px] border-brut-ink pl-4">
               <div className="flex items-baseline gap-2">
-                <Badge variant="solid" className="bg-foreground text-background border-brut-ink">
+                <Badge variant="solid" className={`${ACTIVITY_BG[a.type]} ${ACTIVITY_TEXT[a.type]} border-brut-ink`}>
                   {ACTIVITY_LABELS[a.type]}
                 </Badge>
                 <span className="text-xs font-bold text-muted-foreground">{new Date(a.happened_at).toLocaleString()}</span>

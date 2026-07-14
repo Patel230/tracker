@@ -1,8 +1,6 @@
 import { AlertTriangle, Bell, Check } from "lucide-react";
 import { useReminders } from "./RemindersProvider";
 
-const COLORS = ["bg-brut-wishlist", "bg-brut-applied", "bg-brut-interview", "bg-brut-offer", "bg-brut-rejected"];
-
 export default function RemindersBanner() {
   const { overdue, complete } = useReminders();
   if (!overdue.length) return null;
@@ -14,9 +12,9 @@ export default function RemindersBanner() {
         <span className="text-xs font-bold uppercase tracking-wider text-foreground">Overdue reminders</span>
       </div>
       <div className="space-y-1">
-        {overdue.map((r, i) => (
+        {overdue.map((r) => (
           <div key={r.id} className="flex items-center gap-2 py-0.5">
-            <span className={`flex items-center gap-1 border-[3px] border-brut-ink px-2 py-0.5 text-[11px] font-bold uppercase tracking-wider ${COLORS[i % COLORS.length]} text-white`}>
+            <span className="flex items-center gap-1 border-[3px] border-brut-ink px-2 py-0.5 text-[11px] font-bold uppercase tracking-wider bg-destructive text-primary-foreground">
               <AlertTriangle size={11} strokeWidth={2.5} />
               Overdue
             </span>

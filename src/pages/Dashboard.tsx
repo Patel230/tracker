@@ -2,25 +2,13 @@ import { useState } from "react";
 import { Award, Bell, Briefcase, Percent, Timer, RotateCcw, type LucideIcon } from "lucide-react";
 import { useFetch } from "../lib/useFetch";
 import { STATUS_LABELS, JOB_STATUSES, type Stats } from "../../shared/types";
-import { INK_HEX, STATUS_BG, STATUS_HEX } from "../lib/theme";
+import { INK_HEX, PRIMARY_HEX, STATUS_BG } from "../lib/theme";
 import { useReminders } from "../components/RemindersProvider";
 import { Button } from "../components/ui/button";
 
-const TILE_STYLES = [
-  { top: "bg-brut-wishlist" },
-  { top: "bg-brut-applied" },
-  { top: "bg-brut-interview" },
-  { top: "bg-brut-offer" },
-];
-
-const TILE_ICONS: Record<string, string> = {
-  "Active applications": "text-brut-wishlist",
-  "Response rate": "text-brut-applied",
-  "Offers": "text-brut-interview",
-  "Avg days to interview": "text-brut-offer",
-};
-
-const BAR_COLORS = [STATUS_HEX.wishlist, STATUS_HEX.applied, STATUS_HEX.interview, STATUS_HEX.offer, STATUS_HEX.rejected];
+// These 4 tiles are generic KPI cards, not tied to any job status — they all
+// get the identical accent instead of borrowing 4 of the 5 status colors by
+// array position (which implied a status meaning none of them actually has).
 
 export default function Dashboard() {
   const { data: stats, error, loading, reload } = useFetch<Stats>("/stats");
@@ -69,30 +57,27 @@ export default function Dashboard() {
       <div className="mx-auto max-w-5xl space-y-6">
         {/* Stat tiles with colored top borders — defolio style */}
         <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-          {tiles.map((t, i) => {
-            const s = TILE_STYLES[i];
-            return (
-              <div key={t.label} className="border-[3px] border-brut-ink bg-card">
-                <div className={`h-1.5 ${s.top}`} />
-                <div className="p-4">
-                  <div className={`flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider ${TILE_ICONS[t.label] || "text-muted-foreground"}`}>
-                    <t.icon size={13} strokeWidth={2.5} />
-                    {t.label}
-                  </div>
-                  <div className="mt-1 text-3xl font-black tabular-nums text-foreground">{t.value}</div>
-                  {t.hint && <div className="mt-1 text-xs font-medium text-muted-foreground">{t.hint}</div>}
+          {tiles.map((t) => (
+            <div key={t.label} className="border-[3px] border-brut-ink bg-card">
+              <div className="h-1.5 bg-primary" />
+              <div className="p-4">
+                <div className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-foreground">
+                  <t.icon size={13} strokeWidth={2.5} />
+                  {t.label}
                 </div>
+                <div className="mt-1 text-3xl font-black tabular-nums text-foreground">{t.value}</div>
+                {t.hint && <div className="mt-1 text-xs font-medium text-muted-foreground">{t.hint}</div>}
               </div>
-            );
-          })}
+            </div>
+          ))}
         </div>
 
         <div className="grid gap-6 lg:grid-cols-2">
           <div className="border-[3px] border-brut-ink bg-card">
-            <div className="h-1.5 bg-brut-applied" />
+            <div className="h-1.5 bg-primary" />
             <div className="p-5">
               <h2 className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-foreground">
-                <Briefcase size={13} strokeWidth={2.5} className="text-brut-applied" />
+                <Briefcase size={13} strokeWidth={2.5} className="text-foreground" />
                 Applications per week
               </h2>
               <p className="text-xs font-medium text-muted-foreground">last 12 weeks</p>
@@ -101,10 +86,10 @@ export default function Dashboard() {
           </div>
 
           <div className="border-[3px] border-brut-ink bg-card">
-            <div className="h-1.5 bg-brut-interview" />
+            <div className="h-1.5 bg-primary" />
             <div className="p-5">
               <h2 className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-foreground">
-                <Timer size={13} strokeWidth={2.5} className="text-brut-interview" />
+                <Timer size={13} strokeWidth={2.5} className="text-foreground" />
                 Pipeline
               </h2>
               <p className="text-xs font-medium text-muted-foreground">jobs by stage (active)</p>
@@ -114,10 +99,10 @@ export default function Dashboard() {
         </div>
 
         <div className="border-[3px] border-brut-ink bg-card">
-          <div className="h-1.5 bg-brut-wishlist" />
+          <div className="h-1.5 bg-primary" />
           <div className="p-5">
             <h2 className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-foreground">
-              <Bell size={13} strokeWidth={2.5} className="text-brut-wishlist" />
+              <Bell size={13} strokeWidth={2.5} className="text-foreground" />
               Upcoming reminders
             </h2>
             {reminders.length === 0 ? (
@@ -186,7 +171,9 @@ function WeeklyBars({ weekly }: { weekly: Stats["weekly"] }) {
         {weekly.map((w, i) => {
           const x = pad.left + i * step + (step - barW) / 2;
           const barH = plotH * (w.count / max);
-          const color = BAR_COLORS[i % BAR_COLORS.length];
+          // One metric (applications per week), not a status breakdown, so
+          // every bar gets the same color instead of a meaningless 5-color cycle.
+          const color = PRIMARY_HEX;
           return (
             <g key={w.weekStart}>
               {w.count > 0 && (

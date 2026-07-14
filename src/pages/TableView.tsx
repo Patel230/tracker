@@ -50,13 +50,17 @@ export default function TableView() {
 
   const openJob = openJobId ? (jobs.find((j) => j.id === openJobId) ?? null) : null;
 
-  const header = (key: SortKey, label: string, color: string) => (
+  // Column headers carry no per-column status meaning, so they all get the
+  // identical treatment instead of borrowing 5 different status colors by
+  // position (the "Added" column previously used bg-brut-ink, i.e. white
+  // text on a white background — invisible).
+  const header = (key: SortKey, label: string) => (
     <th
       onClick={() => {
         if (sortKey === key) setSortAsc(!sortAsc);
         else { setSortKey(key); setSortAsc(true); }
       }}
-      className={`cursor-pointer select-none px-4 py-2.5 text-left text-xs font-bold uppercase tracking-wider text-white hover:opacity-80 transition-opacity ${color}`}
+      className="cursor-pointer select-none bg-primary px-4 py-2.5 text-left text-xs font-bold uppercase tracking-wider text-primary-foreground hover:opacity-80 transition-opacity"
     >
       <span className="flex items-center gap-1">
         {label}
@@ -101,7 +105,7 @@ export default function TableView() {
           />
         </div>
         <div className="flex items-center gap-1">
-          <ListFilter size={14} strokeWidth={2.5} className="text-brut-wishlist" />
+          <ListFilter size={14} strokeWidth={2.5} className="text-muted-foreground" />
           <select value={status} onChange={(e) => setStatus(e.target.value as JobStatus | "all")} className="flex w-auto border-[3px] border-brut-ink bg-input px-3 py-2.5 text-sm font-medium text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background">
             <option value="all">All statuses</option>
             {JOB_STATUSES.map((s) => (
@@ -116,7 +120,7 @@ export default function TableView() {
             onChange={(e) => setShowArchived(e.target.checked)}
             className="size-4 accent-primary"
           />
-          <ArchiveRestore size={13} strokeWidth={2.5} className="text-brut-offer" />
+          <ArchiveRestore size={13} strokeWidth={2.5} className="text-muted-foreground" />
           Include archived
         </label>
         <span className="ml-auto text-xs font-bold uppercase tracking-wider text-muted-foreground">{rows.length} jobs</span>
@@ -126,13 +130,13 @@ export default function TableView() {
         <table className="w-full text-sm">
           <thead>
             <tr>
-              {header("company", "Company", "bg-brut-wishlist")}
-              {header("title", "Title", "bg-brut-applied")}
-              {header("status", "Status", "bg-brut-interview")}
-              <th className="bg-brut-wishlist px-4 py-2.5 text-left text-xs font-bold uppercase tracking-wider text-white">Location</th>
-              <th className="bg-brut-offer px-4 py-2.5 text-left text-xs font-bold uppercase tracking-wider text-white">Salary</th>
-              {header("applied_at", "Applied", "bg-brut-applied")}
-              {header("created_at", "Added", "bg-brut-ink")}
+              {header("company", "Company")}
+              {header("title", "Title")}
+              {header("status", "Status")}
+              <th className="bg-primary px-4 py-2.5 text-left text-xs font-bold uppercase tracking-wider text-primary-foreground">Location</th>
+              <th className="bg-primary px-4 py-2.5 text-left text-xs font-bold uppercase tracking-wider text-primary-foreground">Salary</th>
+              {header("applied_at", "Applied")}
+              {header("created_at", "Added")}
             </tr>
           </thead>
           <tbody>
@@ -155,7 +159,7 @@ export default function TableView() {
                 </td>
                 <td className="px-4 py-2.5 font-medium text-muted-foreground">{j.location ?? "—"}</td>
                 <td className="px-4 py-2.5 font-medium">
-                  <span className="font-bold text-brut-offer">{salaryLabel(j) ?? "—"}</span>
+                  <span className="font-bold text-foreground">{salaryLabel(j) ?? "—"}</span>
                 </td>
                 <td
                   title={j.applied_at ? exactTimestamp(j.applied_at) : undefined}

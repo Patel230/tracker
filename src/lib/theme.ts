@@ -1,4 +1,4 @@
-import type { JobStatus } from "../../shared/types";
+import type { ActivityType, JobStatus } from "../../shared/types";
 
 // CVD-validated (Okabe-Ito derived) — see palette check in project history.
 // Order matches JOB_STATUSES; adjacent pairs pass deutan/tritan separation.
@@ -22,11 +22,47 @@ export const STATUS_BG: Record<JobStatus, string> = {
 // text clears WCAG AA (4.5:1) against every one of them; white does not clear
 // it against any of them. Verified by computing relative luminance per color.
 export const STATUS_TEXT: Record<JobStatus, string> = {
-  wishlist: "text-black",
-  applied: "text-black",
-  interview: "text-black",
-  offer: "text-black",
-  rejected: "text-black",
+  wishlist: "text-primary-foreground",
+  applied: "text-primary-foreground",
+  interview: "text-primary-foreground",
+  offer: "text-primary-foreground",
+  rejected: "text-primary-foreground",
+};
+
+// Activity-timeline badge colors. Where an activity type names an actual
+// pipeline stage (applied/interview/offer/rejected), it reuses that exact
+// status color — same real-world event, same color, not a new one. Interview
+// process sub-steps (phone_screen, onsite) group under `interview` for the
+// same reason. Freeform user entries (note, follow_up) and system-logged
+// entries (status_change) aren't tied to any stage, so they get their own
+// two mid-tone colors instead of borrowing a status color that would imply
+// stage meaning they don't have.
+export const ACTIVITY_BG: Record<ActivityType, string> = {
+  applied: "bg-brut-applied",
+  phone_screen: "bg-brut-interview",
+  interview: "bg-brut-interview",
+  onsite: "bg-brut-interview",
+  offer: "bg-brut-offer",
+  rejected: "bg-brut-rejected",
+  note: "bg-brut-note",
+  follow_up: "bg-brut-note",
+  status_change: "bg-brut-system",
+};
+
+// brut-note/brut-system are mid-tone, not bright like the status colors, so
+// they pair with the standard white `foreground` text instead of black
+// `primary-foreground` — verified ≥4.5:1 for both, unlike the bright tier.
+export const ACTIVITY_TEXT: Record<ActivityType, string> = {
+  applied: "text-primary-foreground",
+  phone_screen: "text-primary-foreground",
+  interview: "text-primary-foreground",
+  onsite: "text-primary-foreground",
+  offer: "text-primary-foreground",
+  rejected: "text-primary-foreground",
+  note: "text-foreground",
+  follow_up: "text-foreground",
+  status_change: "text-foreground",
 };
 
 export const INK_HEX = "#ffffff";
+export const PRIMARY_HEX = "#ffd23f";

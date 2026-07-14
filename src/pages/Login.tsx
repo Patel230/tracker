@@ -41,18 +41,18 @@ export default function Login() {
       {/* Left panel */}
       <div className="hidden flex-1 flex-col justify-between border-r-[3px] border-brut-ink bg-primary p-12 lg:flex">
         <Link to="/">
-          <Logo />
+          <Logo textClassName="text-primary-foreground" />
         </Link>
         <div>
-          <blockquote className="text-2xl font-black uppercase leading-[0.95] tracking-tight text-foreground">
+          <blockquote className="text-2xl font-black uppercase leading-[0.95] tracking-tight text-primary-foreground">
             "The best time to organize your job search
             <br />
             <span className="text-destructive">was yesterday.</span>
             <br />
             The second best time is now."
           </blockquote>
-          <div className="mt-4 h-1 w-20 bg-foreground" />
-          <p className="mt-4 text-sm font-bold uppercase tracking-wider text-foreground/60">
+          <div className="mt-4 h-1 w-20 bg-primary-foreground" />
+          <p className="mt-4 text-sm font-bold uppercase tracking-wider text-primary-foreground/70">
             Free for students · No time limit
           </p>
         </div>

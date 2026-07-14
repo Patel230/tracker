@@ -18,20 +18,19 @@
   --font-sans: "Space Grotesk", ui-sans-serif, system-ui, -apple-system, sans-serif;
   --font-head: "Space Grotesk", ui-sans-serif, system-ui, -apple-system, sans-serif;
 
-  /* Neo Brutalism theme */
+  /* Neo Brutalism theme — every color here has exactly one job; see
+     src/lib/theme.ts and the color-system plan for the full map of what
+     uses what. Text/icons on any bright color below (primary, destructive,
+     or any brut-* status/activity color) always pair with
+     --color-primary-foreground (verified ≥4.5:1 contrast on all of them). */
   --color-background: #0a0a0a;
   --color-foreground: #ffffff;
   --color-card: #1a1a1a;
-  --color-card-foreground: #ffffff;
   --color-primary: #ffd23f;
   --color-primary-foreground: #000000;
   --color-muted: #2a2a2a;
   --color-muted-foreground: #d4d4d4;
-  --color-accent: #ff6b6b;
-  --color-accent-foreground: #000000;
   --color-destructive: #ef4444;
-  --color-destructive-foreground: #ffffff;
-  --color-border: #ffffff;
   --color-input: #1a1a1a;
 
   /* Neo Brutalist hard shadows */
@@ -46,13 +45,21 @@
   /* Pipeline stage colors */
   --color-brut-ink: #ffffff;
   --color-brut-paper: #0a0a0a;
-  --color-brut-surface: #1a1a1a;
-  --color-brut-yellow: #ffd23f;
   --color-brut-wishlist: #eab308;
   --color-brut-applied: #3b82f6;
   --color-brut-interview: #84cc16;
   --color-brut-offer: #ec4899;
   --color-brut-rejected: #f97316;
+
+  /* Non-status activity-log colors: freeform/system entries that aren't a
+     pipeline stage. Deliberately mid-tone (not bright), so they pair with
+     --color-foreground (white) rather than primary-foreground — verified. */
+  --color-brut-note: #64748b;
+  --color-brut-system: #78716c;
+
+  /* Accent for the Landing page's inverted (light-background) terminal
+     panel, where the usual white ink tokens fail contrast. */
+  --color-brut-terminal: #b45309;
 }
 
 html,
@@ -106,6 +113,9 @@ body::before {
   .bg-brut-interview { background-color: var(--color-brut-interview); }
   .bg-brut-offer { background-color: var(--color-brut-offer); }
   .bg-brut-rejected { background-color: var(--color-brut-rejected); }
+  .bg-brut-note { background-color: var(--color-brut-note); }
+  .bg-brut-system { background-color: var(--color-brut-system); }
+  .text-brut-terminal { color: var(--color-brut-terminal); }
 }
 
 /* border-l-brut-{wishlist..rejected,ink} are NOT listed here on purpose: the

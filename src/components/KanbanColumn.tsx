@@ -95,7 +95,7 @@ export default function KanbanColumn({ status, droppableId, jobs, onOpen, onCrea
             onClick={() => setAdding(true)}
             className={`flex w-full items-center justify-center gap-1.5 border-[3px] border-dashed py-1.5 text-xs font-bold uppercase tracking-wider transition-colors ${
               isOver
-                ? `${STATUS_BG[status]} border-brut-ink text-white`
+                ? `${STATUS_BG[status]} border-brut-ink text-primary-foreground`
                 : "border-brut-ink/30 text-muted-foreground hover:border-brut-ink hover:text-foreground"
             }`}
           >
