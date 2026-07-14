@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
-import { api, ApiError } from "./api";
+import { api, ApiError, setOnUnauthorized } from "./api";
 
 interface User {
   id: string;
@@ -40,6 +40,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
     return () => controller.abort();
   }, []);
+
+  // An expired/missing session must send the user back to the landing page.
+  // Registered here, invoked by api.ts on any 401 once a user is present. The
+  // pre-login /auth/me probe sees 401 too, but user is already null then, so the
+  // no-op setUser(null) is harmless.
+  useEffect(() => {
+    if (!user) return;
+    setOnUnauthorized(() => setUser(null));
+    return () => setOnUnauthorized(null);
+  }, [user]);
 
   const login = async (email: string, password: string) => {
     setUser(await api.post<User>("/auth/login", { email, password }));

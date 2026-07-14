@@ -6,7 +6,7 @@ import { api } from "../lib/api";
 import { STATUS_LABELS, type Job, type JobStatus } from "../../shared/types";
 import { STATUS_BG } from "../lib/theme";
 import { Badge } from "../components/ui/badge";
-import JobCard from "./JobCard";
+import { SortableJobCard } from "./JobCard";
 
 interface Props {
   status: JobStatus;
@@ -58,7 +58,7 @@ export default function KanbanColumn({ status, droppableId, jobs, onOpen, onCrea
       >
         <SortableContext items={jobs.map((j) => j.id)} strategy={verticalListSortingStrategy}>
           {jobs.map((job) => (
-            <JobCard key={job.id} job={job} onOpen={onOpen} />
+            <SortableJobCard key={job.id} job={job} onOpen={onOpen} />
           ))}
         </SortableContext>
       </div>

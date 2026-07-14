@@ -292,7 +292,15 @@ function TimelineTab({ jobId }: { jobId: string }) {
   const [notes, setNotes] = useState("");
 
   useEffect(() => {
-    api.get<Activity[]>(`/jobs/${jobId}/activities`).then(setItems);
+    const controller = new AbortController();
+    api
+      .get<Activity[]>(`/jobs/${jobId}/activities`, controller.signal)
+      .then(setItems)
+      .catch((err) => {
+        if (err instanceof DOMException && err.name === "AbortError") return;
+        setItems([]);
+      });
+    return () => controller.abort();
   }, [jobId]);
 
   const add = async (e: FormEvent) => {
@@ -377,7 +385,15 @@ function ContactsTab({ jobId }: { jobId: string }) {
   const [form, setForm] = useState({ name: "", role: "", email: "", linkedin: "" });
 
   useEffect(() => {
-    api.get<Contact[]>(`/jobs/${jobId}/contacts`).then(setItems);
+    const controller = new AbortController();
+    api
+      .get<Contact[]>(`/jobs/${jobId}/contacts`, controller.signal)
+      .then(setItems)
+      .catch((err) => {
+        if (err instanceof DOMException && err.name === "AbortError") return;
+        setItems([]);
+      });
+    return () => controller.abort();
   }, [jobId]);
 
   const add = async (e: FormEvent) => {
@@ -460,7 +476,15 @@ function RemindersTab({ jobId }: { jobId: string }) {
   const [dueAt, setDueAt] = useState("");
 
   useEffect(() => {
-    api.get<Reminder[]>(`/jobs/${jobId}/reminders`).then(setItems);
+    const controller = new AbortController();
+    api
+      .get<Reminder[]>(`/jobs/${jobId}/reminders`, controller.signal)
+      .then(setItems)
+      .catch((err) => {
+        if (err instanceof DOMException && err.name === "AbortError") return;
+        setItems([]);
+      });
+    return () => controller.abort();
   }, [jobId]);
 
   const add = async (e: FormEvent) => {

@@ -1,3 +1,4 @@
+import { forwardRef, type ComponentPropsWithRef } from "react";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { Clock, MapPin, Wallet } from "lucide-react";
@@ -34,34 +35,36 @@ export function exactTimestamp(iso: string): string {
   return new Date(iso).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" });
 }
 
-interface Props {
+export interface JobCardProps extends ComponentPropsWithRef<"div"> {
   job: Job;
   onOpen?: (id: string) => void;
+  // Purely visual — the DragOverlay variant gets the tilted shadow. No hook
+  // behavior depends on it, which is what keeps the overlay from registering a
+  // second draggable under the same id.
   overlay?: boolean;
 }
 
-export default function JobCard({ job, onOpen, overlay }: Props) {
-  const sortable = useSortable({ id: job.id, disabled: overlay });
-  const style = overlay
-    ? undefined
-    : {
-        transform: CSS.Transform.toString(sortable.transform),
-        transition: sortable.transition,
-        opacity: sortable.isDragging ? 0.25 : 1,
-      };
-
+// Pure presentational markup — NO dnd hooks. Rendered directly inside the
+// <DragOverlay> (where the original code also called useSortable, reading the
+// empty default SortableContext and relying on the node ref being null to avoid
+// a duplicate registration). With a dedicated plain component that whole class
+// of fragility disappears.
+export const JobCard = forwardRef<HTMLDivElement, JobCardProps>(function JobCard(
+  { job, onOpen, overlay, style, className = "", ...rest },
+  ref
+) {
   const salary = salaryLabel(job);
   const borderColor = BORDER_COLORS[job.status];
 
   return (
     <div
-      ref={overlay ? undefined : sortable.setNodeRef}
+      {...rest}
+      ref={ref}
       style={style}
-      {...(overlay ? {} : { ...sortable.attributes, ...sortable.listeners })}
       onClick={() => onOpen?.(job.id)}
       className={`border-[3px] border-brut-ink border-l-[6px] bg-card cursor-grab p-3 transition-all ${borderColor} ${
         overlay ? "rotate-2 shadow-[6px_6px_0_0_#000]" : "hover:shadow-[3px_3px_0_0_#000] hover:-translate-y-0.5"
-      }`}
+      } ${className}`}
     >
       <div className="text-sm font-black text-foreground">{job.company}</div>
       <div className="mt-0.5 text-sm font-medium text-foreground/70">{job.title}</div>
@@ -73,7 +76,9 @@ export default function JobCard({ job, onOpen, overlay }: Props) {
           </span>
         )}
         {salary && (
-          <span className={`flex items-center gap-1 border-[3px] border-brut-ink px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider ${STATUS_BG[job.status]} text-white`}>
+          <span
+            className={`flex items-center gap-1 border-[3px] border-brut-ink px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider ${STATUS_BG[job.status]} text-white`}
+          >
             <Wallet size={10} strokeWidth={2.5} />
             {salary}
           </span>
@@ -87,5 +92,30 @@ export default function JobCard({ job, onOpen, overlay }: Props) {
         </span>
       </div>
     </div>
+  );
+});
+
+interface SortableJobCardProps {
+  job: Job;
+  onOpen?: (id: string) => void;
+}
+
+// Column usage — wraps JobCard with the sortable id. Board columns use this;
+// the DragOverlay uses plain <JobCard> above.
+export function SortableJobCard({ job, onOpen }: SortableJobCardProps) {
+  const sortable = useSortable({ id: job.id });
+  return (
+    <JobCard
+      ref={sortable.setNodeRef}
+      job={job}
+      onOpen={onOpen}
+      style={{
+        transform: CSS.Transform.toString(sortable.transform),
+        transition: sortable.transition,
+        opacity: sortable.isDragging ? 0.25 : 1,
+      }}
+      {...sortable.attributes}
+      {...sortable.listeners}
+    />
   );
 }

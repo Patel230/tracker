@@ -1,16 +1,21 @@
-import { useEffect, type RefObject } from "react";
+import { useEffect, useRef, type RefObject } from "react";
 
 const FOCUSABLE =
   'a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
 // Trap Tab cycling inside `ref`, move focus in on mount, and restore focus to
-// the previously active element on unmount. Returns nothing; the caller handles
-// Escape separately since the close callback differs per overlay.
-export function useFocusTrap(
-  ref: RefObject<HTMLElement | null>,
-  active: boolean,
-  onEscape?: () => void
-) {
+// the previously active element on unmount.
+//
+// `onEscape` is held in a ref so the effect does not re-run when the caller
+// passes a fresh inline arrow every render (as the modals do): re-running would
+// re-snapshot `previouslyFocused` and steal focus back to the first field on
+// every parent render while the user is typing.
+export function useFocusTrap(ref: RefObject<HTMLElement | null>, active: boolean, onEscape?: () => void) {
+  const onEscapeRef = useRef(onEscape);
+  useEffect(() => {
+    onEscapeRef.current = onEscape;
+  });
+
   useEffect(() => {
     if (!active) return;
     const container = ref.current;
@@ -22,9 +27,9 @@ export function useFocusTrap(
     if (first) first.focus();
 
     const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape" && onEscape) {
+      if (e.key === "Escape" && onEscapeRef.current) {
         e.preventDefault();
-        onEscape();
+        onEscapeRef.current();
         return;
       }
       if (e.key !== "Tab") return;
@@ -48,10 +53,9 @@ export function useFocusTrap(
     container.addEventListener("keydown", onKeyDown);
     return () => {
       container.removeEventListener("keydown", onKeyDown);
-      // Restore focus unless it already moved somewhere sensible.
       if (previouslyFocused && document.body.contains(previouslyFocused)) {
         previouslyFocused.focus();
       }
     };
-  }, [ref, active, onEscape]);
+  }, [ref, active]);
 }

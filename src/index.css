@@ -106,5 +106,8 @@ body::before {
   .bg-brut-interview { background-color: var(--color-brut-interview); }
   .bg-brut-offer { background-color: var(--color-brut-offer); }
   .bg-brut-rejected { background-color: var(--color-brut-rejected); }
-  .border-l-brut-wishlist { border-left-color: var(--color-brut-wishlist); }
 }
+
+/* border-l-brut-{wishlist..rejected,ink} are NOT listed here on purpose: the
+   five --color-brut-* tokens above make Tailwind v4 auto-generate them. The
+   hand-written rule it removed was being emitted twice. */

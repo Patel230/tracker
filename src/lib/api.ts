@@ -6,6 +6,18 @@ export class ApiError extends Error {
   }
 }
 
+export const isUnauthorized = (err: unknown): err is ApiError =>
+  err instanceof ApiError && err.status === 401;
+
+// A 401 anywhere means the session is dead. Rather than every caller guessing
+// what to do, auth.tsx registers one handler here; a 401 clears the user and
+// routes back to login. Without this, a response after the cookie expired would
+// just hang on "Loading…" forever with no way out.
+let onUnauthorized: (() => void) | null = null;
+export function setOnUnauthorized(handler: (() => void) | null) {
+  onUnauthorized = handler;
+}
+
 async function request<T>(method: string, path: string, body?: unknown, signal?: AbortSignal): Promise<T> {
   const res = await fetch(`/api${path}`, {
     method,
@@ -16,7 +28,9 @@ async function request<T>(method: string, path: string, body?: unknown, signal?:
   });
   const data = await res.json().catch(() => ({}));
   if (!res.ok) {
-    throw new ApiError(res.status, (data as { error?: string }).error ?? `Request failed (${res.status})`);
+    const err = new ApiError(res.status, (data as { error?: string }).error ?? `Request failed (${res.status})`);
+    if (res.status === 401) onUnauthorized?.();
+    throw err;
   }
   return data as T;
 }

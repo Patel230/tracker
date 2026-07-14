@@ -48,8 +48,10 @@ stats.get("/", async (c) => {
       .first<{ avg_days: number | null }>(),
 
     c.env.DB.prepare(
+      // 12 Monday-start weeks can span up to ~89 days, so pull 90 to make sure
+      // the oldest bucket isn't under-counted at the boundary.
       `SELECT applied_at FROM jobs
-       WHERE user_id = ? AND archived = 0 AND applied_at >= datetime('now', '-84 days')`
+       WHERE user_id = ? AND archived = 0 AND applied_at >= datetime('now', '-90 days')`
     )
       .bind(userId)
       .all<{ applied_at: string }>(),

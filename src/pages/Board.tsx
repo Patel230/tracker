@@ -13,7 +13,7 @@ import {
 import { api } from "../lib/api";
 import { JOB_STATUSES, type Job, type JobStatus } from "../../shared/types";
 import KanbanColumn from "../components/KanbanColumn";
-import JobCard from "../components/JobCard";
+import { JobCard } from "../components/JobCard";
 import JobDrawer from "../components/JobDrawer";
 
 const COL_PREFIX = "col:";
@@ -25,10 +25,18 @@ export default function Board() {
   const [openJobId, setOpenJobId] = useState<string | null>(null);
 
   const load = useCallback(() => {
+    const controller = new AbortController();
     api
-      .get<Job[]>("/jobs")
-      .then(setJobs)
+      .get<Job[]>("/jobs", controller.signal)
+      .then((jobs) => {
+        if (!controller.signal.aborted) setJobs(jobs);
+      })
+      .catch((err) => {
+        if (err instanceof DOMException && err.name === "AbortError") return;
+        setJobs([]);
+      })
       .finally(() => setLoading(false));
+    return () => controller.abort();
   }, []);
   useEffect(load, [load]);
 

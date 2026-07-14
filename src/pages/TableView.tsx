@@ -1,17 +1,17 @@
 import { useEffect, useMemo, useState } from "react";
-import { ArchiveRestore, ChevronDown, ChevronUp, Search, ListFilter } from "lucide-react";
-import { api } from "../lib/api";
+import { ArchiveRestore, ChevronDown, ChevronUp, RotateCcw, Search, ListFilter } from "lucide-react";
+import { useFetch } from "../lib/useFetch";
 import { JOB_STATUSES, STATUS_LABELS, type Job, type JobStatus } from "../../shared/types";
 import { salaryLabel, daysAgo, exactTimestamp } from "../components/JobCard";
 import { STATUS_BG, STATUS_TEXT } from "../lib/theme";
 import JobDrawer from "../components/JobDrawer";
+import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { Badge } from "../components/ui/badge";
 
 type SortKey = "company" | "title" | "status" | "applied_at" | "created_at";
 
 export default function TableView() {
-  const [jobs, setJobs] = useState<Job[]>([]);
   const [query, setQuery] = useState("");
   const [status, setStatus] = useState<JobStatus | "all">("all");
   const [showArchived, setShowArchived] = useState(false);
@@ -19,9 +19,16 @@ export default function TableView() {
   const [sortAsc, setSortAsc] = useState(false);
   const [openJobId, setOpenJobId] = useState<string | null>(null);
 
+  // The hook owns the initial load + loading/error/abort lifecycle. A separate
+  // local list is kept so the drawer's onChange/onDelete can patch rows without
+  // refetching; it resets to the freshly loaded data whenever the fetch settles.
+  const { data, error, loading, reload } = useFetch<Job[]>(`/jobs${showArchived ? "?archived=1" : ""}`, [
+    showArchived,
+  ]);
+  const [jobs, setJobs] = useState<Job[]>([]);
   useEffect(() => {
-    api.get<Job[]>(`/jobs${showArchived ? "?archived=1" : ""}`).then(setJobs);
-  }, [showArchived]);
+    if (data) setJobs(data);
+  }, [data]);
 
   const rows = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -59,9 +66,31 @@ export default function TableView() {
     </th>
   );
 
+  if (loading) {
+    return (
+      <div className="flex h-full items-center justify-center text-sm font-bold uppercase tracking-wider text-muted-foreground">
+        Loading…
+      </div>
+    );
+  }
+  if (error) {
+    return (
+      <div className="flex h-full flex-col items-center justify-center gap-3 p-6 text-center">
+        <p className="text-sm font-bold uppercase tracking-wider text-destructive">Couldn't load your jobs.</p>
+        <Button variant="outline" size="sm" onClick={reload}>
+          <RotateCcw size={14} strokeWidth={2.5} />
+          Retry
+        </Button>
+      </div>
+    );
+  }
+
   return (
     <div className="h-full overflow-y-auto p-6">
       <div className="mb-5 flex flex-wrap items-center gap-3">
+        <Button variant="ghost" size="sm" onClick={reload} className="px-2">
+          <RotateCcw size={14} strokeWidth={2.5} />
+        </Button>
         <div className="relative">
           <Search size={14} strokeWidth={2.5} className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
           <Input

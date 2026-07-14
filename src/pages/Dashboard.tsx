@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react";
-import { Award, Bell, Briefcase, Percent, Timer, type LucideIcon } from "lucide-react";
-import { api } from "../lib/api";
+import { useState } from "react";
+import { Award, Bell, Briefcase, Percent, Timer, RotateCcw, type LucideIcon } from "lucide-react";
+import { useFetch } from "../lib/useFetch";
 import { STATUS_LABELS, JOB_STATUSES, type Stats } from "../../shared/types";
 import { INK_HEX, STATUS_BG, STATUS_HEX } from "../lib/theme";
 import { useReminders } from "../components/RemindersProvider";
@@ -23,17 +23,26 @@ const TILE_ICONS: Record<string, string> = {
 const BAR_COLORS = [STATUS_HEX.wishlist, STATUS_HEX.applied, STATUS_HEX.interview, STATUS_HEX.offer, STATUS_HEX.rejected];
 
 export default function Dashboard() {
-  const [stats, setStats] = useState<Stats | null>(null);
+  const { data: stats, error, loading, reload } = useFetch<Stats>("/stats");
   const { reminders, complete } = useReminders();
 
-  useEffect(() => {
-    api.get<Stats>("/stats").then(setStats);
-  }, []);
-
-  if (!stats) {
+  if (loading) {
     return (
       <div className="flex h-full items-center justify-center text-sm font-bold uppercase tracking-wider text-muted-foreground">
         Loading…
+      </div>
+    );
+  }
+  if (error || !stats) {
+    return (
+      <div className="flex h-full flex-col items-center justify-center gap-3 p-6 text-center">
+        <p className="text-sm font-bold uppercase tracking-wider text-destructive">
+          Couldn't load your stats.
+        </p>
+        <Button variant="outline" size="sm" onClick={reload}>
+          <RotateCcw size={14} strokeWidth={2.5} />
+          Retry
+        </Button>
       </div>
     );
   }
