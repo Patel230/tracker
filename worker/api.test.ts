@@ -260,12 +260,32 @@ describe("auth", () => {
     expect((await client().fetch("/api/jobs")).status).toBe(401);
   });
 
+  it("rejects account deletion with a missing or wrong password, leaving the account intact", async () => {
+    const c = client();
+    await c.fetch("/api/auth/register", json({ email: "keepme@test.dev", password: "password1" }));
+
+    const noBody = await c.fetch("/api/auth/account", { method: "DELETE" });
+    expect(noBody.status).toBe(400);
+
+    const wrongPassword = await c.fetch("/api/auth/account", {
+      method: "DELETE",
+      body: JSON.stringify({ password: "notright1" }),
+    });
+    expect(wrongPassword.status).toBe(403);
+
+    // Account still exists and the session is still valid.
+    expect((await c.fetch("/api/auth/me")).status).toBe(200);
+  });
+
   it("deletes the account and all data, then blocks further access", async () => {
     const c = client();
     await c.fetch("/api/auth/register", json({ email: "del@test.dev", password: "password1" }));
     const job = (await (await c.fetch("/api/jobs", json({ company: "Temp", title: "Role" }))).json()) as Job;
 
-    const del = await c.fetch("/api/auth/account", { method: "DELETE" });
+    const del = await c.fetch("/api/auth/account", {
+      method: "DELETE",
+      body: JSON.stringify({ password: "password1" }),
+    });
     expect(del.status).toBe(200);
 
     // Session wiped → /me is unauthorized.
@@ -287,7 +307,7 @@ describe("auth", () => {
       "/api/auth/change-password",
       json({ currentPassword: "notright1", newPassword: "brandnew12" })
     );
-    expect(wrong.status).toBe(401);
+    expect(wrong.status).toBe(403);
 
     const ok = await c.fetch(
       "/api/auth/change-password",

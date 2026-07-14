@@ -1,6 +1,13 @@
 import { Hono } from "hono";
 import type { z } from "zod";
-import { contactFields, activityFields, reminderFields } from "./jobs";
+import {
+  contactFields,
+  activityFields,
+  reminderFields,
+  contactColumns,
+  activityColumns,
+  reminderColumns,
+} from "./jobs";
 import type { AppEnv } from "../lib/auth";
 
 // PATCH/DELETE for rows owned via their parent job. Ownership is enforced by
@@ -43,10 +50,10 @@ function itemRoutes(table: "contacts" | "activities" | "reminders", schema: z.Zo
   return r;
 }
 
-export const contacts = itemRoutes("contacts", contactFields, ["name", "role", "email", "phone", "linkedin", "notes"]);
-export const activities = itemRoutes("activities", activityFields, ["type", "title", "notes", "happened_at"]);
+export const contacts = itemRoutes("contacts", contactFields, contactColumns);
+export const activities = itemRoutes("activities", activityFields, activityColumns);
 
-export const reminders = itemRoutes("reminders", reminderFields, ["due_at", "note"]);
+export const reminders = itemRoutes("reminders", reminderFields, reminderColumns);
 
 reminders.get("/upcoming", async (c) => {
   const { results } = await c.env.DB.prepare(

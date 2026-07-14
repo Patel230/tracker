@@ -14,6 +14,10 @@ const changePasswordBody = z.object({
   newPassword: z.string().min(8).max(128),
 });
 
+const deleteAccountBody = z.object({
+  password: z.string().min(1).max(128),
+});
+
 const auth = new Hono<AppEnv>();
 
 // Before anything else: a broken JWT_SECRET must stop the request before a
@@ -21,11 +25,12 @@ const auth = new Hono<AppEnv>();
 auth.use("*", requireSessionConfig);
 
 // Guessing a password is a game of volume; these are the only endpoints where
-// volume is the attack. change-password is included because it accepts the
-// current password.
+// volume is the attack. change-password and account are included because
+// they accept the current password.
 auth.use("/login", rateLimitByIp("login"));
 auth.use("/register", rateLimitByIp("register"));
 auth.use("/change-password", rateLimitByIp("change-password"));
+auth.use("/account", rateLimitByIp("delete-account"));
 
 auth.post("/register", async (c) => {
   if (c.env.ALLOW_REGISTRATION !== "true") {
@@ -98,6 +103,22 @@ auth.post("/logout", (c) => {
 auth.delete("/account", async (c) => {
   const userId = await authenticate(c);
   if (!userId) return c.json({ error: "Unauthorized" }, 401);
+
+  // A stolen session cookie must not be enough to irreversibly delete the
+  // account — require the password, same as change-password.
+  const parsed = deleteAccountBody.safeParse(await c.req.json().catch(() => null));
+  if (!parsed.success) return c.json({ error: "Password is required" }, 400);
+
+  const user = await c.env.DB.prepare("SELECT password_hash FROM users WHERE id = ?")
+    .bind(userId)
+    .first<{ password_hash: string }>();
+  // 403, not 401: the session is still valid, only this specific action is
+  // refused. api.ts treats any 401 as "the session is dead" and logs the
+  // client out globally — a wrong password here must not do that.
+  if (!user || !(await verifyPassword(parsed.data.password, user.password_hash))) {
+    return c.json({ error: "Password is incorrect" }, 403);
+  }
+
   // Cascades to jobs, contacts, activities, reminders via FK ON DELETE CASCADE.
   await c.env.DB.prepare("DELETE FROM users WHERE id = ?").bind(userId).run();
   clearSession(c);
@@ -115,8 +136,9 @@ auth.post("/change-password", async (c) => {
   const user = await c.env.DB.prepare("SELECT password_hash FROM users WHERE id = ?")
     .bind(userId)
     .first<{ password_hash: string }>();
+  // 403, not 401 — see the matching comment on DELETE /account.
   if (!user || !(await verifyPassword(currentPassword, user.password_hash))) {
-    return c.json({ error: "Current password is incorrect" }, 401);
+    return c.json({ error: "Current password is incorrect" }, 403);
   }
 
   // Bumping token_version revokes every session issued before this change —

@@ -10,7 +10,12 @@ const FOCUSABLE =
 // passes a fresh inline arrow every render (as the modals do): re-running would
 // re-snapshot `previouslyFocused` and steal focus back to the first field on
 // every parent render while the user is typing.
-export function useFocusTrap(ref: RefObject<HTMLElement | null>, active: boolean, onEscape?: () => void) {
+export function useFocusTrap(
+  ref: RefObject<HTMLElement | null>,
+  active: boolean,
+  onEscape?: () => void,
+  initialFocusRef?: RefObject<HTMLElement | null>
+) {
   const onEscapeRef = useRef(onEscape);
   useEffect(() => {
     onEscapeRef.current = onEscape;
@@ -22,8 +27,11 @@ export function useFocusTrap(ref: RefObject<HTMLElement | null>, active: boolean
     if (!container) return;
 
     const previouslyFocused = document.activeElement as HTMLElement | null;
+    // Defaults to the first focusable element in DOM order (e.g. a modal's
+    // close button), which isn't always the field the caller wants focused
+    // first — pass initialFocusRef to override.
     const focusables = container.querySelectorAll<HTMLElement>(FOCUSABLE);
-    const first = focusables[0];
+    const first = initialFocusRef?.current ?? focusables[0];
     if (first) first.focus();
 
     const onKeyDown = (e: KeyboardEvent) => {
@@ -57,5 +65,5 @@ export function useFocusTrap(ref: RefObject<HTMLElement | null>, active: boolean
         previouslyFocused.focus();
       }
     };
-  }, [ref, active]);
+  }, [ref, active, initialFocusRef]);
 }

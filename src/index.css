@@ -25,7 +25,7 @@
   --color-card-foreground: #ffffff;
   --color-primary: #ffd23f;
   --color-primary-foreground: #000000;
-  --color-muted: #ffffff;
+  --color-muted: #2a2a2a;
   --color-muted-foreground: #d4d4d4;
   --color-accent: #ff6b6b;
   --color-accent-foreground: #000000;
@@ -49,7 +49,7 @@
   --color-brut-surface: #1a1a1a;
   --color-brut-yellow: #ffd23f;
   --color-brut-wishlist: #eab308;
-  --color-brut-applied: #eab308;
+  --color-brut-applied: #3b82f6;
   --color-brut-interview: #84cc16;
   --color-brut-offer: #ec4899;
   --color-brut-rejected: #f97316;

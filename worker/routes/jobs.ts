@@ -82,6 +82,14 @@ async function ownedJob(c: { env: Env }, userId: string, jobId: string) {
 // Reassign int1-based sort_order, 0,1,2,… to an entire column after a move,
 // with `movedJobId` pinned at `index`. Returns all refreshed rows for the
 // column so the client can refresh the integer spacing in one shot.
+//
+// The SELECT snapshot and the batched UPDATEs below are not one transaction,
+// so two /move calls landing in the same column at nearly the same instant
+// can race and leave one of the two with an inconsistent sort_order. Scoped
+// to a single user's own data (never cross-user), and self-heals on the next
+// reorder — a real fix needs either a single-statement window-function
+// renumber or request-level locking D1 doesn't cheaply offer, which is more
+// machinery than this rare, self-correcting race is worth.
 async function renumberColumn(
   db: D1Database,
   userId: string,
@@ -308,9 +316,16 @@ function childRoutes<T extends z.ZodTypeAny>(opts: {
   return r;
 }
 
-jobs.route("/", childRoutes({ table: "contacts", schema: contactFields, columns: ["name", "role", "email", "phone", "linkedin", "notes"], orderBy: "created_at" }));
-jobs.route("/", childRoutes({ table: "activities", schema: activityFields, columns: ["type", "title", "notes", "happened_at"], orderBy: "happened_at DESC" }));
-jobs.route("/", childRoutes({ table: "reminders", schema: reminderFields, columns: ["due_at", "note"], orderBy: "due_at" }));
+// Single source of truth for each resource's writable columns — shared with
+// items.ts's PATCH routes so the create (POST) and update (PATCH) column
+// lists can't drift apart.
+export const contactColumns = ["name", "role", "email", "phone", "linkedin", "notes"];
+export const activityColumns = ["type", "title", "notes", "happened_at"];
+export const reminderColumns = ["due_at", "note"];
+
+jobs.route("/", childRoutes({ table: "contacts", schema: contactFields, columns: contactColumns, orderBy: "created_at" }));
+jobs.route("/", childRoutes({ table: "activities", schema: activityFields, columns: activityColumns, orderBy: "happened_at DESC" }));
+jobs.route("/", childRoutes({ table: "reminders", schema: reminderFields, columns: reminderColumns, orderBy: "due_at" }));
 
 export { contactFields, activityFields, reminderFields };
 export default jobs;

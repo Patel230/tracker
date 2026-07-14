@@ -18,12 +18,15 @@ export const STATUS_BG: Record<JobStatus, string> = {
   rejected: "bg-brut-rejected",
 };
 
+// All five --color-brut-* backgrounds are bright/saturated enough that black
+// text clears WCAG AA (4.5:1) against every one of them; white does not clear
+// it against any of them. Verified by computing relative luminance per color.
 export const STATUS_TEXT: Record<JobStatus, string> = {
-  wishlist: "text-white",
-  applied: "text-white",
-  interview: "text-white",
-  offer: "text-white",
-  rejected: "text-white",
+  wishlist: "text-black",
+  applied: "text-black",
+  interview: "text-black",
+  offer: "text-black",
+  rejected: "text-black",
 };
 
 export const INK_HEX = "#ffffff";

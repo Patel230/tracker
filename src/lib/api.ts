@@ -40,5 +40,6 @@ export const api = {
   post: <T>(path: string, body?: unknown, signal?: AbortSignal) => request<T>("POST", path, body, signal),
   patch: <T>(path: string, body?: unknown, signal?: AbortSignal) =>
     request<T>("PATCH", path, body, signal),
-  delete: <T = unknown>(path: string, signal?: AbortSignal) => request<T>("DELETE", path, undefined, signal),
+  delete: <T = unknown>(path: string, body?: unknown, signal?: AbortSignal) =>
+    request<T>("DELETE", path, body, signal),
 };

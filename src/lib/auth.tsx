@@ -12,7 +12,7 @@ interface AuthState {
   login: (email: string, password: string) => Promise<void>;
   register: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
-  deleteAccount: () => Promise<void>;
+  deleteAccount: (password: string) => Promise<void>;
   changePassword: (currentPassword: string, newPassword: string) => Promise<void>;
 }
 
@@ -61,8 +61,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await api.post("/auth/logout");
     setUser(null);
   };
-  const deleteAccount = async () => {
-    await api.delete("/auth/account");
+  const deleteAccount = async (password: string) => {
+    await api.delete("/auth/account", { password });
     setUser(null);
   };
   const changePassword = async (currentPassword: string, newPassword: string) => {

@@ -8,8 +8,10 @@ import { Input } from "./ui/input";
 export default function DeleteAccountModal({ onClose }: { onClose: () => void }) {
   const { deleteAccount } = useAuth();
   const panelRef = useRef<HTMLDivElement>(null);
-  useFocusTrap(panelRef, true, onClose);
+  const confirmInputRef = useRef<HTMLInputElement>(null);
+  useFocusTrap(panelRef, true, onClose, confirmInputRef);
   const [confirm, setConfirm] = useState("");
+  const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -19,10 +21,14 @@ export default function DeleteAccountModal({ onClose }: { onClose: () => void })
       setError('Type DELETE to confirm.');
       return;
     }
+    if (!password) {
+      setError("Password is required.");
+      return;
+    }
     setError(null);
     setBusy(true);
     try {
-      await deleteAccount();
+      await deleteAccount(password);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not delete account");
       setBusy(false);
@@ -56,9 +62,21 @@ export default function DeleteAccountModal({ onClose }: { onClose: () => void })
             <label className="block text-xs font-bold uppercase tracking-wider text-muted-foreground">
               Type DELETE to confirm
               <Input
+                ref={confirmInputRef}
                 autoFocus
                 value={confirm}
                 onChange={(e) => setConfirm(e.target.value)}
+                className="mt-1"
+              />
+            </label>
+
+            <label className="block text-xs font-bold uppercase tracking-wider text-muted-foreground">
+              Password
+              <Input
+                type="password"
+                autoComplete="current-password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
                 className="mt-1"
               />
             </label>

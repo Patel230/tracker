@@ -17,6 +17,9 @@ export function useFetch<T>(path: string, deps: unknown[] = []): State<T> & { re
   // old one settles, the old response is discarded. Also read by reload() so a
   // manual refresh restarts even when the path hasn't changed.
   const gen = useRef(0);
+  // reload() bumps this to re-run the effect below even when `deps` is
+  // unchanged — it carries no meaning of its own beyond forcing a re-run.
+  const [nonce, setNonce] = useState(0);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -35,7 +38,7 @@ export function useFetch<T>(path: string, deps: unknown[] = []): State<T> & { re
       });
     return () => controller.abort();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, deps);
+  }, [...deps, nonce]);
 
-  return { ...state, reload: () => setState({ data: null, error: false, loading: true }) };
+  return { ...state, reload: () => setNonce((n) => n + 1) };
 }
