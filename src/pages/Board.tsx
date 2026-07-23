@@ -10,13 +10,14 @@ import {
   type DragOverEvent,
   type DragStartEvent,
 } from "@dnd-kit/core";
-import { RotateCcw } from "lucide-react";
+import { RotateCcw, Search, Filter } from "lucide-react";
 import { api } from "../lib/api";
 import { JOB_STATUSES, type Job, type JobStatus } from "../../shared/types";
 import KanbanColumn from "../components/KanbanColumn";
 import { JobCard } from "../components/JobCard";
 import JobDrawer from "../components/JobDrawer";
 import { Button } from "../components/ui/button";
+import { Input } from "../components/ui/input";
 
 const COL_PREFIX = "col:";
 
@@ -26,6 +27,7 @@ export default function Board() {
   const [error, setError] = useState(false);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [openJobId, setOpenJobId] = useState<string | null>(null);
+  const [query, setQuery] = useState("");
 
   const load = useCallback(() => {
     const controller = new AbortController();
@@ -39,9 +41,6 @@ export default function Board() {
       })
       .catch((err) => {
         if (err instanceof DOMException && err.name === "AbortError") return;
-        // Don't wipe the board to empty silently: a transient 5xx used to render
-        // five blank columns with no indication anything went wrong, and the
-        // only recovery was a full reload. Keep whatever we had and show retry.
         setError(true);
       })
       .finally(() => {
@@ -49,18 +48,34 @@ export default function Board() {
       });
     return () => controller.abort();
   }, []);
-  useEffect(load, [load]);
+
+  useEffect(() => {
+    const cancel = load();
+    const handleJobCreated = () => load();
+    window.addEventListener("job-created", handleJobCreated);
+    return () => {
+      cancel();
+      window.removeEventListener("job-created", handleJobCreated);
+    };
+  }, [load]);
+
+  const filteredJobs = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return jobs;
+    return jobs.filter(
+      (j) =>
+        j.company.toLowerCase().includes(q) ||
+        j.title.toLowerCase().includes(q) ||
+        (j.location ?? "").toLowerCase().includes(q)
+    );
+  }, [jobs, query]);
 
   const columns = useMemo(() => {
     const map = Object.fromEntries(JOB_STATUSES.map((s) => [s, [] as Job[]])) as Record<JobStatus, Job[]>;
-    // GET /jobs already excludes archived server-side, but local state can hold
-    // a job that was just archived from the drawer (onChange patches the row in
-    // place before a reload). Filter it client-side too so the archived card
-    // doesn't linger on the board until the next fetch.
-    for (const j of [...jobs].filter((j) => !j.archived).sort((a, b) => a.sort_order - b.sort_order))
+    for (const j of [...filteredJobs].filter((j) => !j.archived).sort((a, b) => a.sort_order - b.sort_order))
       map[j.status].push(j);
     return map;
-  }, [jobs]);
+  }, [filteredJobs]);
 
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }));
 
@@ -139,32 +154,58 @@ export default function Board() {
   }
 
   return (
-    <div className="h-full overflow-x-auto p-4">
-      <DndContext
-        sensors={sensors}
-        collisionDetection={closestCorners}
-        onDragStart={onDragStart}
-        onDragOver={onDragOver}
-        onDragEnd={onDragEnd}
-        onDragCancel={() => {
-          setActiveId(null);
-          load();
-        }}
-      >
-        <div className="flex h-full min-w-max gap-4">
-          {JOB_STATUSES.map((status) => (
-            <KanbanColumn
-              key={status}
-              status={status}
-              droppableId={`${COL_PREFIX}${status}`}
-              jobs={columns[status]}
-              onOpen={setOpenJobId}
-              onCreated={(job) => setJobs((js) => [...js, job])}
+    <div className="flex h-full flex-col p-4">
+      <div className="mb-3 flex flex-wrap items-center justify-between gap-3 px-1">
+        <div className="flex items-center gap-3">
+          <div className="relative min-w-[240px]">
+            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              placeholder="Filter board by company, title..."
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              className="pl-9 h-9 text-xs"
             />
-          ))}
+          </div>
+          {query && (
+            <Button size="sm" variant="ghost" onClick={() => setQuery("")} className="h-9 px-2 text-xs">
+              Clear
+            </Button>
+          )}
         </div>
-        <DragOverlay>{activeJob ? <JobCard job={activeJob} overlay /> : null}</DragOverlay>
-      </DndContext>
+
+        <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">
+          <Filter size={12} strokeWidth={2.5} />
+          <span>Showing {filteredJobs.length} of {jobs.length} jobs</span>
+        </div>
+      </div>
+
+      <div className="flex-1 overflow-x-auto min-h-0">
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCorners}
+          onDragStart={onDragStart}
+          onDragOver={onDragOver}
+          onDragEnd={onDragEnd}
+          onDragCancel={() => {
+            setActiveId(null);
+            load();
+          }}
+        >
+          <div className="flex h-full min-w-max gap-4 pb-2">
+            {JOB_STATUSES.map((status) => (
+              <KanbanColumn
+                key={status}
+                status={status}
+                droppableId={`${COL_PREFIX}${status}`}
+                jobs={columns[status]}
+                onOpen={setOpenJobId}
+                onCreated={(job) => setJobs((js) => [...js, job])}
+              />
+            ))}
+          </div>
+          <DragOverlay>{activeJob ? <JobCard job={activeJob} overlay /> : null}</DragOverlay>
+        </DndContext>
+      </div>
 
       {openJob && (
         <JobDrawer

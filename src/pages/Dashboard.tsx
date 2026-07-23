@@ -1,15 +1,12 @@
 import { useState } from "react";
-import { Award, Bell, Briefcase, Percent, Timer, RotateCcw, type LucideIcon } from "lucide-react";
+import { Award, Bell, Briefcase, Percent, Timer, RotateCcw, Sparkles, Kanban, Building2, type LucideIcon } from "lucide-react";
+import { Link } from "react-router-dom";
 import { useFetch } from "../lib/useFetch";
 import { STATUS_LABELS, JOB_STATUSES, type Stats } from "../../shared/types";
 import { INK_HEX, PRIMARY_HEX, STATUS_BG } from "../lib/theme";
 import { useReminders } from "../components/RemindersProvider";
 import { Button } from "../components/ui/button";
 
-// Decorative variety, by explicit choice: these 4 tiles aren't tied to a job
-// status, but each gets a distinct status color anyway so they read apart at
-// a glance. Bright color on the card's own dark bg-card background (not the
-// status color itself), so contrast is safe regardless of which is picked.
 const TILE_STYLES = [
   { top: "bg-brut-wishlist" },
   { top: "bg-brut-applied" },
@@ -25,16 +22,9 @@ const TILE_ICONS: Record<string, string> = {
 };
 
 export default function Dashboard() {
-  const { data: stats, error, loading, reload } = useFetch<Stats>("/stats");
+  const { data: stats, error, reload } = useFetch<Stats>("/stats");
   const { reminders, complete } = useReminders();
 
-  if (loading) {
-    return (
-      <div className="flex h-full items-center justify-center text-sm font-bold uppercase tracking-wider text-muted-foreground">
-        Loading…
-      </div>
-    );
-  }
   if (error || !stats) {
     return (
       <div className="flex h-full flex-col items-center justify-center gap-3 p-6 text-center">
@@ -69,19 +59,67 @@ export default function Dashboard() {
   return (
     <div className="h-full overflow-y-auto p-6">
       <div className="mx-auto max-w-5xl space-y-6">
-        {/* Stat tiles with colored top borders — defolio style */}
+        {/* Quick Action Navigation Bar */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <Link
+            to="/board"
+            className="flex items-center gap-3 border-[3px] border-brut-ink bg-card p-3 shadow-[4px_4px_0_0_#000] hover:shadow-[2px_2px_0_0_#000] hover:translate-x-0.5 hover:translate-y-0.5 transition-all group"
+          >
+            <span className="flex size-10 items-center justify-center border-[2px] border-brut-ink bg-primary text-primary-foreground">
+              <Kanban size={20} strokeWidth={2.5} />
+            </span>
+            <div>
+              <div className="text-xs font-black uppercase tracking-wider text-foreground group-hover:text-primary transition-colors">
+                Kanban Pipeline
+              </div>
+              <div className="text-[11px] font-medium text-muted-foreground">Drag & drop application cards</div>
+            </div>
+          </Link>
+
+          <Link
+            to="/companies"
+            className="flex items-center gap-3 border-[3px] border-brut-ink bg-card p-3 shadow-[4px_4px_0_0_#000] hover:shadow-[2px_2px_0_0_#000] hover:translate-x-0.5 hover:translate-y-0.5 transition-all group"
+          >
+            <span className="flex size-10 items-center justify-center border-[2px] border-brut-ink bg-brut-applied text-primary-foreground">
+              <Building2 size={20} strokeWidth={2.5} />
+            </span>
+            <div>
+              <div className="text-xs font-black uppercase tracking-wider text-foreground group-hover:text-brut-applied transition-colors">
+                Top 200 Directory
+              </div>
+              <div className="text-[11px] font-medium text-muted-foreground">100 Companies & 100 Startups</div>
+            </div>
+          </Link>
+
+          <Link
+            to="/table"
+            className="flex items-center gap-3 border-[3px] border-brut-ink bg-card p-3 shadow-[4px_4px_0_0_#000] hover:shadow-[2px_2px_0_0_#000] hover:translate-x-0.5 hover:translate-y-0.5 transition-all group"
+          >
+            <span className="flex size-10 items-center justify-center border-[2px] border-brut-ink bg-brut-interview text-primary-foreground">
+              <Sparkles size={20} strokeWidth={2.5} />
+            </span>
+            <div>
+              <div className="text-xs font-black uppercase tracking-wider text-foreground group-hover:text-brut-interview transition-colors">
+                Data & Table View
+              </div>
+              <div className="text-[11px] font-medium text-muted-foreground">Sort, filter, and export applications</div>
+            </div>
+          </Link>
+        </div>
+
+        {/* Stat tiles */}
         <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
           {tiles.map((t, i) => {
             const s = TILE_STYLES[i];
             return (
-              <div key={t.label} className="border-[3px] border-brut-ink bg-card">
+              <div key={t.label} className="border-[3px] border-brut-ink bg-card shadow-[4px_4px_0_0_#000]">
                 <div className={`h-1.5 ${s.top}`} />
                 <div className="p-4">
-                  <div className={`flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider ${TILE_ICONS[t.label] || "text-muted-foreground"}`}>
+                  <div className={`flex items-center gap-1.5 text-xs font-black uppercase tracking-wider ${TILE_ICONS[t.label] || "text-muted-foreground"}`}>
                     <t.icon size={13} strokeWidth={2.5} />
                     {t.label}
                   </div>
-                  <div className="mt-1 text-3xl font-black tabular-nums text-foreground">{t.value}</div>
+                  <div className="mt-2 text-3xl font-black tabular-nums text-foreground">{t.value}</div>
                   {t.hint && <div className="mt-1 text-xs font-medium text-muted-foreground">{t.hint}</div>}
                 </div>
               </div>
@@ -90,10 +128,10 @@ export default function Dashboard() {
         </div>
 
         <div className="grid gap-6 lg:grid-cols-2">
-          <div className="border-[3px] border-brut-ink bg-card">
+          <div className="border-[3px] border-brut-ink bg-card shadow-[4px_4px_0_0_#000]">
             <div className="h-1.5 bg-brut-applied" />
             <div className="p-5">
-              <h2 className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-foreground">
+              <h2 className="flex items-center gap-1.5 text-xs font-black uppercase tracking-wider text-foreground">
                 <Briefcase size={13} strokeWidth={2.5} className="text-brut-applied" />
                 Applications per week
               </h2>
@@ -102,25 +140,25 @@ export default function Dashboard() {
             </div>
           </div>
 
-          <div className="border-[3px] border-brut-ink bg-card">
+          <div className="border-[3px] border-brut-ink bg-card shadow-[4px_4px_0_0_#000]">
             <div className="h-1.5 bg-brut-interview" />
             <div className="p-5">
-              <h2 className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-foreground">
+              <h2 className="flex items-center gap-1.5 text-xs font-black uppercase tracking-wider text-foreground">
                 <Timer size={13} strokeWidth={2.5} className="text-brut-interview" />
-                Pipeline
+                Pipeline Stages
               </h2>
-              <p className="text-xs font-medium text-muted-foreground">jobs by stage (active)</p>
+              <p className="text-xs font-medium text-muted-foreground">jobs by status</p>
               <Funnel funnel={stats.funnel} />
             </div>
           </div>
         </div>
 
-        <div className="border-[3px] border-brut-ink bg-card">
+        <div className="border-[3px] border-brut-ink bg-card shadow-[4px_4px_0_0_#000]">
           <div className="h-1.5 bg-brut-wishlist" />
           <div className="p-5">
-            <h2 className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-foreground">
+            <h2 className="flex items-center gap-1.5 text-xs font-black uppercase tracking-wider text-foreground">
               <Bell size={13} strokeWidth={2.5} className="text-brut-wishlist" />
-              Upcoming reminders
+              Upcoming Reminders
             </h2>
             {reminders.length === 0 ? (
               <p className="mt-3 text-sm font-bold uppercase tracking-wider text-muted-foreground">
@@ -188,8 +226,6 @@ function WeeklyBars({ weekly }: { weekly: Stats["weekly"] }) {
         {weekly.map((w, i) => {
           const x = pad.left + i * step + (step - barW) / 2;
           const barH = plotH * (w.count / max);
-          // One metric (applications per week), not a status breakdown, so
-          // every bar gets the same color instead of a meaningless 5-color cycle.
           const color = PRIMARY_HEX;
           return (
             <g key={w.weekStart}>
@@ -225,7 +261,7 @@ function WeeklyBars({ weekly }: { weekly: Stats["weekly"] }) {
       </svg>
       {hover !== null && (
         <div
-          className="pointer-events-none absolute -top-1 border-[3px] border-brut-ink bg-card px-2.5 py-1.5 text-xs"
+          className="pointer-events-none absolute -top-1 border-[3px] border-brut-ink bg-card px-2.5 py-1.5 text-xs shadow-md"
           style={{ left: `${((pad.left + hover * step + step / 2) / W) * 100}%`, transform: "translateX(-50%)" }}
         >
           <span className="font-black text-foreground">{weekly[hover].count}</span>{" "}
