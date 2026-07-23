@@ -7,6 +7,7 @@ import {
   ExternalLink,
   FileText,
   History,
+  Pencil,
   Plus,
   Save,
   Trash2,
@@ -14,7 +15,7 @@ import {
   X,
   type LucideIcon,
 } from "lucide-react";
-import { api } from "../lib/api";
+import { api, ApiError } from "../lib/api";
 import { useFocusTrap } from "../lib/useFocusTrap";
 import { ACTIVITY_BG, ACTIVITY_TEXT } from "../lib/theme";
 import {
@@ -26,6 +27,7 @@ import {
   STATUS_LABELS,
   safeExternalUrl,
   type Activity,
+  type ActivityType,
   type Contact,
   type Job,
   type JobStatus,
@@ -62,13 +64,35 @@ function Field({ label, children }: { label: string; children: ReactNode }) {
   );
 }
 
+// One place to turn a thrown ApiError into a short message for the inline
+// banners. Network failures come back as a plain TypeError (fetch rejected),
+// which read worse than a generic "didn't go through".
+function errMsg(err: unknown, fallback: string): string {
+  if (err instanceof ApiError) return err.message;
+  if (err instanceof Error && err.message) return err.message;
+  return fallback;
+}
+
 export default function JobDrawer({ job, onClose, onChange, onDelete }: Props) {
   const [tab, setTab] = useState<Tab>("details");
+  const [error, setError] = useState<string | null>(null);
+  const [confirming, setConfirming] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const asideRef = useRef<HTMLDivElement>(null);
   useFocusTrap(asideRef, true, onClose);
 
+  // Every mutating call below wraps the server call so a failure surfaces a
+  // banner instead of becoming an unhandled rejection, and any optimistic UI
+  // is rolled back to the last-known-good job. `job` (from props) is the
+  // source of truth: Board/TableView pass it back via onChange, so reverting
+  // means re-emitting it unchanged.
   const patch = async (fields: Partial<Job>) => {
-    onChange([await api.patch<Job>(`/jobs/${job.id}`, fields)]);
+    try {
+      onChange([await api.patch<Job>(`/jobs/${job.id}`, fields)]);
+      setError(null);
+    } catch (err) {
+      setError(errMsg(err, "Couldn't save. Try again."));
+    }
   };
 
   // Status has to go through /move, not PATCH. PATCH changes the status column
@@ -77,14 +101,31 @@ export default function JobDrawer({ job, onClose, onChange, onDelete }: Props) {
   // /move renumbers the destination column and returns all of its rows.
   const changeStatus = async (status: JobStatus) => {
     if (status === job.status) return;
-    onChange(await api.patch<Job[]>(`/jobs/${job.id}/move`, { status, index: 0 }));
+    try {
+      onChange(await api.patch<Job[]>(`/jobs/${job.id}/move`, { status, index: 0 }));
+      setError(null);
+    } catch (err) {
+      // Re-emit the unchanged job so the select snaps back to its real status
+      // rather than showing the failed target.
+      onChange([{ ...job }]);
+      setError(errMsg(err, "Couldn't change status. Try again."));
+    }
   };
 
   const remove = async () => {
-    if (!confirm(`Delete ${job.company} — ${job.title}? This also removes its contacts, timeline and reminders.`)) return;
-    await api.delete(`/jobs/${job.id}`);
-    onDelete(job.id);
+    setDeleting(true);
+    try {
+      await api.delete(`/jobs/${job.id}`);
+      onDelete(job.id);
+    } catch (err) {
+      setConfirming(false);
+      setError(errMsg(err, "Couldn't delete. Try again."));
+    } finally {
+      setDeleting(false);
+    }
   };
+
+  const jobUrl = safeExternalUrl(job.url);
 
   return (
     <>
@@ -116,9 +157,9 @@ export default function JobDrawer({ job, onClose, onChange, onDelete }: Props) {
                 </option>
               ))}
             </select>
-            {safeExternalUrl(job.url) && (
+            {jobUrl && (
               <a
-                href={safeExternalUrl(job.url)!}
+                href={jobUrl}
                 target="_blank"
                 rel="noreferrer"
                 className="flex items-center gap-1 text-xs font-bold uppercase tracking-wider text-brut-applied underline decoration-2 underline-offset-2"
@@ -132,12 +173,17 @@ export default function JobDrawer({ job, onClose, onChange, onDelete }: Props) {
                 {job.archived ? <ArchiveRestore size={13} strokeWidth={2.5} /> : <Archive size={13} strokeWidth={2.5} />}
                 {job.archived ? "Unarchive" : "Archive"}
               </Button>
-              <Button size="sm" variant="destructive" onClick={remove}>
+              <Button size="sm" variant="destructive" onClick={() => setConfirming(true)}>
                 <Trash2 size={13} strokeWidth={2.5} />
                 Delete
               </Button>
             </div>
           </div>
+          {error && (
+            <p className="mt-3 border-[3px] border-destructive bg-destructive/5 px-2 py-1 text-sm font-bold text-destructive" role="alert">
+              {error}
+            </p>
+          )}
           <nav className="mt-4 flex gap-1.5">
             {(["details", "timeline", "contacts", "reminders"] as Tab[]).map((t) => {
               const Icon = TAB_ICONS[t];
@@ -164,6 +210,63 @@ export default function JobDrawer({ job, onClose, onChange, onDelete }: Props) {
           {tab === "reminders" && <RemindersTab jobId={job.id} />}
         </div>
       </aside>
+
+      {confirming && (
+        <ConfirmDeleteDialog
+          job={job}
+          busy={deleting}
+          onCancel={() => setConfirming(false)}
+          onConfirm={remove}
+        />
+      )}
+    </>
+  );
+}
+
+function ConfirmDeleteDialog({
+  job,
+  busy,
+  onCancel,
+  onConfirm,
+}: {
+  job: Job;
+  busy: boolean;
+  onCancel: () => void;
+  onConfirm: () => void;
+}) {
+  const panelRef = useRef<HTMLDivElement>(null);
+  useFocusTrap(panelRef, true, onCancel);
+
+  return (
+    <>
+      <div className="fixed inset-0 z-[60] bg-foreground/40" onClick={onCancel} />
+      <div className="fixed inset-0 z-[70] flex items-center justify-center p-4">
+        <div ref={panelRef} tabIndex={-1} className="border-[3px] border-brut-ink bg-card p-6 w-full max-w-sm focus:outline-none">
+          <div className="flex items-start justify-between">
+            <h2 className="text-lg font-black uppercase tracking-tight text-destructive">Delete job</h2>
+            <button
+              onClick={onCancel}
+              className="border-[3px] border-brut-ink px-2 py-1 text-foreground hover:bg-brut-paper transition-colors"
+              aria-label="Close"
+            >
+              <X size={16} strokeWidth={2.5} />
+            </button>
+          </div>
+          <p className="mt-4 text-sm font-medium text-muted-foreground">
+            Delete <span className="font-bold text-foreground">{job.company} — {job.title}</span>? This also
+            removes its contacts, timeline, and reminders. This can't be undone.
+          </p>
+          <div className="mt-6 flex items-center gap-2">
+            <Button type="button" variant="destructive" disabled={busy} onClick={onConfirm}>
+              <Trash2 size={14} strokeWidth={2.5} />
+              {busy ? "Deleting…" : "Delete"}
+            </Button>
+            <Button type="button" variant="outline" disabled={busy} onClick={onCancel}>
+              Cancel
+            </Button>
+          </div>
+        </div>
+      </div>
     </>
   );
 }
@@ -188,14 +291,20 @@ function DetailsTab({ job, onSave }: { job: Job; onSave: (f: Partial<Job>) => Pr
   const submit = async (e: FormEvent) => {
     e.preventDefault();
     setError(null);
+    const min = form.salary_min ? Number(form.salary_min) : null;
+    const max = form.salary_max ? Number(form.salary_max) : null;
+    if (min !== null && max !== null && min > max) {
+      setError("Salary min can't be greater than salary max.");
+      return;
+    }
     try {
       await onSave({
         company: form.company.trim(),
         title: form.title.trim(),
         url: form.url.trim() || null,
         location: form.location.trim() || null,
-        salary_min: form.salary_min ? Number(form.salary_min) : null,
-        salary_max: form.salary_max ? Number(form.salary_max) : null,
+        salary_min: min,
+        salary_max: max,
         salary_currency: (form.salary_currency || null) as Job["salary_currency"],
         salary_period: (form.salary_period || null) as Job["salary_period"],
         description: form.description || null,
@@ -203,6 +312,8 @@ function DetailsTab({ job, onSave }: { job: Job; onSave: (f: Partial<Job>) => Pr
       });
       setSaved(true);
     } catch (err) {
+      // onSave already surfaced a drawer-level banner; keep a local one too so
+      // the user sees it without scrolling past unchanged form fields.
       setError(err instanceof Error ? err.message : "Save failed");
     }
   };
@@ -266,7 +377,7 @@ function DetailsTab({ job, onSave }: { job: Job; onSave: (f: Partial<Job>) => Pr
         />
       </Field>
       {error && (
-        <p className="border-[3px] border-destructive bg-destructive/5 px-2 py-1 text-sm font-bold text-destructive">
+        <p className="border-[3px] border-destructive bg-destructive/5 px-2 py-1 text-sm font-bold text-destructive" role="alert">
           {error}
         </p>
       )}
@@ -288,9 +399,12 @@ function DetailsTab({ job, onSave }: { job: Job; onSave: (f: Partial<Job>) => Pr
 
 function TimelineTab({ jobId }: { jobId: string }) {
   const [items, setItems] = useState<Activity[] | null>(null);
-  const [type, setType] = useState<Activity["type"]>("note");
+  const [type, setType] = useState<ActivityType>("note");
   const [title, setTitle] = useState("");
   const [notes, setNotes] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [edit, setEdit] = useState({ title: "", notes: "" });
 
   useEffect(() => {
     const controller = new AbortController();
@@ -307,19 +421,48 @@ function TimelineTab({ jobId }: { jobId: string }) {
   const add = async (e: FormEvent) => {
     e.preventDefault();
     if (!title.trim()) return;
-    const item = await api.post<Activity>(`/jobs/${jobId}/activities`, {
-      type,
-      title: title.trim(),
-      notes: notes.trim() || null,
-    });
-    setItems((xs) => [item, ...(xs ?? [])]);
-    setTitle("");
-    setNotes("");
+    setError(null);
+    try {
+      const item = await api.post<Activity>(`/jobs/${jobId}/activities`, {
+        type,
+        title: title.trim(),
+        notes: notes.trim() || null,
+      });
+      setItems((xs) => [item, ...(xs ?? [])]);
+      setTitle("");
+      setNotes("");
+    } catch (err) {
+      setError(errMsg(err, "Couldn't add to timeline."));
+    }
   };
 
   const remove = async (id: string) => {
-    await api.delete(`/activities/${id}`);
-    setItems((xs) => (xs ?? []).filter((x) => x.id !== id));
+    setError(null);
+    try {
+      await api.delete(`/activities/${id}`);
+      setItems((xs) => (xs ?? []).filter((x) => x.id !== id));
+    } catch (err) {
+      setError(errMsg(err, "Couldn't delete."));
+    }
+  };
+
+  const startEdit = (a: Activity) => {
+    setEditingId(a.id);
+    setEdit({ title: a.title, notes: a.notes ?? "" });
+  };
+
+  const saveEdit = async (id: string) => {
+    setError(null);
+    try {
+      const updated = await api.patch<Activity>(`/activities/${id}`, {
+        title: edit.title.trim(),
+        notes: edit.notes.trim() || null,
+      });
+      setItems((xs) => (xs ?? []).map((x) => (x.id === id ? updated : x)));
+      setEditingId(null);
+    } catch (err) {
+      setError(errMsg(err, "Couldn't save edit."));
+    }
   };
 
   return (
@@ -328,7 +471,7 @@ function TimelineTab({ jobId }: { jobId: string }) {
         <div className="flex gap-2">
           <select
             value={type}
-            onChange={(e) => setType(e.target.value as Activity["type"])}
+            onChange={(e) => setType(e.target.value as ActivityType)}
             className="border-[3px] border-brut-ink bg-input px-3 py-2 text-sm font-medium text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background"
           >
             {ACTIVITY_TYPES.filter((t) => t !== "status_change").map((t) => (
@@ -350,6 +493,12 @@ function TimelineTab({ jobId }: { jobId: string }) {
         </Button>
       </form>
 
+      {error && (
+        <p className="border-[3px] border-destructive bg-destructive/5 px-2 py-1 text-sm font-bold text-destructive" role="alert">
+          {error}
+        </p>
+      )}
+
       {items === null ? (
         <p className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Loading…</p>
       ) : items.length === 0 ? (
@@ -363,16 +512,49 @@ function TimelineTab({ jobId }: { jobId: string }) {
                   {ACTIVITY_LABELS[a.type]}
                 </Badge>
                 <span className="text-xs font-bold text-muted-foreground">{new Date(a.happened_at).toLocaleString()}</span>
+                {a.type !== "status_change" && (
+                  <button
+                    onClick={() => (editingId === a.id ? setEditingId(null) : startEdit(a))}
+                    className="ml-auto hidden text-muted-foreground hover:text-foreground group-hover:block"
+                    aria-label={editingId === a.id ? "Cancel edit" : "Edit"}
+                  >
+                    <Pencil size={13} strokeWidth={2.5} />
+                  </button>
+                )}
                 <button
                   onClick={() => remove(a.id)}
-                  className="ml-auto hidden text-muted-foreground hover:text-destructive group-hover:block"
+                  className={`${a.type === "status_change" ? "ml-auto" : ""} hidden text-muted-foreground hover:text-destructive group-hover:block`}
                   aria-label="Delete"
                 >
                   <Trash2 size={13} strokeWidth={2.5} />
                 </button>
               </div>
-              <div className="mt-1 text-sm font-bold text-foreground">{a.title}</div>
-              {a.notes && <div className="mt-0.5 whitespace-pre-wrap text-sm font-medium text-muted-foreground">{a.notes}</div>}
+              {editingId === a.id ? (
+                <div className="mt-2 space-y-2">
+                  <Input value={edit.title} onChange={(e) => setEdit((ed) => ({ ...ed, title: e.target.value }))} />
+                  <textarea
+                    rows={2}
+                    value={edit.notes}
+                    onChange={(e) => setEdit((ed) => ({ ...ed, notes: e.target.value }))}
+                    placeholder="Details (optional)"
+                    className="w-full border-[3px] border-brut-ink bg-input px-3 py-2 text-sm font-medium text-foreground placeholder:text-muted-foreground/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background transition-all"
+                  />
+                  <div className="flex gap-2">
+                    <Button size="sm" onClick={() => saveEdit(a.id)}>
+                      <Save size={13} strokeWidth={2.5} />
+                      Save
+                    </Button>
+                    <Button size="sm" variant="outline" onClick={() => setEditingId(null)}>
+                      Cancel
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <div className="mt-1 text-sm font-bold text-foreground">{a.title}</div>
+                  {a.notes && <div className="mt-0.5 whitespace-pre-wrap text-sm font-medium text-muted-foreground">{a.notes}</div>}
+                </>
+              )}
             </li>
           ))}
         </ol>
@@ -383,7 +565,10 @@ function TimelineTab({ jobId }: { jobId: string }) {
 
 function ContactsTab({ jobId }: { jobId: string }) {
   const [items, setItems] = useState<Contact[] | null>(null);
-  const [form, setForm] = useState({ name: "", role: "", email: "", linkedin: "" });
+  const [form, setForm] = useState({ name: "", role: "", email: "", phone: "", linkedin: "", notes: "" });
+  const [error, setError] = useState<string | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [edit, setEdit] = useState({ name: "", role: "", email: "", phone: "", linkedin: "", notes: "" });
 
   useEffect(() => {
     const controller = new AbortController();
@@ -400,23 +585,67 @@ function ContactsTab({ jobId }: { jobId: string }) {
   const add = async (e: FormEvent) => {
     e.preventDefault();
     if (!form.name.trim()) return;
-    const item = await api.post<Contact>(`/jobs/${jobId}/contacts`, {
-      name: form.name.trim(),
-      role: form.role.trim() || null,
-      email: form.email.trim() || null,
-      linkedin: form.linkedin.trim() || null,
-    });
-    setItems((xs) => [...(xs ?? []), item]);
-    setForm({ name: "", role: "", email: "", linkedin: "" });
+    setError(null);
+    try {
+      const item = await api.post<Contact>(`/jobs/${jobId}/contacts`, {
+        name: form.name.trim(),
+        role: form.role.trim() || null,
+        email: form.email.trim() || null,
+        phone: form.phone.trim() || null,
+        linkedin: form.linkedin.trim() || null,
+        notes: form.notes.trim() || null,
+      });
+      setItems((xs) => [...(xs ?? []), item]);
+      setForm({ name: "", role: "", email: "", phone: "", linkedin: "", notes: "" });
+    } catch (err) {
+      setError(errMsg(err, "Couldn't add contact."));
+    }
   };
 
   const remove = async (id: string) => {
-    await api.delete(`/contacts/${id}`);
-    setItems((xs) => (xs ?? []).filter((x) => x.id !== id));
+    setError(null);
+    try {
+      await api.delete(`/contacts/${id}`);
+      setItems((xs) => (xs ?? []).filter((x) => x.id !== id));
+    } catch (err) {
+      setError(errMsg(err, "Couldn't delete."));
+    }
+  };
+
+  const startEdit = (ct: Contact) => {
+    setEditingId(ct.id);
+    setEdit({
+      name: ct.name,
+      role: ct.role ?? "",
+      email: ct.email ?? "",
+      phone: ct.phone ?? "",
+      linkedin: ct.linkedin ?? "",
+      notes: ct.notes ?? "",
+    });
+  };
+
+  const saveEdit = async (id: string) => {
+    setError(null);
+    try {
+      const updated = await api.patch<Contact>(`/contacts/${id}`, {
+        name: edit.name.trim(),
+        role: edit.role.trim() || null,
+        email: edit.email.trim() || null,
+        phone: edit.phone.trim() || null,
+        linkedin: edit.linkedin.trim() || null,
+        notes: edit.notes.trim() || null,
+      });
+      setItems((xs) => (xs ?? []).map((x) => (x.id === id ? updated : x)));
+      setEditingId(null);
+    } catch (err) {
+      setError(errMsg(err, "Couldn't save edit."));
+    }
   };
 
   const set = (k: keyof typeof form) => (e: { target: { value: string } }) =>
     setForm((f) => ({ ...f, [k]: e.target.value }));
+  const setEditField = (k: keyof typeof edit) => (e: { target: { value: string } }) =>
+    setEdit((ed) => ({ ...ed, [k]: e.target.value }));
 
   return (
     <div className="space-y-4">
@@ -424,12 +653,20 @@ function ContactsTab({ jobId }: { jobId: string }) {
         <Input placeholder="Name *" value={form.name} onChange={set("name")} />
         <Input placeholder="Role (recruiter, hiring manager…)" value={form.role} onChange={set("role")} />
         <Input placeholder="Email" type="email" value={form.email} onChange={set("email")} />
+        <Input placeholder="Phone" value={form.phone} onChange={set("phone")} />
         <Input placeholder="LinkedIn URL" value={form.linkedin} onChange={set("linkedin")} />
+        <Input placeholder="Notes" value={form.notes} onChange={set("notes")} />
         <Button size="sm" type="submit" className="col-span-2 justify-self-start">
           <Plus size={13} strokeWidth={2.5} />
           Add contact
         </Button>
       </form>
+
+      {error && (
+        <p className="border-[3px] border-destructive bg-destructive/5 px-2 py-1 text-sm font-bold text-destructive" role="alert">
+          {error}
+        </p>
+      )}
 
       {items === null ? (
         <p className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Loading…</p>
@@ -439,30 +676,61 @@ function ContactsTab({ jobId }: { jobId: string }) {
         <ul className="space-y-2">
           {items.map((ct) => (
             <li key={ct.id} className="border-[3px] border-brut-ink bg-card group p-3">
-              <div className="flex items-baseline gap-2">
-                <span className="text-sm font-black text-foreground">{ct.name}</span>
-                {ct.role && <Badge variant="outline" className="text-muted-foreground border-brut-ink/40">{ct.role}</Badge>}
-                <button
-                  onClick={() => remove(ct.id)}
-                  className="ml-auto hidden text-muted-foreground hover:text-destructive group-hover:block"
-                  aria-label="Delete"
-                >
-                  <Trash2 size={13} strokeWidth={2.5} />
-                </button>
-              </div>
-              <div className="mt-1 flex flex-wrap gap-3 text-xs font-bold">
-                {ct.email && (
-                  <a href={`mailto:${ct.email}`} className="text-brut-applied underline decoration-2 underline-offset-2">
-                    {ct.email}
-                  </a>
-                )}
-                {safeExternalUrl(ct.linkedin) && (
-                  <a href={safeExternalUrl(ct.linkedin)!} target="_blank" rel="noreferrer" className="flex items-center gap-1 text-brut-applied underline decoration-2 underline-offset-2">
-                    LinkedIn
-                    <ExternalLink size={11} strokeWidth={2.5} />
-                  </a>
-                )}
-              </div>
+              {editingId === ct.id ? (
+                <div className="grid grid-cols-2 gap-2">
+                  <Input placeholder="Name *" value={edit.name} onChange={setEditField("name")} />
+                  <Input placeholder="Role" value={edit.role} onChange={setEditField("role")} />
+                  <Input placeholder="Email" type="email" value={edit.email} onChange={setEditField("email")} />
+                  <Input placeholder="Phone" value={edit.phone} onChange={setEditField("phone")} />
+                  <Input placeholder="LinkedIn URL" value={edit.linkedin} onChange={setEditField("linkedin")} />
+                  <Input placeholder="Notes" value={edit.notes} onChange={setEditField("notes")} />
+                  <div className="col-span-2 flex gap-2">
+                    <Button size="sm" onClick={() => saveEdit(ct.id)}>
+                      <Save size={13} strokeWidth={2.5} />
+                      Save
+                    </Button>
+                    <Button size="sm" variant="outline" onClick={() => setEditingId(null)}>
+                      Cancel
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-sm font-black text-foreground">{ct.name}</span>
+                    {ct.role && <Badge variant="outline" className="text-muted-foreground border-brut-ink/40">{ct.role}</Badge>}
+                    <button
+                      onClick={() => startEdit(ct)}
+                      className="ml-auto hidden text-muted-foreground hover:text-foreground group-hover:block"
+                      aria-label="Edit contact"
+                    >
+                      <Pencil size={13} strokeWidth={2.5} />
+                    </button>
+                    <button
+                      onClick={() => remove(ct.id)}
+                      className="hidden text-muted-foreground hover:text-destructive group-hover:block"
+                      aria-label="Delete contact"
+                    >
+                      <Trash2 size={13} strokeWidth={2.5} />
+                    </button>
+                  </div>
+                  <div className="mt-1 flex flex-wrap gap-3 text-xs font-bold">
+                    {ct.email && (
+                      <a href={`mailto:${ct.email}`} className="text-brut-applied underline decoration-2 underline-offset-2">
+                        {ct.email}
+                      </a>
+                    )}
+                    {ct.phone && <span className="text-muted-foreground">{ct.phone}</span>}
+                    {safeExternalUrl(ct.linkedin) && (
+                      <a href={safeExternalUrl(ct.linkedin)!} target="_blank" rel="noreferrer" className="flex items-center gap-1 text-brut-applied underline decoration-2 underline-offset-2">
+                        LinkedIn
+                        <ExternalLink size={11} strokeWidth={2.5} />
+                      </a>
+                    )}
+                  </div>
+                  {ct.notes && <p className="mt-1 whitespace-pre-wrap text-xs font-medium text-muted-foreground">{ct.notes}</p>}
+                </>
+              )}
             </li>
           ))}
         </ul>
@@ -475,6 +743,9 @@ function RemindersTab({ jobId }: { jobId: string }) {
   const [items, setItems] = useState<Reminder[] | null>(null);
   const [note, setNote] = useState("");
   const [dueAt, setDueAt] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [edit, setEdit] = useState({ note: "", due_at: "" });
 
   useEffect(() => {
     const controller = new AbortController();
@@ -491,25 +762,84 @@ function RemindersTab({ jobId }: { jobId: string }) {
   const add = async (e: FormEvent) => {
     e.preventDefault();
     if (!note.trim() || !dueAt) return;
-    const item = await api.post<Reminder>(`/jobs/${jobId}/reminders`, {
-      note: note.trim(),
-      due_at: new Date(dueAt).toISOString(),
-    });
-    setItems((xs) => [...(xs ?? []), item].sort((a, b) => a.due_at.localeCompare(b.due_at)));
-    setNote("");
-    setDueAt("");
+    // datetime-local can hold a partial/malformed string; new Date() on it
+    // yields Invalid Date, whose .toISOString() throws RangeError and would
+    // escape this handler with the button stuck busy and no error shown.
+    const due = new Date(dueAt);
+    if (isNaN(due.getTime())) {
+      setError("Pick a valid date and time.");
+      return;
+    }
+    setError(null);
+    try {
+      const item = await api.post<Reminder>(`/jobs/${jobId}/reminders`, {
+        note: note.trim(),
+        due_at: due.toISOString(),
+      });
+      setItems((xs) => [...(xs ?? []), item].sort((a, b) => a.due_at.localeCompare(b.due_at)));
+      setNote("");
+      setDueAt("");
+    } catch (err) {
+      setError(errMsg(err, "Couldn't add reminder."));
+    }
   };
 
   const complete = async (id: string) => {
-    await api.patch(`/reminders/${id}/complete`);
-    setItems((xs) =>
-      (xs ?? []).map((x) => (x.id === id ? { ...x, completed_at: new Date().toISOString() } : x))
-    );
+    setError(null);
+    const prev = items ?? [];
+    // Optimistic: hide it immediately, roll back on failure so the user isn't
+    // told it's done when it isn't (the 5-min poll would otherwise restore it
+    // silently much later).
+    setItems((xs) => (xs ?? []).map((x) => (x.id === id ? { ...x, completed_at: new Date().toISOString() } : x)));
+    try {
+      await api.patch(`/reminders/${id}/complete`);
+    } catch (err) {
+      setItems(prev);
+      setError(errMsg(err, "Couldn't mark done."));
+    }
   };
 
   const remove = async (id: string) => {
-    await api.delete(`/reminders/${id}`);
-    setItems((xs) => (xs ?? []).filter((x) => x.id !== id));
+    setError(null);
+    try {
+      await api.delete(`/reminders/${id}`);
+      setItems((xs) => (xs ?? []).filter((x) => x.id !== id));
+    } catch (err) {
+      setError(errMsg(err, "Couldn't delete."));
+    }
+  };
+
+  const startEdit = (r: Reminder) => {
+    setEditingId(r.id);
+    // Reformat the stored ISO back into the datetime-local shape (local time,
+    // no timezone), so editing opens with the existing value rather than blank.
+    const d = new Date(r.due_at);
+    const pad = (n: number) => String(n).padStart(2, "0");
+    const local = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+    setEdit({ note: r.note, due_at: local });
+  };
+
+  const saveEdit = async (id: string) => {
+    setError(null);
+    const due = new Date(edit.due_at);
+    if (isNaN(due.getTime())) {
+      setError("Pick a valid date and time.");
+      return;
+    }
+    if (!edit.note.trim()) {
+      setError("Note can't be empty.");
+      return;
+    }
+    try {
+      const updated = await api.patch<Reminder>(`/reminders/${id}`, {
+        note: edit.note.trim(),
+        due_at: due.toISOString(),
+      });
+      setItems((xs) => (xs ?? []).map((x) => (x.id === id ? updated : x)).sort((a, b) => a.due_at.localeCompare(b.due_at)));
+      setEditingId(null);
+    } catch (err) {
+      setError(errMsg(err, "Couldn't save edit."));
+    }
   };
 
   return (
@@ -525,6 +855,12 @@ function RemindersTab({ jobId }: { jobId: string }) {
         </div>
       </form>
 
+      {error && (
+        <p className="border-[3px] border-destructive bg-destructive/5 px-2 py-1 text-sm font-bold text-destructive" role="alert">
+          {error}
+        </p>
+      )}
+
       {items === null ? (
         <p className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Loading…</p>
       ) : items.length === 0 ? (
@@ -534,28 +870,53 @@ function RemindersTab({ jobId }: { jobId: string }) {
           {items.map((r) => {
             const overdue = !r.completed_at && new Date(r.due_at) <= new Date();
             return (
-              <li key={r.id} className="border-[3px] border-brut-ink bg-card group flex items-center gap-3 p-3">
-                <input
-                  type="checkbox"
-                  checked={!!r.completed_at}
-                  disabled={!!r.completed_at}
-                  onChange={() => complete(r.id)}
-                  className="size-4 accent-primary"
-                />
-                <div className={r.completed_at ? "text-sm font-medium text-muted-foreground line-through" : "text-sm font-bold text-foreground"}>
-                  {r.note}
-                  <div className={`text-xs font-bold ${overdue ? "text-destructive" : "text-muted-foreground"}`}>
-                    {new Date(r.due_at).toLocaleString()}
-                    {overdue && " · overdue"}
+              <li key={r.id} className="border-[3px] border-brut-ink bg-card group flex flex-col gap-3 p-3">
+                {editingId === r.id ? (
+                  <div className="space-y-2">
+                    <Input value={edit.note} onChange={(e) => setEdit((ed) => ({ ...ed, note: e.target.value }))} />
+                    <Input type="datetime-local" value={edit.due_at} onChange={(e) => setEdit((ed) => ({ ...ed, due_at: e.target.value }))} />
+                    <div className="flex gap-2">
+                      <Button size="sm" onClick={() => saveEdit(r.id)}>
+                        <Save size={13} strokeWidth={2.5} />
+                        Save
+                      </Button>
+                      <Button size="sm" variant="outline" onClick={() => setEditingId(null)}>
+                        Cancel
+                      </Button>
+                    </div>
                   </div>
-                </div>
-                <button
-                  onClick={() => remove(r.id)}
-                  className="ml-auto hidden text-muted-foreground hover:text-destructive group-hover:block"
-                  aria-label="Delete"
-                >
-                  <Trash2 size={13} strokeWidth={2.5} />
-                </button>
+                ) : (
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="checkbox"
+                      checked={!!r.completed_at}
+                      disabled={!!r.completed_at}
+                      onChange={() => complete(r.id)}
+                      className="size-4 accent-primary"
+                    />
+                    <div className={r.completed_at ? "text-sm font-medium text-muted-foreground line-through" : "text-sm font-bold text-foreground"}>
+                      {r.note}
+                      <div className={`text-xs font-bold ${overdue ? "text-destructive" : "text-muted-foreground"}`}>
+                        {new Date(r.due_at).toLocaleString()}
+                        {overdue && " · overdue"}
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => startEdit(r)}
+                      className="ml-auto hidden text-muted-foreground hover:text-foreground group-hover:block"
+                      aria-label="Edit reminder"
+                    >
+                      <Pencil size={13} strokeWidth={2.5} />
+                    </button>
+                    <button
+                      onClick={() => remove(r.id)}
+                      className="hidden text-muted-foreground hover:text-destructive group-hover:block"
+                      aria-label="Delete"
+                    >
+                      <Trash2 size={13} strokeWidth={2.5} />
+                    </button>
+                  </div>
+                )}
               </li>
             );
           })}

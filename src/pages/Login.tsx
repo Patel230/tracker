@@ -159,7 +159,7 @@ export default function Login() {
               )}
 
               {error && (
-                <div className="border-[3px] border-destructive bg-destructive/20 px-4 py-3">
+                <div className="border-[3px] border-destructive bg-destructive/20 px-4 py-3" role="alert">
                   <p className="text-sm font-bold leading-snug text-destructive">{error}</p>
                   {error.includes("private") && (
                     <a

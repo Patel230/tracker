@@ -92,7 +92,7 @@ All job endpoints require authentication.
 
 List all jobs for the logged-in user.
 
-**Query params:** `?archived=1` to include archived jobs (excluded by default).
+**Query params:** `?archived=1` to include archived jobs (excluded by default). `?limit=N` to cap the result (default 100, max 200) — the list is never unbounded.
 
 **Response** `200`:
 ```json
@@ -119,6 +119,8 @@ List all jobs for the logged-in user.
   }
 ]
 ```
+
+> `applied_at` is a permanent "first applied" timestamp. It is stamped the first time a job reaches `applied` and is **never cleared** when the job moves back to Wishlist or on to Rejected — the history is retained. Stats that count "applied" jobs (response rate, weekly volume) gate on `status = 'applied'` as well as `applied_at IS NOT NULL`, so a demoted job leaves those counts without losing its stamp. `salary_min` may not exceed `salary_max` (enforced on create and patch).
 
 ---
 
@@ -204,6 +206,10 @@ Contacts, activities, and reminders share identical routing patterns under a job
 ### `DELETE /api/contacts/:id`
 
 Same pattern for `activities` and `reminders`.
+
+### `GET /api/contacts` · `GET /api/activities` · `GET /api/reminders`
+
+Top-level lists of every row across all of the user's jobs, joined through `jobs` so an unauthenticated-other-user id never leaks. `?limit=N` caps the result (default 200, max 500). Each reminder/contact row is returned with the joined `company` and `job_title` fields.
 
 **Contact schema:** `{ name, role?, email?, phone?, linkedin?, notes? }`
 

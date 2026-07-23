@@ -96,7 +96,7 @@ export default function ChangePasswordModal({ onClose }: { onClose: () => void }
               </label>
 
               {error && (
-                <p className="flex items-center gap-1.5 border-[3px] border-destructive bg-destructive/5 px-2 py-1 text-sm font-bold text-destructive">
+                <p className="flex items-center gap-1.5 border-[3px] border-destructive bg-destructive/5 px-2 py-1 text-sm font-bold text-destructive" role="alert">
                   <AlertCircle size={14} strokeWidth={2.5} />
                   {error}
                 </p>

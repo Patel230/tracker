@@ -8,7 +8,6 @@ const SESSION_DAYS = 30;
 export type AppEnv = { Bindings: Env; Variables: { userId: string } };
 
 const MIN_SECRET_LENGTH = 32;
-
 // TextEncoder turns a missing secret into a zero-length key, which jose will
 // happily sign AND verify with — a deploy that forgot the secret would accept
 // forged sessions for any user instead of failing. Refuse to start instead.
@@ -23,6 +22,20 @@ function secretKey(secret: string | undefined) {
   return new TextEncoder().encode(secret);
 }
 
+// The flag set createSession and clearSession both need. Centralizing it isn't
+// just tidiness: clearSession used to forward only { path: "/" } to deleteCookie,
+// so the maxAge:0 Set-Cookie it emits dropped `secure`/`sameSite`. Over HTTPS a
+// browser ignores a non-Secure deletion against the existing Secure cookie, so
+// logout and account-delete silently failed to clear the cookie. Both paths now
+// take the same flags from one place — the drift can't come back.
+const sessionCookieOpts = (c: Context<AppEnv>) => ({
+  httpOnly: true,
+  // Secure cookies don't stick on Safari over plain-http localhost dev.
+  secure: new URL(c.req.url).protocol === "https:",
+  sameSite: "Lax" as const,
+  path: "/",
+});
+
 export async function createSession(c: Context<AppEnv>, userId: string, tokenVersion: number) {
   const token = await new SignJWT({ sub: userId, tv: tokenVersion })
     .setProtectedHeader({ alg: "HS256" })
@@ -30,17 +43,13 @@ export async function createSession(c: Context<AppEnv>, userId: string, tokenVer
     .setExpirationTime(`${SESSION_DAYS}d`)
     .sign(secretKey(c.env.JWT_SECRET));
   setCookie(c, AUTH_COOKIE, token, {
-    httpOnly: true,
-    // Secure cookies don't stick on Safari over plain-http localhost dev.
-    secure: new URL(c.req.url).protocol === "https:",
-    sameSite: "Lax",
-    path: "/",
+    ...sessionCookieOpts(c),
     maxAge: SESSION_DAYS * 24 * 60 * 60,
   });
 }
 
 export function clearSession(c: Context<AppEnv>) {
-  deleteCookie(c, AUTH_COOKIE, { path: "/" });
+  deleteCookie(c, AUTH_COOKIE, sessionCookieOpts(c));
 }
 
 // Authenticates the request: the cookie's JWT must be valid AND its token

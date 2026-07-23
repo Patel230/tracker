@@ -6,9 +6,6 @@ export class ApiError extends Error {
   }
 }
 
-export const isUnauthorized = (err: unknown): err is ApiError =>
-  err instanceof ApiError && err.status === 401;
-
 // A 401 anywhere means the session is dead. Rather than every caller guessing
 // what to do, auth.tsx registers one handler here; a 401 clears the user and
 // routes back to login. Without this, a response after the cookie expired would

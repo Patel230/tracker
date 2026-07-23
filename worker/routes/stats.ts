@@ -8,6 +8,13 @@ const INTERVIEW_TYPES = "('phone_screen', 'interview', 'onsite', 'offer')";
 // average and weekly queries did not, so archiving a job removed it from the
 // funnel while it kept dragging on the response rate — the numbers on one
 // screen disagreed with each other.
+//
+// applied_at is a permanent "first applied" timestamp: it is stamped the first
+// time a job reaches "applied" and never cleared on demotion. So gating the
+// response-rate denominator and the weekly chart on `applied_at IS NOT NULL`
+// alone would still count a job that was since moved back to Wishlist or on to
+// Rejected. Both gate on status = 'applied' as well, so a demoted job leaves
+// the denominator and the weekly chart without losing its "first applied" history.
 
 const stats = new Hono<AppEnv>();
 
@@ -30,7 +37,7 @@ stats.get("/", async (c) => {
                     OR EXISTS (SELECT 1 FROM activities a
                                WHERE a.job_id = jobs.id AND a.type IN ${INTERVIEW_TYPES})
                   THEN 1 ELSE 0 END) AS responded
-       FROM jobs WHERE user_id = ? AND archived = 0 AND applied_at IS NOT NULL`
+       FROM jobs WHERE user_id = ? AND archived = 0 AND status = 'applied' AND applied_at IS NOT NULL`
     )
       .bind(userId)
       .first<{ applied: number; responded: number | null }>(),
@@ -49,9 +56,15 @@ stats.get("/", async (c) => {
 
     c.env.DB.prepare(
       // 12 Monday-start weeks can span up to ~89 days, so pull 90 to make sure
-      // the oldest bucket isn't under-counted at the boundary.
+      // the oldest bucket isn't under-counted at the boundary. The cutoff is
+      // ISO-T (strftime …T…Z) to match the T-separated `applied_at` format —
+      // datetime('now','-90 days') is space-separated and compares wrong at the
+      // boundary (a row ~9h older than the cutoff was getting included).
+      // status = 'applied' keeps a demoted job (first-applied stamp retained)
+      // out of the "applications per week" chart.
       `SELECT applied_at FROM jobs
-       WHERE user_id = ? AND archived = 0 AND applied_at >= datetime('now', '-90 days')`
+       WHERE user_id = ? AND archived = 0 AND status = 'applied'
+         AND applied_at >= strftime('%Y-%m-%dT%H:%M:%SZ', 'now', '-90 days')`
     )
       .bind(userId)
       .all<{ applied_at: string }>(),

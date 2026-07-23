@@ -86,9 +86,9 @@ Request → Worker (fetch handler)
 
 ### Authentication
 
-1. **Registration/Login** — validates with Zod, hashes the password (PBKDF2-HMAC-SHA256 via WebCrypto), signs a JWT (HS256, jose), sets the httpOnly cookie `tracker_auth`
+1. **Registration/Login** — validates with Zod, hashes the password (PBKDF2-HMAC-SHA256 via WebCrypto), signs a JWT (HS256, jose), sets the httpOnly cookie `tracker_auth`. Cookie options (`secure`, `sameSite`, `path`, `httpOnly`) come from one shared `sessionCookieOpts` helper used by both `createSession` and `clearSession` — over HTTPS the deletion must carry `Secure` too or the browser ignores it against the existing Secure cookie.
 2. **Verification** — `requireAuth` reads the cookie, verifies the JWT, checks the token version against the database, then sets `c.set("userId", userId)`
-3. **Logout** — clears the auth cookie in the response. It does **not** revoke the JWT: the token stays valid until it expires, so logout protects the browser it ran in, not a token that has already been stolen. Revocation is what `token_version` is for.
+3. **Logout** — clears the auth cookie in the response (with matching flags, see above). It does **not** revoke the JWT: the token stays valid until it expires, so logout protects the browser it ran in, not a token that has already been stolen. Revocation is what `token_version` is for.
 4. **Password change** — increments `users.token_version`, which invalidates every session issued before it
 
 Notes:
@@ -124,6 +124,8 @@ Stats are computed client-side from D1 aggregate queries in `worker/routes/stats
 - Total active, response rate, offers count
 - Avg days from application to first interview
 - Weekly application volume (last 12 weeks)
+
+Every stats query filters `archived = 0`. The response-rate denominator and the weekly chart additionally gate on `status = 'applied'`, because `applied_at` is a permanent "first applied" stamp that is retained when a job is demoted — gating on the stamp alone would keep a demoted job in those counts. List endpoints (`GET /jobs`, the per-job child GETs, and the top-level `/contacts`·`/activities`·`/reminders` lists) are capped with a `?limit` clamp so no query is unbounded.
 
 ## Deployment
 

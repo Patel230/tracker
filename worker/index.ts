@@ -7,11 +7,17 @@ import { requireAuth, type AppEnv } from "./lib/auth";
 
 const app = new Hono<AppEnv>();
 
+const MAX_BODY_BYTES = 1024 * 1024;
+
 // public/_headers only decorates static asset responses — /api/* is generated
 // here and inherits none of it. JSON has no script context, so the CSP is a
 // lockdown rather than the page policy; nosniff is the one that actually
 // matters, stopping a JSON body from being re-interpreted as something else.
 app.use("/api/*", async (c, next) => {
+  const cl = Number(c.req.header("content-length"));
+  if (Number.isFinite(cl) && cl > MAX_BODY_BYTES) {
+    return c.json({ error: "Request body too large" }, 413);
+  }
   // finally, not just after next(): a handler that throws skips straight to
   // app.onError, and headers set only after a successful next() would never
   // reach the 500 response it builds from this same context.
@@ -22,6 +28,11 @@ app.use("/api/*", async (c, next) => {
     c.header("X-Content-Type-Options", "nosniff");
     c.header("Referrer-Policy", "strict-origin-when-cross-origin");
     c.header("X-Frame-Options", "DENY");
+    // Match public/_headers so the CHANGELOG's "security headers on both
+    // static assets and /api/*" claim is true — previously /api/* stopped at
+    // CSP/nosniff/Referrer/X-Frame-Options and missed these two.
+    c.header("Strict-Transport-Security", "max-age=31536000; includeSubDomains");
+    c.header("Permissions-Policy", "geolocation=(), microphone=(), camera=(), interest-cohort=()");
   }
 });
 

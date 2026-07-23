@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Navigate, NavLink, Route, Routes } from "react-router-dom";
 import { Kanban, KeyRound, LayoutDashboard, LogOut, Rows3, Trash2, ChevronDown } from "lucide-react";
 import { useAuth } from "./lib/auth";
@@ -35,7 +35,22 @@ export default function App() {
   const [deletingAccount, setDeletingAccount] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
   useClickOutside(menuRef, () => setMenuOpen(false));
+
+  // Escape closes the menu and returns focus to the trigger, matching the
+  // WAI-ARIA menu pattern. useClickOutside handles mouse/touch, not keyboard.
+  useEffect(() => {
+    if (!menuOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setMenuOpen(false);
+        triggerRef.current?.focus();
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [menuOpen]);
 
   if (loading) {
     return (
@@ -84,7 +99,11 @@ export default function App() {
 
         <div className="ml-auto relative" ref={menuRef}>
           <button
+            ref={triggerRef}
             onClick={() => setMenuOpen(!menuOpen)}
+            aria-haspopup="menu"
+            aria-expanded={menuOpen}
+            aria-label="Account menu"
             className="flex items-center gap-2 px-2 py-1.5 text-xs font-bold uppercase tracking-wider text-muted-foreground hover:text-foreground transition-colors"
           >
             <span className={`flex size-7 items-center justify-center text-sm font-bold text-primary-foreground ${AVATAR_COLORS[colorIndex]}`}>
@@ -94,24 +113,24 @@ export default function App() {
           </button>
 
           {menuOpen && (
-            <div className="absolute right-0 top-full mt-2 w-56 border-[3px] border-brut-ink bg-card z-50">
+            <div role="menu" aria-label="Account" className="absolute right-0 top-full mt-2 w-56 border-[3px] border-brut-ink bg-card z-50">
               <div className="px-4 py-3 border-b-[3px] border-brut-ink/5">
                 <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">Signed in as</p>
                 <p className="text-sm font-semibold text-foreground mt-0.5 truncate">{user.email}</p>
               </div>
               <div className="py-1">
-                <button onClick={() => { setChangingPassword(true); setMenuOpen(false); }}
+                <button role="menuitem" onClick={() => { setChangingPassword(true); setMenuOpen(false); }}
                   className="flex w-full items-center gap-3 px-4 py-2.5 text-xs font-semibold text-muted-foreground hover:text-foreground hover:bg-background/30 transition-colors">
                   <KeyRound size={14} strokeWidth={2} />
                   Change password
                 </button>
-                <button onClick={() => { logout(); setMenuOpen(false); }}
+                <button role="menuitem" onClick={() => { logout(); setMenuOpen(false); }}
                   className="flex w-full items-center gap-3 px-4 py-2.5 text-xs font-semibold text-muted-foreground hover:text-foreground hover:bg-background/30 transition-colors">
                   <LogOut size={14} strokeWidth={2} />
                   Sign out
                 </button>
                 <div className="mx-3 my-1 border-t-[3px] border-brut-ink/5" />
-                <button onClick={() => { setDeletingAccount(true); setMenuOpen(false); }}
+                <button role="menuitem" onClick={() => { setDeletingAccount(true); setMenuOpen(false); }}
                   className="flex w-full items-center gap-3 px-4 py-2.5 text-xs font-semibold text-destructive/70 hover:text-destructive hover:bg-background/30 transition-colors">
                   <Trash2 size={14} strokeWidth={2} />
                   Delete account

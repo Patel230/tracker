@@ -32,8 +32,14 @@ export default function TableView() {
 
   const rows = useMemo(() => {
     const q = query.trim().toLowerCase();
+    // GET /jobs already excludes archived server-side (unless ?archived=1), but
+    // local state can hold a job that was just archived from the drawer — onChange
+    // patches the row in place before a reload. Filter client-side too (matching
+    // Board's columns useMemo) so the archived row doesn't linger with an
+    // "(archived)" tag when showArchived is off, contradicting the server's view.
     const filtered = jobs.filter(
       (j) =>
+        (showArchived || !j.archived) &&
         (status === "all" || j.status === status) &&
         (!q ||
           j.company.toLowerCase().includes(q) ||
@@ -41,9 +47,14 @@ export default function TableView() {
           (j.location ?? "").toLowerCase().includes(q))
     );
     return filtered.sort((a, b) => {
-      const av = a[sortKey] ?? "";
-      const bv = b[sortKey] ?? "";
-      const cmp = String(av).localeCompare(String(bv));
+      let cmp: number;
+      if (sortKey === "status") {
+        cmp = JOB_STATUSES.indexOf(a.status) - JOB_STATUSES.indexOf(b.status);
+      } else {
+        const av = a[sortKey] ?? "";
+        const bv = b[sortKey] ?? "";
+        cmp = String(av).localeCompare(String(bv));
+      }
       return sortAsc ? cmp : -cmp;
     });
   }, [jobs, query, status, sortKey, sortAsc]);
@@ -143,8 +154,17 @@ export default function TableView() {
             {rows.map((j) => (
               <tr
                 key={j.id}
+                role="button"
+                tabIndex={0}
                 onClick={() => setOpenJobId(j.id)}
-                className="cursor-pointer border-b-[3px] border-brut-ink/5 last:border-0 hover:bg-brut-paper/80 transition-colors"
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    setOpenJobId(j.id);
+                  }
+                }}
+                aria-label={`Open ${j.company} — ${j.title}`}
+                className="cursor-pointer border-b-[3px] border-brut-ink/5 last:border-0 hover:bg-brut-paper/80 transition-colors focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-primary"
               >
                 <td className="px-4 py-2.5 font-black text-foreground border-l-[6px]"
                   style={{ borderLeftColor: `var(--color-brut-${j.status})` }}>
@@ -185,6 +205,7 @@ export default function TableView() {
 
       {openJob && (
         <JobDrawer
+          key={openJob.id}
           job={openJob}
           onClose={() => setOpenJobId(null)}
           onChange={(updated) => setJobs((js) => js.map((x) => updated.find((u) => u.id === x.id) ?? x))}

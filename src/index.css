@@ -42,14 +42,20 @@
   --shadow-xl: 12px 12px 0 0 #000000;
   --shadow-2xl: 15px 15px 0 0 #000000;
 
-  /* Pipeline stage colors */
+  /* Pipeline stage colors — Okabe-Ito colorblind-safe palette. These mirror
+     STATUS_HEX in src/lib/theme.ts (the two must stay in sync): swap one, swap
+     the other. `applied` is Okabe-Ito sky-blue #56B4E9 rather than blue
+     #0072B2 because the darker blue fails 4.5:1 with black text on it AND as
+     text on the dark background — sky-blue passes both, so every status can
+     use one text rule (black primary-foreground on the color, the color as
+     text on the dark bg). Verified ≥4.5:1 in both directions for all five. */
   --color-brut-ink: #ffffff;
   --color-brut-paper: #0a0a0a;
-  --color-brut-wishlist: #eab308;
-  --color-brut-applied: #3b82f6;
-  --color-brut-interview: #84cc16;
-  --color-brut-offer: #ec4899;
-  --color-brut-rejected: #f97316;
+  --color-brut-wishlist: #e69f00;
+  --color-brut-applied: #56b4e9;
+  --color-brut-interview: #009e73;
+  --color-brut-offer: #cc79a7;
+  --color-brut-rejected: #d55e00;
 
   /* Non-status activity-log colors: freeform/system entries that aren't a
      pipeline stage. Deliberately mid-tone (not bright), so they pair with

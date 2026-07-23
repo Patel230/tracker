@@ -71,6 +71,61 @@ describe("auth", () => {
     expect((await c.fetch("/api/auth/me")).status).toBe(401);
   });
 
+  it("clears the auth cookie with Secure over HTTPS on logout and account delete", async () => {
+    // The client() helper does setCookie.split(";")[0], keeping only name=value
+    // and throwing away every attribute — so it can't see whether the deletion
+    // carries Secure. That is exactly how the clearSession bug hid: over HTTPS a
+    // non-Secure maxAge:0 Set-Cookie is ignored against the existing Secure
+    // cookie, so the session survived logout. Assert on the raw header instead.
+    const registerAndCookie = async (host: string) => {
+      const res = await app.request(
+        `https://${host}/api/auth/register`,
+        { ...json({ email: "secure@test.dev", password: "password1" }), headers: { "Content-Type": "application/json" } },
+        env
+      );
+      return res.headers.get("set-cookie") ?? "";
+    };
+
+    const loginCookie = await registerAndCookie("secure.test");
+    expect(loginCookie).toContain("Secure"); // createSession sets Secure over https
+
+    const logout = await app.request(
+      "https://secure.test/api/auth/logout",
+      { method: "POST", headers: { Cookie: loginCookie } },
+      env
+    );
+    const logoutCookie = logout.headers.get("set-cookie") ?? "";
+    expect(logoutCookie).toContain("Max-Age=0");
+    expect(logoutCookie).toContain("Secure");
+    expect(logoutCookie).toContain("SameSite=Lax");
+
+    // Account delete must clear the cookie the same way. Re-register (the first
+    // account was logged out, not deleted) then delete with the password.
+    const reg2 = await app.request(
+      "https://secure.test/api/auth/register",
+      { ...json({ email: "secure2@test.dev", password: "password1" }), headers: { "Content-Type": "application/json" } },
+      env
+    );
+    const cookie2 = reg2.headers.get("set-cookie") ?? "";
+    const del = await app.request(
+      "https://secure.test/api/auth/account",
+      { method: "DELETE", body: JSON.stringify({ password: "password1" }), headers: { Cookie: cookie2 } },
+      env
+    );
+    const delCookie = del.headers.get("set-cookie") ?? "";
+    expect(delCookie).toContain("Max-Age=0");
+    expect(delCookie).toContain("Secure");
+
+    // Over plain HTTP (localhost dev) the deletion must NOT carry Secure, or
+    // Safari would drop it and logout would fail there too.
+    const httpLogout = await app.request(
+      "http://localhost/api/auth/logout",
+      { method: "POST" },
+      env
+    );
+    expect(httpLogout.headers.get("set-cookie") ?? "").not.toContain("Secure");
+  });
+
   it("returns 409, not 500, when the same email registers twice or races itself", async () => {
     const register = () =>
       app.request(
@@ -440,6 +495,88 @@ describe("jobs", () => {
     expect(stats.weekly.reduce((n, w) => n + w.count, 0)).toBe(1);
   });
 
+  it("includes a reminder due inside 7 days and excludes one just outside", async () => {
+    // due_at is ISO-T (...T...Z); the cutoff used to be datetime('now','+7 days')
+    // which is space-separated, so at the 8th character ('T' vs ' ') a same-day
+    // in-window reminder sorted AFTER the cutoff and got dropped. The existing
+    // test used a reminder 3 days out, safely inside, and hid the boundary bug.
+    const c = client();
+    await c.fetch("/api/auth/register", json({ email: "boundary@test.dev", password: "password1" }));
+    const job = (await (await c.fetch("/api/jobs", json({ company: "B", title: "R", status: "applied" }))).json()) as Job;
+
+    const inId = (
+      (await (
+        await c.fetch(
+          `/api/jobs/${job.id}/reminders`,
+          json({ note: "inside", due_at: new Date(Date.now() + 6 * 86400000 + 23 * 3600000).toISOString() })
+        )
+      ).json()) as { id: string }
+    ).id;
+    const outId = (
+      (await (
+        await c.fetch(
+          `/api/jobs/${job.id}/reminders`,
+          json({ note: "outside", due_at: new Date(Date.now() + 7 * 86400000 + 3600000).toISOString() })
+        )
+      ).json()) as { id: string }
+    ).id;
+
+    const upcoming = (await (await c.fetch("/api/reminders/upcoming")).json()) as { id: string }[];
+    expect(upcoming.some((r) => r.id === inId)).toBe(true);
+    expect(upcoming.some((r) => r.id === outId)).toBe(false);
+  });
+
+  it("stops counting a demoted job in response rate and weekly, but keeps its applied_at", async () => {
+    // applied_at is a permanent "first applied" stamp: moving a job out of
+    // "applied" must not clear it (history is retained), but it must leave the
+    // response-rate denominator and the weekly chart — both of which used to gate
+    // on applied_at IS NOT NULL alone and so kept counting the demoted job.
+    const c = client();
+    await c.fetch("/api/auth/register", json({ email: "demote@test.dev", password: "password1" }));
+    const job = (await (await c.fetch("/api/jobs", json({ company: "Demote", title: "R" }))).json()) as Job;
+
+    // Wishlist -> applied stamps applied_at.
+    await c.fetch(`/api/jobs/${job.id}/move`, { method: "PATCH", body: JSON.stringify({ status: "applied", index: 0 }) });
+    const appliedJob = (await (await c.fetch(`/api/jobs/${job.id}`)).json()) as Job;
+    expect(appliedJob.applied_at).not.toBeNull();
+
+    // applied -> wishlist: applied_at stays (permanent), but the job is no
+    // longer "applied", so it must drop out of response rate + weekly.
+    await c.fetch(`/api/jobs/${job.id}/move`, { method: "PATCH", body: JSON.stringify({ status: "wishlist", index: 0 }) });
+    const demoted = (await (await c.fetch(`/api/jobs/${job.id}`)).json()) as Job;
+    expect(demoted.applied_at).not.toBeNull(); // permanent stamp retained
+    expect(demoted.status).toBe("wishlist");
+
+    const stats = (await (await c.fetch("/api/stats")).json()) as Stats;
+    expect(stats.funnel.applied).toBe(0);
+    expect(stats.funnel.wishlist).toBe(1);
+    expect(stats.responseRate).toBe(null); // no applied jobs → undefined rate
+    expect(stats.weekly.reduce((n, w) => n + w.count, 0)).toBe(0);
+  });
+
+  it("rejects an inverted salary range on create and on patch", async () => {
+    const c = client();
+    await c.fetch("/api/auth/register", json({ email: "salary@test.dev", password: "password1" }));
+
+    const bad = await c.fetch("/api/jobs", json({ company: "S", title: "R", salary_min: 200000, salary_max: 50000 }));
+    expect(bad.status).toBe(400);
+    expect(((await bad.json()) as { error: string }).error).toBe("Salary min can't be greater than salary max");
+
+    // A valid range goes through.
+    const job = (await (await c.fetch("/api/jobs", json({ company: "S", title: "R", salary_min: 50000, salary_max: 200000 }))).json()) as Job;
+
+    // Patching to an inverted range is rejected too.
+    const badPatch = await c.fetch(`/api/jobs/${job.id}`, {
+      method: "PATCH",
+      body: JSON.stringify({ salary_min: 999999, salary_max: 1 }),
+    });
+    expect(badPatch.status).toBe(400);
+    expect(((await badPatch.json()) as { error: string }).error).toBe("Salary min can't be greater than salary max");
+
+    // Patching only one bound (no cross-field conflict) is fine.
+    expect((await c.fetch(`/api/jobs/${job.id}`, { method: "PATCH", body: JSON.stringify({ salary_max: 80000 }) })).status).toBe(200);
+  });
+
   it("move places the card at the requested slot and renumbers the column", async () => {
     const c = client();
     await c.fetch("/api/auth/register", json({ email: "order@test.dev", password: "password1" }));
@@ -568,5 +705,37 @@ describe("child resources", () => {
     // a malformed email is rejected rather than stored
     const bad = await c.fetch(`/api/jobs/${job.id}/contacts`, json({ name: "Bad", email: "not-an-email" }));
     expect(bad.status).toBe(400);
+  });
+
+  it("lists every contact/activity/reminder across jobs, user-scoped and capped", async () => {
+    const c = client();
+    await c.fetch("/api/auth/register", json({ email: "lists@test.dev", password: "password1" }));
+    const job = (await (await c.fetch("/api/jobs", json({ company: "List", title: "R" }))).json()) as Job;
+    await c.fetch(`/api/jobs/${job.id}/contacts`, json({ name: "One" }));
+    await c.fetch(`/api/jobs/${job.id}/activities`, json({ type: "note", title: "n" }));
+    await c.fetch(
+      `/api/jobs/${job.id}/reminders`,
+      json({ note: "r", due_at: new Date(Date.now() + 86400000).toISOString() })
+    );
+
+    const contacts = (await (await c.fetch("/api/contacts")).json()) as { id: string; company?: string }[];
+    expect(contacts).toHaveLength(1);
+    expect(contacts[0].company).toBe("List"); // joined through jobs
+
+    const activities = (await (await c.fetch("/api/activities")).json()) as { id: string }[];
+    expect(activities).toHaveLength(1);
+
+    const reminders = (await (await c.fetch("/api/reminders")).json()) as { id: string }[];
+    expect(reminders).toHaveLength(1);
+
+    // Another user sees none of these.
+    const other = client();
+    await other.fetch("/api/auth/register", json({ email: "lists2@test.dev", password: "password1" }));
+    expect(((await (await other.fetch("/api/contacts")).json()) as unknown[]).length).toBe(0);
+
+    // ?limit is clamped — asking for 0 falls back to the default, and a huge
+    // value is capped rather than honored.
+    const many = (await (await c.fetch("/api/contacts?limit=99999")).json()) as unknown[];
+    expect(many.length).toBeLessThanOrEqual(500);
   });
 });

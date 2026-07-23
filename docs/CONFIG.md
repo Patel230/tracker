@@ -85,7 +85,7 @@ npm run db:migrate:remote  # production
 
 ### Schema
 
-See `migrations/0001_init.sql` and `migrations/0002_salary_currency_period.sql` for the full schema. The database has five tables:
+See `migrations/0001_init.sql`, `0002_salary_currency_period.sql`, `0003_token_version.sql`, and `0004_indexes.sql` for the full schema. The database has five tables:
 
 | Table | Purpose |
 |---|---|

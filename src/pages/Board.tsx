@@ -10,17 +10,20 @@ import {
   type DragOverEvent,
   type DragStartEvent,
 } from "@dnd-kit/core";
+import { RotateCcw } from "lucide-react";
 import { api } from "../lib/api";
 import { JOB_STATUSES, type Job, type JobStatus } from "../../shared/types";
 import KanbanColumn from "../components/KanbanColumn";
 import { JobCard } from "../components/JobCard";
 import JobDrawer from "../components/JobDrawer";
+import { Button } from "../components/ui/button";
 
 const COL_PREFIX = "col:";
 
 export default function Board() {
   const [jobs, setJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [openJobId, setOpenJobId] = useState<string | null>(null);
 
@@ -29,20 +32,33 @@ export default function Board() {
     api
       .get<Job[]>("/jobs", controller.signal)
       .then((jobs) => {
-        if (!controller.signal.aborted) setJobs(jobs);
+        if (!controller.signal.aborted) {
+          setJobs(jobs);
+          setError(false);
+        }
       })
       .catch((err) => {
         if (err instanceof DOMException && err.name === "AbortError") return;
-        setJobs([]);
+        // Don't wipe the board to empty silently: a transient 5xx used to render
+        // five blank columns with no indication anything went wrong, and the
+        // only recovery was a full reload. Keep whatever we had and show retry.
+        setError(true);
       })
-      .finally(() => setLoading(false));
+      .finally(() => {
+        if (!controller.signal.aborted) setLoading(false);
+      });
     return () => controller.abort();
   }, []);
   useEffect(load, [load]);
 
   const columns = useMemo(() => {
     const map = Object.fromEntries(JOB_STATUSES.map((s) => [s, [] as Job[]])) as Record<JobStatus, Job[]>;
-    for (const j of [...jobs].sort((a, b) => a.sort_order - b.sort_order)) map[j.status].push(j);
+    // GET /jobs already excludes archived server-side, but local state can hold
+    // a job that was just archived from the drawer (onChange patches the row in
+    // place before a reload). Filter it client-side too so the archived card
+    // doesn't linger on the board until the next fetch.
+    for (const j of [...jobs].filter((j) => !j.archived).sort((a, b) => a.sort_order - b.sort_order))
+      map[j.status].push(j);
     return map;
   }, [jobs]);
 
@@ -110,6 +126,17 @@ export default function Board() {
   if (loading) {
     return <div className="flex h-full items-center justify-center text-muted-foreground text-sm font-bold uppercase tracking-wider">Loading…</div>;
   }
+  if (error) {
+    return (
+      <div className="flex h-full flex-col items-center justify-center gap-3 p-6 text-center">
+        <p className="text-sm font-bold uppercase tracking-wider text-destructive">Couldn't load your board.</p>
+        <Button variant="outline" size="sm" onClick={() => { setError(false); setLoading(true); load(); }}>
+          <RotateCcw size={14} strokeWidth={2.5} />
+          Retry
+        </Button>
+      </div>
+    );
+  }
 
   return (
     <div className="h-full overflow-x-auto p-4">
@@ -141,6 +168,7 @@ export default function Board() {
 
       {openJob && (
         <JobDrawer
+          key={openJob.id}
           job={openJob}
           onClose={() => setOpenJobId(null)}
           onChange={(updated) =>

@@ -121,27 +121,20 @@ Or add the domain in the Cloudflare dashboard under **Workers & Pages > tracker 
 
 ## CI/CD
 
-The repo includes a GitHub Actions workflow (`.github/workflows/ci.yml`) that runs on every push/PR:
+The repo includes a GitHub Actions workflow (`.github/workflows/ci.yml`) that on every push/PR runs:
 
 - TypeScript type checking (`npm run typecheck`)
 - Integration tests (`npm test`)
+- Production build (`npm run build`)
 
-To deploy automatically from CI, add these [repository secrets](https://docs.github.com/en/actions/security-guides/using-secrets-in-github-actions):
+On **pushes to `main`** it also deploys the Worker to Cloudflare automatically (PRs only build+test — they never ship). The deploy job needs these [repository secrets](https://docs.github.com/en/actions/security-guides/using-secrets-in-github-actions):
 
 | Secret | Value |
 |---|---|
 | `CLOUDFLARE_API_TOKEN` | Cloudflare API token with Workers & D1 permissions |
 | `CLOUDFLARE_ACCOUNT_ID` | Your Cloudflare account ID |
 
-Then uncomment or add a deploy step in `.github/workflows/ci.yml`:
-
-```yaml
-- name: Deploy
-  run: npm run deploy
-  env:
-    CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-    CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-```
+> **Migrations are still manual.** The deploy job ships the Worker only — it does **not** run `db:migrate:remote`. Apply migrations deliberately after reading the deploy prerequisites (a missing `JWT_SECRET` or the `token_version` migration makes everything 500), then the next push to `main` deploys the code.
 
 ---
 

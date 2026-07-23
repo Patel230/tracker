@@ -1,4 +1,4 @@
-import { forwardRef, type ComponentPropsWithRef } from "react";
+import { forwardRef, type ComponentPropsWithRef, type KeyboardEvent as ReactKeyboardEvent } from "react";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { Clock, MapPin, Wallet } from "lucide-react";
@@ -16,9 +16,9 @@ const BORDER_COLORS: Record<JobStatus, string> = {
 export function salaryLabel(job: Job): string | null {
   const fmt = (n: number) => (n >= 1000 ? `${Math.round(n / 1000)}k` : String(n));
   let range: string | null = null;
-  if (job.salary_min && job.salary_max) range = `${fmt(job.salary_min)}–${fmt(job.salary_max)}`;
-  else if (job.salary_min) range = `${fmt(job.salary_min)}+`;
-  else if (job.salary_max) range = `up to ${fmt(job.salary_max)}`;
+  if (job.salary_min != null && job.salary_max != null) range = `${fmt(job.salary_min)}–${fmt(job.salary_max)}`;
+  else if (job.salary_min != null) range = `${fmt(job.salary_min)}+`;
+  else if (job.salary_max != null) range = `up to ${fmt(job.salary_max)}`;
   if (!range) return null;
   const unit = job.salary_period ? PERIOD_LABELS[job.salary_period] : "";
   return `${job.salary_currency ?? ""}${range}${unit}`;
@@ -56,12 +56,26 @@ export const JobCard = forwardRef<HTMLDivElement, JobCardProps>(function JobCard
   const salary = salaryLabel(job);
   const borderColor = BORDER_COLORS[job.status];
 
+  // Keyboard users open a card the same way mouse users do: the card is a
+  // button (role + tabIndex) so Enter/Space fire onOpen. Without this the
+  // board was mouse-only despite the app investing in focus traps elsewhere.
+  const onKeyDown = (e: ReactKeyboardEvent) => {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      onOpen?.(job.id);
+    }
+  };
+
   return (
     <div
       {...rest}
       ref={ref}
       style={style}
+      role={onOpen ? "button" : undefined}
+      tabIndex={onOpen ? 0 : undefined}
       onClick={() => onOpen?.(job.id)}
+      onKeyDown={onOpen ? onKeyDown : undefined}
+      aria-label={onOpen ? `Open ${job.company} — ${job.title}` : undefined}
       className={`border-[3px] border-brut-ink border-l-[6px] bg-card cursor-grab p-3 transition-all ${borderColor} ${
         overlay ? "rotate-2 shadow-[6px_6px_0_0_#000]" : "hover:shadow-[3px_3px_0_0_#000] hover:-translate-y-0.5"
       } ${className}`}

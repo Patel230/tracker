@@ -11,6 +11,7 @@ import {
   type JobStatus,
 } from "../../shared/types";
 import type { AppEnv } from "../lib/auth";
+import { limitParam } from "../lib/pagination";
 
 // Only http(s). See safeExternalUrl: zod's .url() alone would let a
 // javascript: scheme through to an href.
@@ -40,6 +41,17 @@ const jobFields = z.object({
   notes: z.string().max(20000).nullish(),
   status: z.enum(JOB_STATUSES).optional(),
 });
+
+// Cross-field check kept as a function and applied via .refine() at the POST
+// and PATCH call sites, rather than chained onto jobFields. Chaining .refine on
+// the object turns it into a ZodEffects, which has no .partial() — and the
+// PATCH path needs .partial(). Applying it at the call site keeps both paths
+// working and validates the cross-field rule wherever the schema is used.
+function salaryRangeOk(v: { salary_min?: number | null; salary_max?: number | null }): boolean {
+  const { salary_min, salary_max } = v;
+  return !(salary_min != null && salary_max != null && salary_min > salary_max);
+}
+const SALARY_RANGE_MSG = "Salary min can't be greater than salary max";
 
 // `index` is the 0-based slot inside the target column; the backend renumbers
 // the whole column to integers to avoid fractional-sort drift accumulating.
@@ -129,15 +141,18 @@ jobs.get("/", async (c) => {
   const includeArchived = c.req.query("archived") === "1";
   const { results } = await c.env.DB.prepare(
     `SELECT * FROM jobs WHERE user_id = ? ${includeArchived ? "" : "AND archived = 0"}
-     ORDER BY status, sort_order`
+     ORDER BY status, sort_order
+     LIMIT ?`
   )
-    .bind(c.get("userId"))
+    .bind(c.get("userId"), limitParam(c.req.query("limit"), 100, 200))
     .all<Job>();
   return c.json(results);
 });
 
 jobs.post("/", async (c) => {
-  const parsed = jobFields.safeParse(await c.req.json().catch(() => null));
+  const parsed = jobFields
+    .refine(salaryRangeOk, { message: SALARY_RANGE_MSG, path: ["salary_min"] })
+    .safeParse(await c.req.json().catch(() => null));
   if (!parsed.success) return c.json({ error: firstIssue(parsed.error) }, 400);
   const f = parsed.data;
   const id = crypto.randomUUID();
@@ -191,6 +206,7 @@ jobs.patch("/:id", async (c) => {
   const parsed = jobFields
     .partial()
     .extend({ archived: z.union([z.literal(0), z.literal(1)]).optional() })
+    .refine(salaryRangeOk, { message: SALARY_RANGE_MSG, path: ["salary_min"] })
     .safeParse(await c.req.json().catch(() => null));
   if (!parsed.success) return c.json({ error: firstIssue(parsed.error) }, 400);
   const f = parsed.data;
@@ -288,9 +304,9 @@ function childRoutes<T extends z.ZodTypeAny>(opts: {
     const job = await ownedJob(c, c.get("userId"), c.req.param("id"));
     if (!job) return c.json({ error: "Not found" }, 404);
     const { results } = await c.env.DB.prepare(
-      `SELECT * FROM ${opts.table} WHERE job_id = ? ORDER BY ${opts.orderBy}`
+      `SELECT * FROM ${opts.table} WHERE job_id = ? ORDER BY ${opts.orderBy} LIMIT ?`
     )
-      .bind(job.id)
+      .bind(job.id, limitParam(c.req.query("limit"), 100, 200))
       .all();
     return c.json(results);
   });

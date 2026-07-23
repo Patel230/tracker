@@ -1,10 +1,15 @@
 import type { ActivityType, JobStatus } from "../../shared/types";
 
-// CVD-validated (Okabe-Ito derived) — see palette check in project history.
-// Order matches JOB_STATUSES; adjacent pairs pass deutan/tritan separation.
+// Source of truth for the pipeline stage palette. The CSS tokens in
+// src/index.css (--color-brut-*) mirror these exact hexes — keep them in
+// sync. Okabe-Ito colorblind-safe; `applied` uses Okabe-Ito sky-blue #56B4E9
+// rather than blue #0072B2 because the darker blue fails WCAG 4.5:1 with black
+// text on it AND as text on the dark background. Every status uses one text
+// rule: black on the color (badges/fields), the color as text on the dark bg
+// (the Dashboard funnel labels). Verified ≥4.5:1 in both directions.
 export const STATUS_HEX: Record<JobStatus, string> = {
   wishlist: "#E69F00",
-  applied: "#0072B2",
+  applied: "#56B4E9",
   interview: "#009E73",
   offer: "#CC79A7",
   rejected: "#D55E00",
