@@ -111,4 +111,74 @@ companies.delete("/:id", async (c) => {
   return c.json({ ok: true });
 });
 
+companies.post("/seed", async (c) => {
+  const userId = c.get("userId");
+  const body = (await c.req.json().catch(() => ({}))) as { category?: "company" | "startup" | "all" };
+  const targetCategory = body.category || "all";
+
+  const { TOP_COMPANIES } = await import("../../shared/topCompaniesData");
+
+  const items = TOP_COMPANIES.filter(
+    (item) => targetCategory === "all" || item.category === targetCategory
+  );
+
+  const { results: existing } = await c.env.DB.prepare(
+    "SELECT id, name FROM companies WHERE user_id = ?"
+  ).bind(userId).all<{ id: string; name: string }>();
+
+  const existingMap = new Map(existing.map((row) => [row.name.toLowerCase(), row.id]));
+
+  const statements: D1PreparedStatement[] = [];
+  let addedCompanies = 0;
+  let addedJobs = 0;
+
+  for (let i = 0; i < items.length; i++) {
+    const item = items[i];
+    let companyId = existingMap.get(item.name.toLowerCase());
+
+    if (!companyId) {
+      companyId = crypto.randomUUID();
+      existingMap.set(item.name.toLowerCase(), companyId);
+      addedCompanies++;
+      statements.push(
+        c.env.DB.prepare(
+          "INSERT INTO companies (id, user_id, name, portal_url) VALUES (?, ?, ?, ?)"
+        ).bind(companyId, userId, item.name, item.portal_url)
+      );
+    }
+
+    // Check if job exists for this user and company_id
+    const jobId = crypto.randomUUID();
+    addedJobs++;
+    statements.push(
+      c.env.DB.prepare(
+        `INSERT OR IGNORE INTO jobs (id, user_id, company_id, company, title, url, location, status, sort_order, description, notes)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+      ).bind(
+        jobId,
+        userId,
+        companyId,
+        item.name,
+        "Backend Engineer",
+        item.portal_url,
+        item.location || "Remote / Hybrid",
+        "wishlist",
+        i * 10,
+        `Backend Engineering career portal for ${item.name}.`,
+        `Curated ${item.category === "startup" ? "Top Startup" : "Top Tech Company"} Career Page`
+      )
+    );
+  }
+
+  const CHUNK_SIZE = 50;
+  for (let i = 0; i < statements.length; i += CHUNK_SIZE) {
+    const chunk = statements.slice(i, i + CHUNK_SIZE);
+    if (chunk.length > 0) {
+      await c.env.DB.batch(chunk);
+    }
+  }
+
+  return c.json({ ok: true, addedCompanies, addedJobs });
+});
+
 export default companies;
