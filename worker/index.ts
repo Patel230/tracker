@@ -2,6 +2,7 @@ import { Hono } from "hono";
 import auth from "./routes/auth";
 import jobs from "./routes/jobs";
 import stats from "./routes/stats";
+import companies from "./routes/companies";
 import { contacts, activities, reminders } from "./routes/items";
 import { requireAuth, type AppEnv } from "./lib/auth";
 
@@ -58,6 +59,7 @@ protectedApi.route("/jobs", jobs);
 protectedApi.route("/contacts", contacts);
 protectedApi.route("/activities", activities);
 protectedApi.route("/reminders", reminders);
+protectedApi.route("/companies", companies);
 protectedApi.route("/stats", stats);
 
 app.route("/api", publicApi);

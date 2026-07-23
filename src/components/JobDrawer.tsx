@@ -126,6 +126,7 @@ export default function JobDrawer({ job, onClose, onChange, onDelete }: Props) {
   };
 
   const jobUrl = safeExternalUrl(job.url);
+  const portalUrl = safeExternalUrl(job.portal_url);
 
   return (
     <>
@@ -165,6 +166,17 @@ export default function JobDrawer({ job, onClose, onChange, onDelete }: Props) {
                 className="flex items-center gap-1 text-xs font-bold uppercase tracking-wider text-brut-applied underline decoration-2 underline-offset-2"
               >
                 Job post
+                <ExternalLink size={12} strokeWidth={2.5} />
+              </a>
+            )}
+            {portalUrl && (
+              <a
+                href={portalUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="flex items-center gap-1 border-[3px] border-brut-ink bg-brut-applied px-2 py-0.5 text-xs font-bold uppercase tracking-wider text-primary-foreground"
+              >
+                Apply
                 <ExternalLink size={12} strokeWidth={2.5} />
               </a>
             )}
@@ -288,6 +300,19 @@ function DetailsTab({ job, onSave }: { job: Job; onSave: (f: Partial<Job>) => Pr
   const [error, setError] = useState<string | null>(null);
   useEffect(() => setSaved(false), [form]);
 
+  // Existing companies, so the company field can auto-complete to one the user
+  // already added — picking it links the job and surfaces its portal as an
+  // "Apply" link. Free text still works for anything not in the list.
+  const [companies, setCompanies] = useState<{ id: string; name: string }[]>([]);
+  useEffect(() => {
+    const controller = new AbortController();
+    api
+      .get<{ id: string; name: string }[]>("/companies", controller.signal)
+      .then(setCompanies)
+      .catch(() => setCompanies([]));
+    return () => controller.abort();
+  }, []);
+
   const submit = async (e: FormEvent) => {
     e.preventDefault();
     setError(null);
@@ -297,19 +322,29 @@ function DetailsTab({ job, onSave }: { job: Job; onSave: (f: Partial<Job>) => Pr
       setError("Salary min can't be greater than salary max.");
       return;
     }
+    const typedName = form.company.trim();
+    // Link to an existing company when the typed name matches one (case-
+    // insensitive) — this is the only way the job gets its portal Apply link.
+    // Otherwise fall back to free-text company, exactly as before.
+    const match = companies.find((c) => c.name.toLowerCase() === typedName.toLowerCase());
+    const payload: Partial<Job> = {
+      title: form.title.trim(),
+      url: form.url.trim() || null,
+      location: form.location.trim() || null,
+      salary_min: min,
+      salary_max: max,
+      salary_currency: (form.salary_currency || null) as Job["salary_currency"],
+      salary_period: (form.salary_period || null) as Job["salary_period"],
+      description: form.description || null,
+      notes: form.notes || null,
+    };
+    if (match) {
+      payload.company_id = match.id;
+    } else {
+      payload.company = typedName;
+    }
     try {
-      await onSave({
-        company: form.company.trim(),
-        title: form.title.trim(),
-        url: form.url.trim() || null,
-        location: form.location.trim() || null,
-        salary_min: min,
-        salary_max: max,
-        salary_currency: (form.salary_currency || null) as Job["salary_currency"],
-        salary_period: (form.salary_period || null) as Job["salary_period"],
-        description: form.description || null,
-        notes: form.notes || null,
-      });
+      await onSave(payload);
       setSaved(true);
     } catch (err) {
       // onSave already surfaced a drawer-level banner; keep a local one too so
@@ -325,7 +360,18 @@ function DetailsTab({ job, onSave }: { job: Job; onSave: (f: Partial<Job>) => Pr
     <form onSubmit={submit} className="space-y-4">
       <div className="grid grid-cols-2 gap-3">
         <Field label="Company">
-          <Input required value={form.company} onChange={set("company")} />
+          <Input
+            required
+            list="company-list"
+            value={form.company}
+            onChange={set("company")}
+            placeholder="Pick an existing company or type a new one"
+          />
+          <datalist id="company-list">
+            {companies.map((c) => (
+              <option key={c.id} value={c.name} />
+            ))}
+          </datalist>
         </Field>
         <Field label="Job title">
           <Input required value={form.title} onChange={set("title")} />

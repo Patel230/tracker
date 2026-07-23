@@ -68,9 +68,21 @@ export const PERIOD_LABELS: Record<Period, string> = {
   year: "/yr",
 };
 
+export interface Company {
+  id: string;
+  user_id: string;
+  name: string;
+  portal_url: string | null;
+  created_at: string;
+  updated_at: string;
+  // joined by the list query
+  job_count?: number;
+}
+
 export interface Job {
   id: string;
   user_id: string;
+  company_id: string | null;
   company: string;
   title: string;
   url: string | null;
@@ -87,6 +99,8 @@ export interface Job {
   archived: number;
   created_at: string;
   updated_at: string;
+  // joined from companies for the "Apply" link; null when not linked
+  portal_url?: string | null;
 }
 
 export interface Contact {

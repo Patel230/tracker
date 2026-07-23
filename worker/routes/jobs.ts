@@ -27,7 +27,8 @@ const httpUrl = (label: string, max: number) =>
 const firstIssue = (error: z.ZodError) => error.issues[0]?.message ?? "Invalid fields";
 
 const jobFields = z.object({
-  company: z.string().trim().min(1, "Company is required").max(200),
+  company_id: z.string().trim().max(36).nullish(),
+  company: z.string().trim().max(200).nullish(),
   title: z.string().trim().min(1, "Title is required").max(200),
   url: httpUrl("Job URL", 2000)
     .nullish()
@@ -52,6 +53,15 @@ function salaryRangeOk(v: { salary_min?: number | null; salary_max?: number | nu
   return !(salary_min != null && salary_max != null && salary_min > salary_max);
 }
 const SALARY_RANGE_MSG = "Salary min can't be greater than salary max";
+
+// A job needs a company one of two ways: link an existing company (company_id)
+// or type a free-text name (company). One or the other, never neither, never a
+// company_id that doesn't belong to the user — the latter is checked at the call
+// site where the userId is in scope.
+function companyRefOk(v: { company_id?: string | null; company?: string | null }): boolean {
+  return !!(v.company_id || (v.company && v.company.trim().length > 0));
+}
+const COMPANY_REF_MSG = "Company is required";
 
 // `index` is the 0-based slot inside the target column; the backend renumbers
 // the whole column to integers to avoid fractional-sort drift accumulating.
@@ -86,7 +96,11 @@ const reminderFields = z.object({
 const now = () => new Date().toISOString();
 
 async function ownedJob(c: { env: Env }, userId: string, jobId: string) {
-  return c.env.DB.prepare("SELECT * FROM jobs WHERE id = ? AND user_id = ?")
+  return c.env.DB.prepare(
+    `SELECT j.*, c.portal_url FROM jobs j
+     LEFT JOIN companies c ON c.id = j.company_id
+     WHERE j.id = ? AND j.user_id = ?`
+  )
     .bind(jobId, userId)
     .first<Job>();
 }
@@ -128,7 +142,11 @@ async function renumberColumn(
 
   const placeholders = ordered.map(() => "?").join(",");
   const { results: rows } = await db
-    .prepare(`SELECT * FROM jobs WHERE id IN (${placeholders})`)
+    .prepare(
+      `SELECT j.*, c.portal_url FROM jobs j
+       LEFT JOIN companies c ON c.id = j.company_id
+       WHERE j.id IN (${placeholders})`
+    )
     .bind(...ordered)
     .all<Job>();
   const byId = new Map(rows.map((r) => [r.id, r]));
@@ -140,8 +158,10 @@ const jobs = new Hono<AppEnv>();
 jobs.get("/", async (c) => {
   const includeArchived = c.req.query("archived") === "1";
   const { results } = await c.env.DB.prepare(
-    `SELECT * FROM jobs WHERE user_id = ? ${includeArchived ? "" : "AND archived = 0"}
-     ORDER BY status, sort_order
+    `SELECT j.*, c.portal_url
+     FROM jobs j LEFT JOIN companies c ON c.id = j.company_id
+     WHERE j.user_id = ? ${includeArchived ? "" : "AND j.archived = 0"}
+     ORDER BY j.status, j.sort_order
      LIMIT ?`
   )
     .bind(c.get("userId"), limitParam(c.req.query("limit"), 100, 200))
@@ -150,11 +170,32 @@ jobs.get("/", async (c) => {
 });
 
 jobs.post("/", async (c) => {
+  const userId = c.get("userId");
   const parsed = jobFields
+    .refine(companyRefOk, { message: COMPANY_REF_MSG, path: ["company"] })
     .refine(salaryRangeOk, { message: SALARY_RANGE_MSG, path: ["salary_min"] })
     .safeParse(await c.req.json().catch(() => null));
   if (!parsed.success) return c.json({ error: firstIssue(parsed.error) }, 400);
   const f = parsed.data;
+
+  // Resolve the company: a linked company_id wins (and its name becomes the
+  // denormalized jobs.company), otherwise the typed name is used as-is. A
+  // company_id must belong to this user — otherwise fall back to free text so a
+  // stale id can't silently attach someone else's company.
+  let companyId = f.company_id ?? null;
+  let companyName = f.company?.trim() ?? "";
+  if (f.company_id) {
+    const linked = await c.env.DB.prepare("SELECT id, name FROM companies WHERE id = ? AND user_id = ?")
+      .bind(f.company_id, userId)
+      .first<{ id: string; name: string }>();
+    if (linked) {
+      companyId = linked.id;
+      companyName = linked.name;
+    } else {
+      companyId = null;
+    }
+  }
+
   const id = crypto.randomUUID();
   const status: JobStatus = f.status ?? "wishlist";
   const appliedAt = status === "applied" ? now() : null;
@@ -163,19 +204,20 @@ jobs.post("/", async (c) => {
   const min = await c.env.DB.prepare(
     "SELECT MIN(sort_order) AS m FROM jobs WHERE user_id = ? AND status = ?"
   )
-    .bind(c.get("userId"), status)
+    .bind(userId, status)
     .first<{ m: number | null }>();
   const sortOrder = (min?.m ?? 1) - 1;
 
   await c.env.DB.prepare(
-    `INSERT INTO jobs (id, user_id, company, title, url, location, salary_min, salary_max,
+    `INSERT INTO jobs (id, user_id, company_id, company, title, url, location, salary_min, salary_max,
        salary_currency, salary_period, description, notes, status, sort_order, applied_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
   )
     .bind(
       id,
-      c.get("userId"),
-      f.company,
+      userId,
+      companyId,
+      companyName,
       f.title,
       f.url ?? null,
       f.location ?? null,
@@ -190,7 +232,7 @@ jobs.post("/", async (c) => {
       appliedAt
     )
     .run();
-  const job = await ownedJob(c, c.get("userId"), id);
+  const job = await ownedJob(c, userId, id);
   return c.json(job, 201);
 });
 
@@ -201,7 +243,8 @@ jobs.get("/:id", async (c) => {
 });
 
 jobs.patch("/:id", async (c) => {
-  const job = await ownedJob(c, c.get("userId"), c.req.param("id"));
+  const userId = c.get("userId");
+  const job = await ownedJob(c, userId, c.req.param("id"));
   if (!job) return c.json({ error: "Not found" }, 404);
   const parsed = jobFields
     .partial()
@@ -212,16 +255,48 @@ jobs.patch("/:id", async (c) => {
   const f = parsed.data;
 
   const merged = { ...job, ...Object.fromEntries(Object.entries(f).filter(([, v]) => v !== undefined)) };
+
+  // If the update touches the company, re-resolve it the same way POST does:
+  // a linked company_id overrides the denormalized name; clearing both is
+  // allowed on PATCH (the field-level refine only gates the full-object POST).
+  let companyId = job.company_id;
+  let companyName = job.company;
+  if (f.company_id !== undefined) {
+    if (f.company_id) {
+      const linked = await c.env.DB.prepare("SELECT id, name FROM companies WHERE id = ? AND user_id = ?")
+        .bind(f.company_id, userId)
+        .first<{ id: string; name: string }>();
+      if (linked) {
+        companyId = linked.id;
+        companyName = linked.name;
+      } else {
+        companyId = null;
+        companyName = f.company?.trim() || job.company;
+      }
+    } else {
+      companyId = null;
+      companyName = f.company?.trim() ?? job.company;
+    }
+  } else if (f.company !== undefined) {
+    companyName = f.company?.trim() ?? job.company;
+    // Re-link if the typed name now matches an existing company for this user.
+    const match = await c.env.DB.prepare("SELECT id FROM companies WHERE user_id = ? AND name = ? COLLATE NOCASE")
+      .bind(userId, companyName)
+      .first<{ id: string }>();
+    companyId = match?.id ?? job.company_id;
+  }
+
   const appliedAt =
     merged.status === "applied" && !job.applied_at ? now() : merged.applied_at;
   await c.env.DB.prepare(
-    `UPDATE jobs SET company=?, title=?, url=?, location=?, salary_min=?, salary_max=?,
+    `UPDATE jobs SET company_id=?, company=?, title=?, url=?, location=?, salary_min=?, salary_max=?,
        salary_currency=?, salary_period=?, description=?, notes=?, status=?, archived=?,
        applied_at=?, updated_at=?
      WHERE id = ? AND user_id = ?`
   )
     .bind(
-      merged.company,
+      companyId,
+      companyName,
       merged.title,
       merged.url ?? null,
       merged.location ?? null,
@@ -236,14 +311,14 @@ jobs.patch("/:id", async (c) => {
       appliedAt ?? null,
       now(),
       job.id,
-      c.get("userId")
+      userId
     )
     .run();
 
   if (f.status && f.status !== job.status) {
     await logStatusChange(c.env.DB, job.id, f.status);
   }
-  return c.json(await ownedJob(c, c.get("userId"), job.id));
+  return c.json(await ownedJob(c, userId, job.id));
 });
 
 jobs.patch("/:id/move", async (c) => {
