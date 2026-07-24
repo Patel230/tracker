@@ -266,7 +266,7 @@ export default function Companies() {
               className="rounded-xl gradient-lime text-slate-950 text-xs font-extrabold gap-1.5 shadow-lg shadow-lime-500/25"
             >
               <Code2 size={14} strokeWidth={2.5} />
-              {seeding ? "Importing…" : "All Roles"}
+              {seeding ? "Importing…" : "Import All 1,000+ Companies"}
             </Button>
           </div>
         </div>
