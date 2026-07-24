@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState, type FormEvent } from "react";
-import { Building2, ExternalLink, Pencil, Plus, Save, Trash2, X, RotateCcw, Search, Sparkles, Globe, Flame, Plane, MapPin, Code2, Bot } from "lucide-react";
+import { Building2, ExternalLink, Pencil, Plus, Save, Trash2, X, RotateCcw, Search, Sparkles, Globe, Flame, Plane, MapPin, Code2, Bot, Rocket } from "lucide-react";
 import { api, ApiError } from "../lib/api";
 import { useFetch } from "../lib/useFetch";
 import { STATUS_LABELS, safeExternalUrl, type Company, type Job } from "../../shared/types";
@@ -21,6 +21,10 @@ const CATEGORY_TAGS: Record<string, { label: string; bg: string; text: string; b
   visa_remote: { label: "Visa Sponsor", bg: "bg-cyan-500/15", text: "text-cyan-300", border: "border-cyan-500/30" },
   india_tech: { label: "India Hub", bg: "bg-lime-500/15", text: "text-lime-300", border: "border-lime-500/30" },
 };
+
+function normalizeName(s: string): string {
+  return s.toLowerCase().replace(/\s*\([^)]*\)/g, "").replace(/[^a-z0-9]/g, "").trim();
+}
 
 export default function Companies() {
   const { data, error, loading, reload } = useFetch<Company[]>("/companies");
@@ -48,6 +52,7 @@ export default function Companies() {
   const topCompanyMap = useMemo(() => {
     const map = new Map<string, { category: string; actively_hiring?: boolean; location?: string; portal_url: string }>();
     for (const c of TOP_COMPANIES) {
+      map.set(normalizeName(c.name), c);
       map.set(c.name.toLowerCase().trim(), c);
     }
     return map;
@@ -55,11 +60,20 @@ export default function Companies() {
 
   const filteredCompanies = useMemo(() => {
     return companies.filter((c) => {
-      const info = topCompanyMap.get(c.name.toLowerCase().trim());
+      const info = topCompanyMap.get(normalizeName(c.name)) || topCompanyMap.get(c.name.toLowerCase().trim());
       
-      if (categoryFilter === "actively_hiring" && !info?.actively_hiring) return false;
-      if (categoryFilter !== "all" && categoryFilter !== "actively_hiring") {
-        if (info?.category !== categoryFilter) return false;
+      if (categoryFilter === "actively_hiring") {
+        if (!info?.actively_hiring) return false;
+      } else if (categoryFilter !== "all") {
+        const cat = info?.category;
+        if (!cat) return false;
+        if (categoryFilter === "startup" && (cat === "startup" || cat === "ai_yc")) {
+          // match
+        } else if (categoryFilter === "remote" && (cat === "remote" || cat === "visa_remote" || cat === "ai_yc")) {
+          // match
+        } else if (cat !== categoryFilter) {
+          return false;
+        }
       }
 
       const matchesSearch =
@@ -97,6 +111,9 @@ export default function Companies() {
     try {
       await api.post("/companies/seed", { category });
       await reload();
+      if (category !== "all") {
+        setCategoryFilter(category);
+      }
     } catch (err) {
       setFormError(err instanceof ApiError ? err.message : "Couldn't seed companies.");
     } finally {
@@ -296,6 +313,7 @@ export default function Companies() {
               { id: "ai_yc", label: "AI & YC", Icon: Bot, iconClass: "text-purple-400", activeBg: "bg-purple-500/20 border-purple-500/40 text-purple-300" },
               { id: "actively_hiring", label: "Actively Hiring", Icon: Flame, iconClass: "text-red-400 fill-red-400", activeBg: "bg-red-500/20 border-red-500/40 text-red-300" },
               { id: "company", label: "Tech Giants", Icon: Sparkles, iconClass: "text-amber-400", activeBg: "bg-amber-500/20 border-amber-500/40 text-amber-300" },
+              { id: "startup", label: "Startups", Icon: Rocket, iconClass: "text-fuchsia-400", activeBg: "bg-fuchsia-500/20 border-fuchsia-500/40 text-fuchsia-300" },
               { id: "remote", label: "Remote", Icon: Globe, iconClass: "text-teal-400", activeBg: "bg-teal-500/20 border-teal-500/40 text-teal-300" },
               { id: "visa_remote", label: "Visa & Relocation", Icon: Plane, iconClass: "text-cyan-400", activeBg: "bg-cyan-500/20 border-cyan-500/40 text-cyan-300" },
               { id: "india_tech", label: "India Tech", Icon: MapPin, iconClass: "text-lime-400", activeBg: "bg-lime-500/20 border-lime-500/40 text-lime-300" },
@@ -334,7 +352,7 @@ export default function Companies() {
             {filteredCompanies.map((c) => {
               const href = portalHref(c.portal_url);
               const expanded = expandedId === c.id;
-              const info = topCompanyMap.get(c.name.toLowerCase().trim());
+              const info = topCompanyMap.get(normalizeName(c.name)) || topCompanyMap.get(c.name.toLowerCase().trim());
               const catTag = info?.category ? CATEGORY_TAGS[info.category] : null;
 
               return (
