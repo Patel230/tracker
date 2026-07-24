@@ -128,7 +128,12 @@ companies.post("/seed", async (c) => {
     "SELECT id, name FROM companies WHERE user_id = ?"
   ).bind(userId).all<{ id: string; name: string }>();
 
-  const existingMap = new Map(existing.map((row) => [row.name.toLowerCase(), row.id]));
+  const { results: existingJobs } = await c.env.DB.prepare(
+    "SELECT company_id, title FROM jobs WHERE user_id = ?"
+  ).bind(userId).all<{ company_id: string; title: string }>();
+
+  const existingMap = new Map(existing.map((row) => [row.name.toLowerCase().trim(), row.id]));
+  const existingJobKeys = new Set(existingJobs.map((j) => `${j.company_id}_${j.title.toLowerCase().trim()}`));
 
   const statements: D1PreparedStatement[] = [];
   let addedCompanies = 0;
@@ -136,11 +141,12 @@ companies.post("/seed", async (c) => {
 
   for (let i = 0; i < items.length; i++) {
     const item = items[i];
-    let companyId = existingMap.get(item.name.toLowerCase());
+    const key = item.name.toLowerCase().trim();
+    let companyId = existingMap.get(key);
 
     if (!companyId) {
       companyId = crypto.randomUUID();
-      existingMap.set(item.name.toLowerCase(), companyId);
+      existingMap.set(key, companyId);
       addedCompanies++;
       statements.push(
         c.env.DB.prepare(
@@ -149,27 +155,31 @@ companies.post("/seed", async (c) => {
       );
     }
 
-    // Check if job exists for this user and company_id
-    const jobId = crypto.randomUUID();
-    addedJobs++;
-    statements.push(
-      c.env.DB.prepare(
-        `INSERT OR IGNORE INTO jobs (id, user_id, company_id, company, title, url, location, status, sort_order, description, notes)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
-      ).bind(
-        jobId,
-        userId,
-        companyId,
-        item.name,
-        "Backend Engineer",
-        item.portal_url,
-        item.location || "Remote / Hybrid",
-        "wishlist",
-        i * 10,
-        `Backend Engineering career portal for ${item.name}.`,
-        `Curated ${item.category === "startup" ? "Top Startup" : "Top Tech Company"} Career Page`
-      )
-    );
+    const jobTitle = item.job_title || "Backend Engineer";
+    const jobKey = `${companyId}_${jobTitle.toLowerCase().trim()}`;
+    if (!existingJobKeys.has(jobKey)) {
+      existingJobKeys.add(jobKey);
+      const jobId = crypto.randomUUID();
+      addedJobs++;
+      statements.push(
+        c.env.DB.prepare(
+          `INSERT OR IGNORE INTO jobs (id, user_id, company_id, company, title, url, location, status, sort_order, description, notes)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+        ).bind(
+          jobId,
+          userId,
+          companyId,
+          item.name,
+          jobTitle,
+          item.portal_url,
+          item.location || "Remote / Hybrid",
+          "wishlist",
+          i * 10,
+          `Backend Engineering career portal for ${item.name}.`,
+          `Curated ${item.category === "startup" ? "Top Startup" : "Top Tech Company"} Career Page`
+        )
+      );
+    }
   }
 
   const CHUNK_SIZE = 50;

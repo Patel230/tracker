@@ -3,6 +3,7 @@ import { Building2, ExternalLink, Pencil, Plus, Save, Trash2, X, RotateCcw, Sear
 import { api, ApiError } from "../lib/api";
 import { useFetch } from "../lib/useFetch";
 import { STATUS_LABELS, safeExternalUrl, type Company, type Job } from "../../shared/types";
+import { TOP_COMPANIES } from "../../shared/topCompaniesData";
 import { STATUS_BG, STATUS_TEXT } from "../lib/theme";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
@@ -26,6 +27,7 @@ export default function Companies() {
   const [seeding, setSeeding] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
   const [search, setSearch] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState<"all" | "actively_hiring" | "company" | "startup" | "remote" | "visa_remote" | "india_tech">("all");
 
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editName, setEditName] = useState("");
@@ -34,6 +36,31 @@ export default function Companies() {
   const [jobsByCompany, setJobsByCompany] = useState<Record<string, Job[]>>({});
   const [openJobId, setOpenJobId] = useState<string | null>(null);
   const [expandedId, setExpandedId] = useState<string | null>(null);
+
+  const topCompanyMap = useMemo(() => {
+    const map = new Map<string, { category: string; actively_hiring?: boolean; location?: string; portal_url: string }>();
+    for (const c of TOP_COMPANIES) {
+      map.set(c.name.toLowerCase().trim(), c);
+    }
+    return map;
+  }, []);
+
+  const filteredCompanies = useMemo(() => {
+    return companies.filter((c) => {
+      const info = topCompanyMap.get(c.name.toLowerCase().trim());
+      
+      if (categoryFilter === "actively_hiring" && !info?.actively_hiring) return false;
+      if (categoryFilter !== "all" && categoryFilter !== "actively_hiring") {
+        if (info?.category !== categoryFilter) return false;
+      }
+
+      const matchesSearch =
+        !search.trim() ||
+        c.name.toLowerCase().includes(search.toLowerCase()) ||
+        (c.portal_url && c.portal_url.toLowerCase().includes(search.toLowerCase()));
+      return matchesSearch;
+    });
+  }, [companies, search, categoryFilter, topCompanyMap]);
 
   const add = async (e: FormEvent) => {
     e.preventDefault();
@@ -113,16 +140,6 @@ export default function Companies() {
 
   const expandedJobs = expandedId ? jobsByCompany[expandedId] ?? null : null;
   const openJob = openJobId ? (expandedJobs?.find((j) => j.id === openJobId) ?? null) : null;
-
-  const filteredCompanies = useMemo(() => {
-    return companies.filter((c) => {
-      const matchesSearch =
-        !search.trim() ||
-        c.name.toLowerCase().includes(search.toLowerCase()) ||
-        (c.portal_url && c.portal_url.toLowerCase().includes(search.toLowerCase()));
-      return matchesSearch;
-    });
-  }, [companies, search]);
 
   const totalJobs = useMemo(() => companies.reduce((sum, c) => sum + (c.job_count ?? 0), 0), [companies]);
 
@@ -253,15 +270,38 @@ export default function Companies() {
         )}
       </form>
 
-      <div className="mb-5 flex flex-wrap items-center gap-3">
+      <div className="mb-5 flex flex-wrap items-center gap-2 border-[3px] border-brut-ink bg-muted/40 p-2">
         <div className="relative flex-1 min-w-[200px]">
           <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
           <Input
             placeholder="Search companies or career links…"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="pl-9"
+            className="pl-9 bg-card"
           />
+        </div>
+        <div className="flex flex-wrap gap-1">
+          {[
+            { id: "all", label: "All" },
+            { id: "actively_hiring", label: "🔥 Actively Hiring" },
+            { id: "company", label: "💻 Tech Giants" },
+            { id: "startup", label: "🚀 Startups" },
+            { id: "remote", label: "🌐 Remote" },
+            { id: "visa_remote", label: "✈️ Visa & Relocation" },
+            { id: "india_tech", label: "🇮🇳 India Tech" },
+          ].map((tab) => (
+            <Button
+              key={tab.id}
+              size="sm"
+              variant={categoryFilter === tab.id ? "default" : "outline"}
+              onClick={() => setCategoryFilter(tab.id as any)}
+              className={`text-xs font-bold border-[2px] border-brut-ink ${
+                categoryFilter === tab.id ? "bg-brut-yellow text-brut-ink font-black shadow-[2px_2px_0_0_#000]" : "bg-card"
+              }`}
+            >
+              {tab.label}
+            </Button>
+          ))}
         </div>
       </div>
 
