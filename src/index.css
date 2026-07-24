@@ -1,11 +1,5 @@
 @import "tailwindcss";
 
-/* Self-hosted so the app makes no third-party request on load: the Google Fonts
-   <link> leaked every visitor's IP and User-Agent to Google, blocked the first
-   paint on a server we don't control, and forced font-src to allow an external
-   origin in the CSP. This is the latin subset of the variable face (300–700).
-   Note the design uses font-black (900), which this face does not contain — the
-   browser synthesises it, exactly as it did when Google served the font. */
 @font-face {
   font-family: "Space Grotesk";
   font-style: normal;
@@ -15,57 +9,35 @@
 }
 
 @theme {
-  --font-sans: "Space Grotesk", ui-sans-serif, system-ui, -apple-system, sans-serif;
-  --font-head: "Space Grotesk", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-sans: "Inter", "Space Grotesk", system-ui, -apple-system, sans-serif;
+  --font-head: "Space Grotesk", system-ui, -apple-system, sans-serif;
 
-  /* Neo Brutalism theme — every color here has exactly one job; see
-     src/lib/theme.ts and the color-system plan for the full map of what
-     uses what. Text/icons on any bright color below (primary, destructive,
-     or any brut-* status/activity color) always pair with
-     --color-primary-foreground (verified ≥4.5:1 contrast on all of them). */
-  --color-background: #0a0a0a;
-  --color-foreground: #ffffff;
-  --color-card: #1a1a1a;
-  --color-primary: #ffd23f;
-  --color-primary-foreground: #000000;
-  --color-muted: #2a2a2a;
-  --color-muted-foreground: #d4d4d4;
-  --color-destructive: #ef4444;
-  --color-input: #1a1a1a;
+  /* Modern Vibrant Dark Theme Palette */
+  --color-background: #090d16;
+  --color-foreground: #f8fafc;
+  --color-card: #111827;
+  --color-card-hover: #1f2937;
+  --color-primary: #6366f1;
+  --color-primary-foreground: #ffffff;
+  --color-secondary: #06b6d4;
+  --color-secondary-foreground: #ffffff;
+  --color-muted: #1e293b;
+  --color-muted-foreground: #94a3b8;
+  --color-destructive: #f43f5e;
+  --color-input: #1f2937;
 
-  /* Neo Brutalist hard shadows */
-  --shadow-xs: 3px 3px 0 0 #000000;
-  --shadow-sm: 5px 5px 0 0 #000000;
-  --shadow: 5px 5px 0 0 #000000;
-  --shadow-md: 7px 7px 0 0 #000000;
-  --shadow-lg: 9px 9px 0 0 #000000;
-  --shadow-xl: 12px 12px 0 0 #000000;
-  --shadow-2xl: 15px 15px 0 0 #000000;
+  /* Pipeline Stage Status Colors - Vibrant Modern Palette */
+  --color-brut-ink: #f8fafc;
+  --color-brut-paper: #090d16;
+  --color-brut-wishlist: #f59e0b; /* Amber Gold */
+  --color-brut-applied: #3b82f6;  /* Royal Blue */
+  --color-brut-interview: #10b981;/* Emerald Green */
+  --color-brut-offer: #ec4899;    /* Hot Pink */
+  --color-brut-rejected: #f43f5e; /* Rose Red */
 
-  /* Pipeline stage colors — Okabe-Ito colorblind-safe palette. These mirror
-     STATUS_HEX in src/lib/theme.ts (the two must stay in sync): swap one, swap
-     the other. `applied` is Okabe-Ito sky-blue #56B4E9 rather than blue
-     #0072B2 because the darker blue fails 4.5:1 with black text on it AND as
-     text on the dark background — sky-blue passes both, so every status can
-     use one text rule (black primary-foreground on the color, the color as
-     text on the dark bg). Verified ≥4.5:1 in both directions for all five. */
-  --color-brut-ink: #ffffff;
-  --color-brut-paper: #0a0a0a;
-  --color-brut-wishlist: #e69f00;
-  --color-brut-applied: #56b4e9;
-  --color-brut-interview: #009e73;
-  --color-brut-offer: #cc79a7;
-  --color-brut-rejected: #d55e00;
-
-  /* Non-status activity-log colors: freeform/system entries that aren't a
-     pipeline stage. Deliberately mid-tone (not bright), so they pair with
-     --color-foreground (white) rather than primary-foreground — verified. */
-  --color-brut-note: #64748b;
-  --color-brut-system: #78716c;
-
-  /* Accent for the Landing page's inverted (light-background) terminal
-     panel, where the usual white ink tokens fail contrast. */
-  --color-brut-terminal: #b45309;
+  --color-brut-note: #8b5cf6;
+  --color-brut-system: #64748b;
+  --color-brut-terminal: #f59e0b;
 }
 
 html,
@@ -76,6 +48,11 @@ body,
 
 body {
   background-color: var(--color-background);
+  background-image: 
+    radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.12) 0px, transparent 50%),
+    radial-gradient(at 100% 0%, rgba(6, 182, 212, 0.10) 0px, transparent 50%),
+    radial-gradient(at 50% 100%, rgba(236, 72, 153, 0.08) 0px, transparent 50%);
+  background-attachment: fixed;
   color: var(--color-foreground);
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
@@ -84,12 +61,7 @@ body {
 
 ::selection {
   background-color: var(--color-primary);
-  color: var(--color-primary-foreground);
-}
-
-/* Neo Brutalism: square corners */
-* {
-  border-radius: 0;
+  color: #ffffff;
 }
 
 button:not(:disabled),
@@ -97,33 +69,53 @@ button:not(:disabled),
   cursor: pointer;
 }
 
-/* Neo Brutalist geometric background - 8x8 grid */
-body::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  background-image: 
-    linear-gradient(rgba(255,255,255,0.08) 1px 0,
-                   rgba(255,255,255,0.08) 0 1px),
-    linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px),
-    linear-gradient(transparent 0, transparent calc(100% - 1px), rgba(255,255,255,0.05) calc(100% - 1px));
-  background-size: 32px 32px, 16px 16px, 16px 16px;
-  z-index: -1;
+/* Custom scrollbars */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
 }
 
-@layer base {
-  .text-brut-ink { color: var(--color-brut-ink); }
-  .bg-brut-wishlist { background-color: var(--color-brut-wishlist); }
-  .bg-brut-applied { background-color: var(--color-brut-applied); }
-  .bg-brut-interview { background-color: var(--color-brut-interview); }
-  .bg-brut-offer { background-color: var(--color-brut-offer); }
-  .bg-brut-rejected { background-color: var(--color-brut-rejected); }
-  .bg-brut-note { background-color: var(--color-brut-note); }
-  .bg-brut-system { background-color: var(--color-brut-system); }
-  .text-brut-terminal { color: var(--color-brut-terminal); }
+::-webkit-scrollbar-track {
+  background: rgba(15, 23, 42, 0.6);
 }
 
-/* border-l-brut-{wishlist..rejected,ink} are NOT listed here on purpose: the
-   five --color-brut-* tokens above make Tailwind v4 auto-generate them. The
-   hand-written rule it removed was being emitted twice. */
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* Smooth glassmorphic utility classes */
+.glass-panel {
+  background: rgba(17, 24, 39, 0.75);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.glass-panel-hover {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.glass-panel-hover:hover {
+  background: rgba(31, 41, 55, 0.85);
+  border-color: rgba(99, 102, 241, 0.3);
+  transform: translateY(-2px);
+  box-shadow: 0 12px 30px -10px rgba(99, 102, 241, 0.2);
+}
+
+.gradient-text {
+  background: linear-gradient(135deg, #818cf8 0%, #c084fc 50%, #f472b6 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.gradient-primary {
+  background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+}
+
+.gradient-primary:hover {
+  background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%);
+}

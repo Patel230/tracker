@@ -25,12 +25,12 @@ const tabs = [
 ];
 
 const AVATAR_COLORS = [
-  "bg-brut-wishlist",
-  "bg-brut-applied",
-  "bg-brut-interview",
-  "bg-brut-offer",
-  "bg-brut-rejected",
-  "bg-primary",
+  "bg-amber-500 text-slate-950",
+  "bg-sky-500 text-slate-950",
+  "bg-emerald-500 text-slate-950",
+  "bg-pink-500 text-slate-950",
+  "bg-purple-500 text-white",
+  "bg-indigo-500 text-white",
 ];
 
 export default function App() {
@@ -57,7 +57,7 @@ export default function App() {
 
   if (loading) {
     return (
-      <div className="flex h-full items-center justify-center bg-background text-sm font-bold uppercase tracking-wider text-muted-foreground">
+      <div className="flex h-full items-center justify-center bg-background text-sm font-semibold text-muted-foreground">
         Loading…
       </div>
     );
@@ -78,23 +78,24 @@ export default function App() {
   return (
     <RemindersProvider>
       <div className="flex h-full flex-col bg-background">
-        <header className="flex items-center gap-5 border-b-[3px] border-brut-ink bg-background/90 backdrop-blur-sm px-5 py-2.5">
-          <Logo size={20} />
-          <nav className="flex gap-1">
+        <header className="flex items-center gap-6 border-b border-white/10 bg-slate-950/80 backdrop-blur-xl px-6 py-3 sticky top-0 z-40">
+          <Logo size={22} />
+          
+          <nav className="flex items-center gap-1.5 bg-slate-900/60 p-1.5 rounded-xl border border-white/5">
             {tabs.map((t) => (
               <NavLink
                 key={t.to}
                 to={t.to}
                 end={t.to === "/"}
                 className={({ isActive }) =>
-                  `flex items-center gap-1.5 px-3 py-2 text-xs font-bold uppercase tracking-wider transition-all ${
+                  `flex items-center gap-2 px-3.5 py-1.5 text-xs font-semibold rounded-lg transition-all ${
                     isActive
-                      ? "text-foreground border-b-[3px] border-primary bg-primary/10"
-                      : "text-muted-foreground hover:text-foreground border-b-[3px] border-transparent hover:bg-card"
+                      ? "bg-indigo-600 text-white shadow-lg shadow-indigo-600/30 font-bold"
+                      : "text-slate-400 hover:text-slate-200 hover:bg-white/5"
                   }`
                 }
               >
-                <t.icon size={14} strokeWidth={2.5} />
+                <t.icon size={15} strokeWidth={2} />
                 {t.label}
               </NavLink>
             ))}
@@ -104,9 +105,9 @@ export default function App() {
             <Button
               size="sm"
               onClick={() => setCreatingJob(true)}
-              className="border-[3px] border-brut-ink bg-primary text-primary-foreground font-black text-xs uppercase tracking-wider shadow-[3px_3px_0_0_#000] hover:shadow-[1px_1px_0_0_#000] hover:translate-x-0.5 hover:translate-y-0.5 transition-all"
+              className="gradient-primary text-white font-bold text-xs rounded-xl shadow-lg shadow-indigo-500/25 hover:shadow-indigo-500/40 transition-all gap-1.5 px-4"
             >
-              <Plus size={14} strokeWidth={3} />
+              <Plus size={15} strokeWidth={2.5} />
               Add Job
             </Button>
 
@@ -117,44 +118,44 @@ export default function App() {
                 aria-haspopup="menu"
                 aria-expanded={menuOpen}
                 aria-label="Account menu"
-                className="flex items-center gap-2 px-2 py-1.5 text-xs font-bold uppercase tracking-wider text-muted-foreground hover:text-foreground transition-colors border-[2px] border-transparent hover:border-brut-ink bg-card"
+                className="flex items-center gap-2.5 px-2.5 py-1.5 text-xs font-medium rounded-xl text-slate-300 hover:text-white transition-all bg-slate-900/60 border border-white/10 hover:border-white/20"
               >
-                <span className={`flex size-7 items-center justify-center text-sm font-black text-primary-foreground ${AVATAR_COLORS[colorIndex]} border-[2px] border-brut-ink`}>
+                <span className={`flex size-6 items-center justify-center rounded-lg text-xs font-bold ${AVATAR_COLORS[colorIndex]} shadow-sm`}>
                   {initial}
                 </span>
-                <ChevronDown size={12} strokeWidth={2.5} className={`transition-transform duration-150 ${menuOpen ? "rotate-180" : ""}`} />
+                <ChevronDown size={13} strokeWidth={2} className={`transition-transform duration-200 text-slate-400 ${menuOpen ? "rotate-180" : ""}`} />
               </button>
 
               {menuOpen && (
-                <div role="menu" aria-label="Account" className="absolute right-0 top-full mt-2 w-56 border-[3px] border-brut-ink bg-card shadow-xl z-50">
-                  <div className="px-4 py-3 border-b-[3px] border-brut-ink/10 bg-background/40">
-                    <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">Signed in as</p>
-                    <p className="text-sm font-black text-foreground mt-0.5 truncate">{user.email}</p>
+                <div role="menu" aria-label="Account" className="absolute right-0 top-full mt-2 w-60 border border-white/10 bg-slate-900/95 backdrop-blur-2xl rounded-2xl shadow-2xl z-50 overflow-hidden">
+                  <div className="px-4 py-3 border-b border-white/10 bg-white/5">
+                    <p className="text-[11px] font-medium text-slate-400">Signed in as</p>
+                    <p className="text-xs font-semibold text-white mt-0.5 truncate">{user.email}</p>
                   </div>
-                  <div className="py-1">
+                  <div className="p-1.5">
                     <button
                       role="menuitem"
                       onClick={() => { setChangingPassword(true); setMenuOpen(false); }}
-                      className="flex w-full items-center gap-3 px-4 py-2.5 text-xs font-bold text-muted-foreground hover:text-foreground hover:bg-background/40 transition-colors"
+                      className="flex w-full items-center gap-2.5 px-3 py-2 text-xs font-medium text-slate-300 rounded-lg hover:text-white hover:bg-white/10 transition-colors"
                     >
-                      <KeyRound size={14} strokeWidth={2.5} />
+                      <KeyRound size={15} strokeWidth={2} />
                       Change password
                     </button>
                     <button
                       role="menuitem"
                       onClick={() => { logout(); setMenuOpen(false); }}
-                      className="flex w-full items-center gap-3 px-4 py-2.5 text-xs font-bold text-muted-foreground hover:text-foreground hover:bg-background/40 transition-colors"
+                      className="flex w-full items-center gap-2.5 px-3 py-2 text-xs font-medium text-slate-300 rounded-lg hover:text-white hover:bg-white/10 transition-colors"
                     >
-                      <LogOut size={14} strokeWidth={2.5} />
+                      <LogOut size={15} strokeWidth={2} />
                       Sign out
                     </button>
-                    <div className="mx-3 my-1 border-t-[3px] border-brut-ink/10" />
+                    <div className="my-1 border-t border-white/10" />
                     <button
                       role="menuitem"
                       onClick={() => { setDeletingAccount(true); setMenuOpen(false); }}
-                      className="flex w-full items-center gap-3 px-4 py-2.5 text-xs font-bold text-destructive/80 hover:text-destructive hover:bg-destructive/10 transition-colors"
+                      className="flex w-full items-center gap-2.5 px-3 py-2 text-xs font-medium text-rose-400 rounded-lg hover:text-rose-300 hover:bg-rose-500/10 transition-colors"
                     >
-                      <Trash2 size={14} strokeWidth={2.5} />
+                      <Trash2 size={15} strokeWidth={2} />
                       Delete account
                     </button>
                   </div>
@@ -170,7 +171,6 @@ export default function App() {
           <CreateJobModal
             onClose={() => setCreatingJob(false)}
             onCreated={() => {
-              // Trigger window reload or navigation update if on board/table
               window.dispatchEvent(new Event("job-created"));
             }}
           />

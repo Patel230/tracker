@@ -4,8 +4,6 @@ import { useDroppable } from "@dnd-kit/core";
 import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { api } from "../lib/api";
 import { STATUS_LABELS, type Job, type JobStatus } from "../../shared/types";
-import { STATUS_BG } from "../lib/theme";
-import { Badge } from "../components/ui/badge";
 import { SortableJobCard } from "./JobCard";
 
 interface Props {
@@ -16,12 +14,12 @@ interface Props {
   onCreated: (job: Job) => void;
 }
 
-const COLUMN_COLORS: Record<JobStatus, { headerBg: string }> = {
-  wishlist: { headerBg: "bg-brut-wishlist/15" },
-  applied: { headerBg: "bg-brut-applied/15" },
-  interview: { headerBg: "bg-brut-interview/15" },
-  offer: { headerBg: "bg-brut-offer/15" },
-  rejected: { headerBg: "bg-brut-rejected/15" },
+const COLUMN_THEMES: Record<JobStatus, { accent: string; badgeBg: string; badgeText: string; topBorder: string }> = {
+  wishlist: { accent: "bg-amber-500", badgeBg: "bg-amber-500/10 border-amber-500/20", badgeText: "text-amber-400", topBorder: "from-amber-500 to-orange-500" },
+  applied: { accent: "bg-sky-500", badgeBg: "bg-sky-500/10 border-sky-500/20", badgeText: "text-sky-400", topBorder: "from-sky-500 to-blue-500" },
+  interview: { accent: "bg-emerald-500", badgeBg: "bg-emerald-500/10 border-emerald-500/20", badgeText: "text-emerald-400", topBorder: "from-emerald-500 to-teal-500" },
+  offer: { accent: "bg-pink-500", badgeBg: "bg-pink-500/10 border-pink-500/20", badgeText: "text-pink-400", topBorder: "from-pink-500 to-rose-500" },
+  rejected: { accent: "bg-rose-500", badgeBg: "bg-rose-500/10 border-rose-500/20", badgeText: "text-rose-400", topBorder: "from-rose-500 to-red-600" },
 };
 
 export default function KanbanColumn({ status, droppableId, jobs, onOpen, onCreated }: Props) {
@@ -50,21 +48,27 @@ export default function KanbanColumn({ status, droppableId, jobs, onOpen, onCrea
     }
   };
 
-  const cc = COLUMN_COLORS[status];
+  const theme = COLUMN_THEMES[status];
 
   return (
-    <section className="flex h-full w-72 flex-col border-[3px] border-brut-ink bg-card">
-      <div className={`h-1.5 ${STATUS_BG[status]}`} />
-      <header className={`flex items-center justify-between border-b-[3px] border-brut-ink px-3 py-2.5 ${cc.headerBg}`}>
-        <h2 className="text-xs font-bold uppercase tracking-wider text-foreground">{STATUS_LABELS[status]}</h2>
-        <Badge variant="secondary" className="text-[11px] px-2 py-0.5">
+    <section className="flex h-full w-80 flex-col rounded-2xl border border-white/10 bg-slate-950/60 backdrop-blur-xl overflow-hidden shadow-xl">
+      <div className={`h-1.5 bg-gradient-to-r ${theme.topBorder}`} />
+      
+      <header className="flex items-center justify-between border-b border-white/5 px-4 py-3 bg-white/[0.02]">
+        <div className="flex items-center gap-2">
+          <span className={`size-2.5 rounded-full ${theme.accent}`} />
+          <h2 className="text-xs font-bold uppercase tracking-wider text-slate-200">{STATUS_LABELS[status]}</h2>
+        </div>
+        <span className={`rounded-full border px-2.5 py-0.5 text-[11px] font-bold ${theme.badgeBg} ${theme.badgeText}`}>
           {jobs.length}
-        </Badge>
+        </span>
       </header>
 
       <div
         ref={setNodeRef}
-        className={`min-h-0 flex-1 space-y-2 overflow-y-auto p-2 ${isOver ? "bg-primary/20" : "bg-background/30"}`}
+        className={`min-h-0 flex-1 space-y-3 overflow-y-auto p-3 transition-colors ${
+          isOver ? "bg-indigo-500/10 ring-2 ring-indigo-500/30 ring-inset" : ""
+        }`}
       >
         <SortableContext items={jobs.map((j) => j.id)} strategy={verticalListSortingStrategy}>
           {jobs.map((job) => (
@@ -73,7 +77,7 @@ export default function KanbanColumn({ status, droppableId, jobs, onOpen, onCrea
         </SortableContext>
       </div>
 
-      <footer className="border-t-[3px] border-brut-ink p-2">
+      <footer className="border-t border-white/5 p-3 bg-white/[0.01]">
         {adding ? (
           <form onSubmit={submit} className="space-y-2">
             <input
@@ -81,26 +85,35 @@ export default function KanbanColumn({ status, droppableId, jobs, onOpen, onCrea
               placeholder="Company"
               value={company}
               onChange={(e) => setCompany(e.target.value)}
-              className="flex w-full border-[3px] border-brut-ink bg-input px-3 py-2 text-sm font-medium text-foreground placeholder:text-muted-foreground/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background transition-all duration-150"
+              className="w-full rounded-xl border border-white/10 bg-slate-900 px-3 py-2 text-xs font-medium text-white placeholder:text-slate-500 focus:border-indigo-500 focus:outline-none transition-all"
             />
             <input
               placeholder="Job title"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="flex w-full border-[3px] border-brut-ink bg-input px-3 py-2 text-sm font-medium text-foreground placeholder:text-muted-foreground/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background transition-all duration-150"
+              className="w-full rounded-xl border border-white/10 bg-slate-900 px-3 py-2 text-xs font-medium text-white placeholder:text-slate-500 focus:border-indigo-500 focus:outline-none transition-all"
             />
             {formError && (
-              <p className="border-[3px] border-destructive bg-destructive/5 px-2 py-1 text-xs font-bold text-destructive" role="alert">
+              <p className="rounded-lg border border-rose-500/30 bg-rose-500/10 p-2 text-xs font-medium text-rose-400">
                 {formError}
               </p>
             )}
-            <div className="flex gap-2">
-              <button type="submit" disabled={busy} className="inline-flex items-center justify-center gap-1.5 border-[3px] border-brut-ink bg-primary px-3 py-1.5 text-xs font-bold uppercase tracking-wider text-primary-foreground shadow-[3px_3px_0_0_#000] hover:-translate-y-0.5 hover:shadow-[4px_4px_0_0_#000] active:translate-x-[1px] active:translate-y-[1px] active:shadow-[2px_2px_0_0_#000] transition-all duration-150 disabled:pointer-events-none disabled:opacity-50">
-                <Plus size={13} strokeWidth={2.5} />
+            <div className="flex gap-2 pt-1">
+              <button
+                type="submit"
+                disabled={busy}
+                className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-xl gradient-primary px-3 py-2 text-xs font-bold text-white shadow-lg shadow-indigo-500/20 hover:shadow-indigo-500/40 transition-all disabled:opacity-50"
+              >
+                <Plus size={14} strokeWidth={2.5} />
                 {busy ? "…" : "Add"}
               </button>
-              <button type="button" onClick={() => setAdding(false)} disabled={busy} className="inline-flex items-center justify-center gap-1.5 border-[3px] border-brut-ink bg-card px-3 py-1.5 text-xs font-bold uppercase tracking-wider text-foreground shadow-[3px_3px_0_0_#000] hover:-translate-y-0.5 hover:shadow-[4px_4px_0_0_#000] active:translate-x-[1px] active:translate-y-[1px] active:shadow-[2px_2px_0_0_#000] transition-all duration-150 disabled:pointer-events-none disabled:opacity-50">
-                <X size={13} strokeWidth={2.5} />
+              <button
+                type="button"
+                onClick={() => setAdding(false)}
+                disabled={busy}
+                className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-white/10 bg-slate-900 px-3 py-2 text-xs font-medium text-slate-300 hover:text-white hover:bg-slate-800 transition-all"
+              >
+                <X size={14} strokeWidth={2.5} />
                 Cancel
               </button>
             </div>
@@ -108,13 +121,13 @@ export default function KanbanColumn({ status, droppableId, jobs, onOpen, onCrea
         ) : (
           <button
             onClick={() => setAdding(true)}
-            className={`flex w-full items-center justify-center gap-1.5 border-[3px] border-dashed py-1.5 text-xs font-bold uppercase tracking-wider transition-colors ${
+            className={`flex w-full items-center justify-center gap-1.5 rounded-xl border border-dashed py-2 text-xs font-semibold transition-all ${
               isOver
-                ? `${STATUS_BG[status]} border-brut-ink text-primary-foreground`
-                : "border-brut-ink/30 text-muted-foreground hover:border-brut-ink hover:text-foreground"
+                ? "border-indigo-500 bg-indigo-500/10 text-indigo-400"
+                : "border-white/10 text-slate-400 hover:border-indigo-500/40 hover:bg-white/5 hover:text-slate-200"
             }`}
           >
-            <Plus size={13} strokeWidth={2.5} />
+            <Plus size={14} strokeWidth={2.5} />
             Add job
           </button>
         )}

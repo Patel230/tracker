@@ -3,13 +3,19 @@ import { ArchiveRestore, ChevronDown, ChevronUp, RotateCcw, Search, ListFilter }
 import { useFetch } from "../lib/useFetch";
 import { JOB_STATUSES, STATUS_LABELS, type Job, type JobStatus } from "../../shared/types";
 import { salaryLabel, daysAgo, exactTimestamp } from "../components/JobCard";
-import { STATUS_BG, STATUS_TEXT } from "../lib/theme";
 import JobDrawer from "../components/JobDrawer";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
-import { Badge } from "../components/ui/badge";
 
 type SortKey = "company" | "title" | "status" | "applied_at" | "created_at";
+
+const STATUS_BADGE_STYLES: Record<JobStatus, { bg: string; text: string; border: string }> = {
+  wishlist: { bg: "bg-amber-500/10", text: "text-amber-400", border: "border-amber-500/30" },
+  applied: { bg: "bg-sky-500/10", text: "text-sky-400", border: "border-sky-500/30" },
+  interview: { bg: "bg-emerald-500/10", text: "text-emerald-400", border: "border-emerald-500/30" },
+  offer: { bg: "bg-pink-500/10", text: "text-pink-400", border: "border-pink-500/30" },
+  rejected: { bg: "bg-rose-500/10", text: "text-rose-400", border: "border-rose-500/30" },
+};
 
 export default function TableView() {
   const [query, setQuery] = useState("");
@@ -19,9 +25,6 @@ export default function TableView() {
   const [sortAsc, setSortAsc] = useState(false);
   const [openJobId, setOpenJobId] = useState<string | null>(null);
 
-  // The hook owns the initial load + loading/error/abort lifecycle. A separate
-  // local list is kept so the drawer's onChange/onDelete can patch rows without
-  // refetching; it resets to the freshly loaded data whenever the fetch settles.
   const { data, error, loading, reload } = useFetch<Job[]>(`/jobs${showArchived ? "?archived=1" : ""}`, [
     showArchived,
   ]);
@@ -32,11 +35,6 @@ export default function TableView() {
 
   const rows = useMemo(() => {
     const q = query.trim().toLowerCase();
-    // GET /jobs already excludes archived server-side (unless ?archived=1), but
-    // local state can hold a job that was just archived from the drawer — onChange
-    // patches the row in place before a reload. Filter client-side too (matching
-    // Board's columns useMemo) so the archived row doesn't linger with an
-    // "(archived)" tag when showArchived is off, contradicting the server's view.
     const filtered = jobs.filter(
       (j) =>
         (showArchived || !j.archived) &&
@@ -61,29 +59,25 @@ export default function TableView() {
 
   const openJob = openJobId ? (jobs.find((j) => j.id === openJobId) ?? null) : null;
 
-  // Column headers carry no per-column status meaning, so they all get the
-  // identical treatment instead of borrowing 5 different status colors by
-  // position (the "Added" column previously used bg-brut-ink, i.e. white
-  // text on a white background — invisible).
   const header = (key: SortKey, label: string) => (
     <th
       onClick={() => {
         if (sortKey === key) setSortAsc(!sortAsc);
         else { setSortKey(key); setSortAsc(true); }
       }}
-      className="cursor-pointer select-none bg-primary px-4 py-2.5 text-left text-xs font-bold uppercase tracking-wider text-primary-foreground hover:opacity-80 transition-opacity"
+      className="cursor-pointer select-none bg-slate-900/90 border-b border-white/10 px-4 py-3 text-left text-xs font-bold uppercase tracking-wider text-slate-300 hover:text-white hover:bg-slate-800 transition-all"
     >
-      <span className="flex items-center gap-1">
+      <span className="flex items-center gap-1.5">
         {label}
         {sortKey === key &&
-          (sortAsc ? <ChevronUp size={13} strokeWidth={3} /> : <ChevronDown size={13} strokeWidth={3} />)}
+          (sortAsc ? <ChevronUp size={13} strokeWidth={2.5} className="text-indigo-400" /> : <ChevronDown size={13} strokeWidth={2.5} className="text-indigo-400" />)}
       </span>
     </th>
   );
 
   if (loading) {
     return (
-      <div className="flex h-full items-center justify-center text-sm font-bold uppercase tracking-wider text-muted-foreground">
+      <div className="flex h-full items-center justify-center text-sm font-semibold text-slate-400">
         Loading…
       </div>
     );
@@ -91,9 +85,9 @@ export default function TableView() {
   if (error) {
     return (
       <div className="flex h-full flex-col items-center justify-center gap-3 p-6 text-center">
-        <p className="text-sm font-bold uppercase tracking-wider text-destructive">Couldn't load your jobs.</p>
-        <Button variant="outline" size="sm" onClick={reload}>
-          <RotateCcw size={14} strokeWidth={2.5} />
+        <p className="text-sm font-semibold text-rose-400">Couldn't load your jobs.</p>
+        <Button variant="outline" size="sm" onClick={reload} className="rounded-xl border-white/10">
+          <RotateCcw size={14} strokeWidth={2} />
           Retry
         </Button>
       </div>
@@ -102,105 +96,113 @@ export default function TableView() {
 
   return (
     <div className="h-full overflow-y-auto p-6">
-      <div className="mb-5 flex flex-wrap items-center gap-3">
-        <Button variant="ghost" size="sm" onClick={reload} className="px-2">
-          <RotateCcw size={14} strokeWidth={2.5} />
-        </Button>
-        <div className="relative">
-          <Search size={14} strokeWidth={2.5} className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            placeholder="Search company, title, location…"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            className="pl-8"
-          />
+      <div className="mx-auto max-w-6xl space-y-4">
+        <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-white/10 bg-slate-900/80 p-3 shadow-xl">
+          <Button variant="ghost" size="sm" onClick={reload} className="rounded-xl px-2.5 text-slate-400 hover:text-white">
+            <RotateCcw size={15} strokeWidth={2} />
+          </Button>
+          <div className="relative flex-1 min-w-[200px]">
+            <Search size={15} strokeWidth={2} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+            <Input
+              placeholder="Search company, title, location…"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              className="pl-9 rounded-xl border-white/5 bg-slate-950 text-white placeholder:text-slate-500 text-xs h-9"
+            />
+          </div>
+          <div className="flex items-center gap-2">
+            <ListFilter size={15} strokeWidth={2} className="text-slate-400" />
+            <select
+              value={status}
+              onChange={(e) => setStatus(e.target.value as JobStatus | "all")}
+              className="rounded-xl border border-white/10 bg-slate-950 px-3 py-1.5 text-xs font-semibold text-white focus:outline-none focus:border-indigo-500 h-9"
+            >
+              <option value="all">All statuses</option>
+              {JOB_STATUSES.map((s) => (
+                <option key={s} value={s}>{STATUS_LABELS[s]}</option>
+              ))}
+            </select>
+          </div>
+          <label className="flex items-center gap-2 px-2 text-xs font-medium text-slate-300">
+            <input
+              type="checkbox"
+              checked={showArchived}
+              onChange={(e) => setShowArchived(e.target.checked)}
+              className="size-4 rounded accent-indigo-600"
+            />
+            <ArchiveRestore size={14} strokeWidth={2} className="text-slate-400" />
+            Include archived
+          </label>
+          <span className="ml-auto text-xs font-semibold text-slate-400 px-2">{rows.length} jobs</span>
         </div>
-        <div className="flex items-center gap-1">
-          <ListFilter size={14} strokeWidth={2.5} className="text-muted-foreground" />
-          <select value={status} onChange={(e) => setStatus(e.target.value as JobStatus | "all")} className="flex w-auto border-[3px] border-brut-ink bg-input px-3 py-2.5 text-sm font-medium text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background">
-            <option value="all">All statuses</option>
-            {JOB_STATUSES.map((s) => (
-              <option key={s} value={s}>{STATUS_LABELS[s]}</option>
-            ))}
-          </select>
-        </div>
-        <label className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-foreground">
-          <input
-            type="checkbox"
-            checked={showArchived}
-            onChange={(e) => setShowArchived(e.target.checked)}
-            className="size-4 accent-primary"
-          />
-          <ArchiveRestore size={13} strokeWidth={2.5} className="text-muted-foreground" />
-          Include archived
-        </label>
-        <span className="ml-auto text-xs font-bold uppercase tracking-wider text-muted-foreground">{rows.length} jobs</span>
-      </div>
 
-      <div className="border-[3px] border-brut-ink bg-card overflow-x-auto">
-        <table className="w-full text-sm">
-          <thead>
-            <tr>
-              {header("company", "Company")}
-              {header("title", "Title")}
-              {header("status", "Status")}
-              <th className="bg-primary px-4 py-2.5 text-left text-xs font-bold uppercase tracking-wider text-primary-foreground">Location</th>
-              <th className="bg-primary px-4 py-2.5 text-left text-xs font-bold uppercase tracking-wider text-primary-foreground">Salary</th>
-              {header("applied_at", "Applied")}
-              {header("created_at", "Added")}
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((j) => (
-              <tr
-                key={j.id}
-                role="button"
-                tabIndex={0}
-                onClick={() => setOpenJobId(j.id)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" || e.key === " ") {
-                    e.preventDefault();
-                    setOpenJobId(j.id);
-                  }
-                }}
-                aria-label={`Open ${j.company} — ${j.title}`}
-                className="cursor-pointer border-b-[3px] border-brut-ink/5 last:border-0 hover:bg-brut-paper/80 transition-colors focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-primary"
-              >
-                <td className="px-4 py-2.5 font-black text-foreground border-l-[6px]"
-                  style={{ borderLeftColor: `var(--color-brut-${j.status})` }}>
-                  {j.company}
-                  {!!j.archived && <span className="ml-2 text-xs font-bold text-muted-foreground">(archived)</span>}
-                </td>
-                <td className="px-4 py-2.5 font-medium text-foreground/70">{j.title}</td>
-                <td className="px-4 py-2.5">
-                  <Badge variant="outline" className={`${STATUS_BG[j.status]} ${STATUS_TEXT[j.status]} border-brut-ink`}>
-                    {STATUS_LABELS[j.status]}
-                  </Badge>
-                </td>
-                <td className="px-4 py-2.5 font-medium text-muted-foreground">{j.location ?? "—"}</td>
-                <td className="px-4 py-2.5 font-medium">
-                  <span className="font-bold text-foreground">{salaryLabel(j) ?? "—"}</span>
-                </td>
-                <td
-                  title={j.applied_at ? exactTimestamp(j.applied_at) : undefined}
-                  className="px-4 py-2.5 font-medium text-brut-applied/60"
-                >
-                  {j.applied_at ? daysAgo(j.applied_at) : "—"}
-                </td>
-                <td title={exactTimestamp(j.created_at)} className="px-4 py-2.5 font-medium text-muted-foreground">
-                  {daysAgo(j.created_at)}
-                </td>
-              </tr>
-            ))}
-            {rows.length === 0 && (
+        <div className="rounded-2xl border border-white/10 bg-slate-900/80 shadow-2xl overflow-hidden">
+          <table className="w-full text-xs">
+            <thead>
               <tr>
-                <td colSpan={7} className="px-4 py-10 text-center text-sm font-bold uppercase tracking-wider text-muted-foreground">
-                  No jobs match.
-                </td>
+                {header("company", "Company")}
+                {header("title", "Title")}
+                {header("status", "Status")}
+                <th className="bg-slate-900/90 border-b border-white/10 px-4 py-3 text-left text-xs font-bold uppercase tracking-wider text-slate-300">Location</th>
+                <th className="bg-slate-900/90 border-b border-white/10 px-4 py-3 text-left text-xs font-bold uppercase tracking-wider text-slate-300">Salary</th>
+                {header("applied_at", "Applied")}
+                {header("created_at", "Added")}
               </tr>
-            )}
-          </tbody>
-        </table>
+            </thead>
+            <tbody className="divide-y divide-white/5">
+              {rows.map((j) => {
+                const badge = STATUS_BADGE_STYLES[j.status];
+                return (
+                  <tr
+                    key={j.id}
+                    role="button"
+                    tabIndex={0}
+                    onClick={() => setOpenJobId(j.id)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        setOpenJobId(j.id);
+                      }
+                    }}
+                    aria-label={`Open ${j.company} — ${j.title}`}
+                    className="cursor-pointer hover:bg-white/[0.03] transition-colors"
+                  >
+                    <td className="px-4 py-3 font-bold text-white">
+                      {j.company}
+                      {!!j.archived && <span className="ml-2 text-xs font-normal text-slate-500">(archived)</span>}
+                    </td>
+                    <td className="px-4 py-3 font-medium text-slate-300">{j.title}</td>
+                    <td className="px-4 py-3">
+                      <span className={`rounded-lg border px-2.5 py-1 text-[11px] font-bold ${badge.bg} ${badge.text} ${badge.border}`}>
+                        {STATUS_LABELS[j.status]}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 font-medium text-slate-400">{j.location ?? "—"}</td>
+                    <td className="px-4 py-3 font-semibold text-slate-200">
+                      {salaryLabel(j) ?? "—"}
+                    </td>
+                    <td
+                      title={j.applied_at ? exactTimestamp(j.applied_at) : undefined}
+                      className="px-4 py-3 font-medium text-sky-400"
+                    >
+                      {j.applied_at ? daysAgo(j.applied_at) : "—"}
+                    </td>
+                    <td title={exactTimestamp(j.created_at)} className="px-4 py-3 font-medium text-slate-400">
+                      {daysAgo(j.created_at)}
+                    </td>
+                  </tr>
+                );
+              })}
+              {rows.length === 0 && (
+                <tr>
+                  <td colSpan={7} className="px-4 py-12 text-center text-xs font-semibold text-slate-400">
+                    No jobs match your filters.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
 
       {openJob && (

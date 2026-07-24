@@ -3,15 +3,22 @@ import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { Clock, MapPin, Wallet } from "lucide-react";
 import { PERIOD_LABELS, type Job, type JobStatus } from "../../shared/types";
-import { STATUS_BG, STATUS_TEXT } from "../lib/theme";
 
-const BORDER_COLORS: Record<JobStatus, string> = {
-  wishlist: "border-l-brut-wishlist",
-  applied: "border-l-brut-applied",
-  interview: "border-l-brut-interview",
-  offer: "border-l-brut-offer",
-  rejected: "border-l-brut-rejected",
+const STATUS_PILLS: Record<JobStatus, { border: string; bg: string; text: string }> = {
+  wishlist: { border: "border-amber-500/30", bg: "bg-amber-500/10", text: "text-amber-400" },
+  applied: { border: "border-sky-500/30", bg: "bg-sky-500/10", text: "text-sky-400" },
+  interview: { border: "border-emerald-500/30", bg: "bg-emerald-500/10", text: "text-emerald-400" },
+  offer: { border: "border-pink-500/30", bg: "bg-pink-500/10", text: "text-pink-400" },
+  rejected: { border: "border-rose-500/30", bg: "bg-rose-500/10", text: "text-rose-400" },
 };
+
+const COMPANY_AVATAR_COLORS = [
+  "from-indigo-500 to-purple-600",
+  "from-sky-500 to-blue-600",
+  "from-emerald-500 to-teal-600",
+  "from-amber-500 to-orange-600",
+  "from-pink-500 to-rose-600",
+];
 
 export function salaryLabel(job: Job): string | null {
   const fmt = (n: number) => (n >= 1000 ? `${Math.round(n / 1000)}k` : String(n));
@@ -38,27 +45,17 @@ export function exactTimestamp(iso: string): string {
 export interface JobCardProps extends ComponentPropsWithRef<"div"> {
   job: Job;
   onOpen?: (id: string) => void;
-  // Purely visual — the DragOverlay variant gets the tilted shadow. No hook
-  // behavior depends on it, which is what keeps the overlay from registering a
-  // second draggable under the same id.
   overlay?: boolean;
 }
 
-// Pure presentational markup — NO dnd hooks. Rendered directly inside the
-// <DragOverlay> (where the original code also called useSortable, reading the
-// empty default SortableContext and relying on the node ref being null to avoid
-// a duplicate registration). With a dedicated plain component that whole class
-// of fragility disappears.
 export const JobCard = forwardRef<HTMLDivElement, JobCardProps>(function JobCard(
   { job, onOpen, overlay, style, className = "", ...rest },
   ref
 ) {
   const salary = salaryLabel(job);
-  const borderColor = BORDER_COLORS[job.status];
+  const pill = STATUS_PILLS[job.status];
+  const avatarIndex = Math.abs(job.company.charCodeAt(0)) % COMPANY_AVATAR_COLORS.length;
 
-  // Keyboard users open a card the same way mouse users do: the card is a
-  // button (role + tabIndex) so Enter/Space fire onOpen. Without this the
-  // board was mouse-only despite the app investing in focus traps elsewhere.
   const onKeyDown = (e: ReactKeyboardEvent) => {
     if (e.key === "Enter" || e.key === " ") {
       e.preventDefault();
@@ -76,32 +73,44 @@ export const JobCard = forwardRef<HTMLDivElement, JobCardProps>(function JobCard
       onClick={() => onOpen?.(job.id)}
       onKeyDown={onOpen ? onKeyDown : undefined}
       aria-label={onOpen ? `Open ${job.company} — ${job.title}` : undefined}
-      className={`border-[3px] border-brut-ink border-l-[6px] bg-card cursor-grab p-3 transition-all ${borderColor} ${
-        overlay ? "rotate-2 shadow-[6px_6px_0_0_#000]" : "hover:shadow-[3px_3px_0_0_#000] hover:-translate-y-0.5"
+      className={`relative group rounded-2xl border border-white/10 bg-slate-900/80 p-4 transition-all duration-200 cursor-grab ${
+        overlay
+          ? "rotate-2 shadow-2xl scale-105 border-indigo-500/50 bg-slate-900"
+          : "hover:border-indigo-500/40 hover:bg-slate-900 hover:shadow-xl hover:shadow-indigo-500/10 hover:-translate-y-0.5"
       } ${className}`}
     >
-      <div className="text-sm font-black text-foreground">{job.company}</div>
-      <div className="mt-0.5 text-sm font-medium text-foreground/70">{job.title}</div>
-      <div className="mt-2 flex flex-wrap items-center gap-1.5">
+      <div className="flex items-start gap-3">
+        <div className={`flex size-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br ${COMPANY_AVATAR_COLORS[avatarIndex]} text-white font-bold text-xs shadow-md shadow-black/20`}>
+          {job.company.charAt(0).toUpperCase()}
+        </div>
+        <div className="min-w-0 flex-1">
+          <h3 className="text-sm font-bold text-slate-100 group-hover:text-indigo-400 transition-colors truncate">
+            {job.company}
+          </h3>
+          <p className="text-xs font-semibold text-slate-300 truncate mt-0.5">
+            {job.title}
+          </p>
+        </div>
+      </div>
+
+      <div className="mt-3 flex flex-wrap items-center gap-2 pt-2 border-t border-white/5">
         {job.location && (
-          <span className="flex items-center gap-1 border-[3px] border-brut-ink/30 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
-            <MapPin size={10} strokeWidth={2.5} />
+          <span className="flex items-center gap-1 rounded-lg bg-slate-800/80 border border-white/5 px-2 py-1 text-[11px] font-medium text-slate-300">
+            <MapPin size={11} className="text-slate-400" strokeWidth={2} />
             {job.location}
           </span>
         )}
         {salary && (
-          <span
-            className={`flex items-center gap-1 border-[3px] border-brut-ink px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider ${STATUS_BG[job.status]} ${STATUS_TEXT[job.status]}`}
-          >
-            <Wallet size={10} strokeWidth={2.5} />
+          <span className={`flex items-center gap-1 rounded-lg border px-2 py-1 text-[11px] font-semibold ${pill.border} ${pill.bg} ${pill.text}`}>
+            <Wallet size={11} strokeWidth={2} />
             {salary}
           </span>
         )}
         <span
           title={exactTimestamp(job.applied_at ?? job.created_at)}
-          className="ml-auto flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground"
+          className="ml-auto flex items-center gap-1 text-[11px] font-medium text-slate-400"
         >
-          <Clock size={10} strokeWidth={2.5} />
+          <Clock size={11} strokeWidth={2} />
           {daysAgo(job.applied_at ?? job.created_at)}
         </span>
       </div>
@@ -114,8 +123,6 @@ interface SortableJobCardProps {
   onOpen?: (id: string) => void;
 }
 
-// Column usage — wraps JobCard with the sortable id. Board columns use this;
-// the DragOverlay uses plain <JobCard> above.
 export function SortableJobCard({ job, onOpen }: SortableJobCardProps) {
   const sortable = useSortable({ id: job.id });
   return (
@@ -126,7 +133,7 @@ export function SortableJobCard({ job, onOpen }: SortableJobCardProps) {
       style={{
         transform: CSS.Transform.toString(sortable.transform),
         transition: sortable.transition,
-        opacity: sortable.isDragging ? 0.25 : 1,
+        opacity: sortable.isDragging ? 0.3 : 1,
       }}
       {...sortable.attributes}
       {...sortable.listeners}

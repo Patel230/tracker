@@ -4,7 +4,6 @@ import { api, ApiError } from "../lib/api";
 import { useFetch } from "../lib/useFetch";
 import { STATUS_LABELS, safeExternalUrl, type Company, type Job } from "../../shared/types";
 import { TOP_COMPANIES } from "../../shared/topCompaniesData";
-import { STATUS_BG, STATUS_TEXT } from "../lib/theme";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { Badge } from "../components/ui/badge";
@@ -13,6 +12,14 @@ import JobDrawer from "../components/JobDrawer";
 function portalHref(url: string | null): string | null {
   return safeExternalUrl(url);
 }
+
+const CATEGORY_TAGS: Record<string, { label: string; bg: string; text: string; border: string }> = {
+  company: { label: "Tech Giant", bg: "bg-amber-500/10", text: "text-amber-400", border: "border-amber-500/20" },
+  startup: { label: "Startup", bg: "bg-indigo-500/10", text: "text-indigo-400", border: "border-indigo-500/20" },
+  remote: { label: "Remote-First", bg: "bg-emerald-500/10", text: "text-emerald-400", border: "border-emerald-500/20" },
+  visa_remote: { label: "Visa Sponsor", bg: "bg-sky-500/10", text: "text-sky-400", border: "border-sky-500/20" },
+  india_tech: { label: "India Hub", bg: "bg-orange-500/10", text: "text-orange-400", border: "border-orange-500/20" },
+};
 
 export default function Companies() {
   const { data, error, loading, reload } = useFetch<Company[]>("/companies");
@@ -145,7 +152,7 @@ export default function Companies() {
 
   if (loading) {
     return (
-      <div className="flex h-full items-center justify-center text-sm font-bold uppercase tracking-wider text-muted-foreground">
+      <div className="flex h-full items-center justify-center text-sm font-semibold text-slate-400">
         Loading…
       </div>
     );
@@ -153,9 +160,9 @@ export default function Companies() {
   if (error) {
     return (
       <div className="flex h-full flex-col items-center justify-center gap-3 p-6 text-center">
-        <p className="text-sm font-bold uppercase tracking-wider text-destructive">Couldn't load companies.</p>
-        <Button variant="outline" size="sm" onClick={reload}>
-          <RotateCcw size={14} strokeWidth={2.5} />
+        <p className="text-sm font-semibold text-rose-400">Couldn't load companies.</p>
+        <Button variant="outline" size="sm" onClick={reload} className="rounded-xl border-white/10">
+          <RotateCcw size={14} strokeWidth={2} />
           Retry
         </Button>
       </div>
@@ -164,294 +171,308 @@ export default function Companies() {
 
   return (
     <div className="h-full overflow-y-auto p-6">
-      <div className="mb-5 flex flex-wrap items-baseline justify-between gap-3">
-        <div>
-          <h1 className="text-lg font-black uppercase tracking-tight text-foreground">Companies & Startup Directory</h1>
-          <p className="mt-0.5 text-xs font-bold uppercase tracking-wider text-muted-foreground">
-            {companies.length} {companies.length === 1 ? "company" : "companies"} · {totalJobs} Backend & Tech jobs tracked
-          </p>
-        </div>
+      <div className="mx-auto max-w-6xl space-y-6">
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <div>
+            <h1 className="text-xl font-bold tracking-tight text-white">Companies & Startup Directory</h1>
+            <p className="mt-1 text-xs font-medium text-slate-400">
+              {companies.length} verified companies · {totalJobs} Backend & Tech jobs tracked
+            </p>
+          </div>
 
-        <div className="flex flex-wrap gap-2">
-          <Button
-            size="sm"
-            variant="outline"
-            disabled={seeding}
-            onClick={() => seedTopCompanies("actively_hiring")}
-            className="border-[3px] border-brut-ink bg-destructive/10 text-destructive border-destructive text-xs font-black shadow-[2px_2px_0_0_#ef4444]"
-          >
-            <Flame size={13} className="text-destructive fill-destructive" strokeWidth={2.5} />
-            {seeding ? "Importing…" : "Top 10 Actively Hiring"}
-          </Button>
-          <Button
-            size="sm"
-            variant="outline"
-            disabled={seeding}
-            onClick={() => seedTopCompanies("company")}
-            className="border-[3px] border-brut-ink bg-card text-xs font-bold"
-          >
-            <Sparkles size={13} className="text-amber-500" strokeWidth={2.5} />
-            {seeding ? "Importing…" : "+ Top 100 Tech Companies"}
-          </Button>
-          <Button
-            size="sm"
-            variant="outline"
-            disabled={seeding}
-            onClick={() => seedTopCompanies("startup")}
-            className="border-[3px] border-brut-ink bg-card text-xs font-bold"
-          >
-            <Rocket size={13} className="text-indigo-500" strokeWidth={2.5} />
-            {seeding ? "Importing…" : "+ Top 100 Startups"}
-          </Button>
-          <Button
-            size="sm"
-            variant="outline"
-            disabled={seeding}
-            onClick={() => seedTopCompanies("remote")}
-            className="border-[3px] border-brut-ink bg-card text-xs font-bold"
-          >
-            <Globe size={13} className="text-emerald-500" strokeWidth={2.5} />
-            {seeding ? "Importing…" : "+ Top 100 Remote Companies"}
-          </Button>
-          <Button
-            size="sm"
-            variant="outline"
-            disabled={seeding}
-            onClick={() => seedTopCompanies("visa_remote")}
-            className="border-[3px] border-brut-ink bg-card text-xs font-bold"
-          >
-            <Plane size={13} className="text-sky-500" strokeWidth={2.5} />
-            {seeding ? "Importing…" : "+ Visa & Relocation"}
-          </Button>
-          <Button
-            size="sm"
-            variant="outline"
-            disabled={seeding}
-            onClick={() => seedTopCompanies("india_tech")}
-            className="border-[3px] border-brut-ink bg-card text-xs font-bold"
-          >
-            <MapPin size={13} className="text-orange-500" strokeWidth={2.5} />
-            {seeding ? "Importing…" : "Top Companies in India"}
-          </Button>
-          <Button
-            size="sm"
-            variant="outline"
-            disabled={seeding}
-            onClick={() => seedTopCompanies("all")}
-            className="border-[3px] border-brut-ink bg-primary text-primary-foreground text-xs font-black"
-          >
-            <Code2 size={13} strokeWidth={2.5} />
-            {seeding ? "Importing…" : "All Python + AI Companies"}
-          </Button>
-        </div>
-      </div>
-
-      <form onSubmit={add} className="mb-4 grid grid-cols-[1fr_1fr_auto] gap-2 border-[3px] border-brut-ink bg-card p-3">
-        <Input
-          required
-          placeholder="Company name *"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-        />
-        <Input
-          type="url"
-          placeholder="Official career portal URL (https://…)"
-          value={portalUrl}
-          onChange={(e) => setPortalUrl(e.target.value)}
-        />
-        <Button type="submit" size="sm" disabled={busy} className="shrink-0">
-          <Plus size={14} strokeWidth={2.5} />
-          {busy ? "…" : "Add"}
-        </Button>
-        {formError && (
-          <p className="col-span-3 border-[3px] border-destructive bg-destructive/5 px-2 py-1 text-xs font-bold text-destructive" role="alert">
-            {formError}
-          </p>
-        )}
-      </form>
-
-      <div className="mb-5 flex flex-wrap items-center gap-2 border-[3px] border-brut-ink bg-muted/40 p-2">
-        <div className="relative flex-1 min-w-[200px]">
-          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            placeholder="Search companies or career links…"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="pl-9 bg-card"
-          />
-        </div>
-        <div className="flex flex-wrap gap-1">
-          {[
-            { id: "all", label: "All", Icon: Building2, iconClass: "text-muted-foreground" },
-            { id: "actively_hiring", label: "Actively Hiring", Icon: Flame, iconClass: "text-destructive fill-destructive" },
-            { id: "company", label: "Tech Giants", Icon: Sparkles, iconClass: "text-amber-500" },
-            { id: "startup", label: "Startups", Icon: Rocket, iconClass: "text-indigo-500" },
-            { id: "remote", label: "Remote", Icon: Globe, iconClass: "text-emerald-500" },
-            { id: "visa_remote", label: "Visa & Relocation", Icon: Plane, iconClass: "text-sky-500" },
-            { id: "india_tech", label: "India Tech", Icon: MapPin, iconClass: "text-orange-500" },
-          ].map(({ id, label, Icon, iconClass }) => (
+          <div className="flex flex-wrap gap-2">
             <Button
-              key={id}
               size="sm"
-              variant={categoryFilter === id ? "default" : "outline"}
-              onClick={() => setCategoryFilter(id as any)}
-              className={`text-xs font-bold border-[2px] border-brut-ink gap-1.5 ${
-                categoryFilter === id ? "bg-brut-yellow text-brut-ink font-black shadow-[2px_2px_0_0_#000]" : "bg-card"
-              }`}
+              variant="outline"
+              disabled={seeding}
+              onClick={() => seedTopCompanies("actively_hiring")}
+              className="rounded-xl border border-rose-500/30 bg-rose-500/10 text-rose-400 text-xs font-bold hover:bg-rose-500/20 gap-1.5"
             >
-              <Icon size={13} className={iconClass} strokeWidth={2.5} />
-              {label}
+              <Flame size={14} className="text-rose-400 fill-rose-400" strokeWidth={2} />
+              {seeding ? "Importing…" : "Top 10 Actively Hiring"}
             </Button>
-          ))}
-        </div>
-      </div>
-
-      {filteredCompanies.length === 0 ? (
-        <div className="border-[3px] border-dashed border-brut-ink/40 p-10 text-center">
-          <Building2 size={28} strokeWidth={1.5} className="mx-auto text-muted-foreground" />
-          <p className="mt-3 text-sm font-bold uppercase tracking-wider text-muted-foreground">
-            No matching companies found.
-          </p>
-          <div className="mt-4 flex justify-center gap-2">
-            <Button size="sm" onClick={() => seedTopCompanies("all")} disabled={seeding}>
-              <Sparkles size={14} strokeWidth={2.5} />
-              Import All 200 Top Companies & Startups
+            <Button
+              size="sm"
+              variant="outline"
+              disabled={seeding}
+              onClick={() => seedTopCompanies("company")}
+              className="rounded-xl border border-white/10 bg-slate-900 text-slate-200 text-xs font-semibold hover:bg-slate-800 gap-1.5"
+            >
+              <Sparkles size={14} className="text-amber-400" strokeWidth={2} />
+              {seeding ? "Importing…" : "Top 100 Tech Giants"}
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              disabled={seeding}
+              onClick={() => seedTopCompanies("startup")}
+              className="rounded-xl border border-white/10 bg-slate-900 text-slate-200 text-xs font-semibold hover:bg-slate-800 gap-1.5"
+            >
+              <Rocket size={14} className="text-indigo-400" strokeWidth={2} />
+              {seeding ? "Importing…" : "Top 100 Startups"}
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              disabled={seeding}
+              onClick={() => seedTopCompanies("remote")}
+              className="rounded-xl border border-white/10 bg-slate-900 text-slate-200 text-xs font-semibold hover:bg-slate-800 gap-1.5"
+            >
+              <Globe size={14} className="text-emerald-400" strokeWidth={2} />
+              {seeding ? "Importing…" : "Top 100 Remote"}
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              disabled={seeding}
+              onClick={() => seedTopCompanies("visa_remote")}
+              className="rounded-xl border border-white/10 bg-slate-900 text-slate-200 text-xs font-semibold hover:bg-slate-800 gap-1.5"
+            >
+              <Plane size={14} className="text-sky-400" strokeWidth={2} />
+              {seeding ? "Importing…" : "Visa & Relocation"}
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              disabled={seeding}
+              onClick={() => seedTopCompanies("india_tech")}
+              className="rounded-xl border border-white/10 bg-slate-900 text-slate-200 text-xs font-semibold hover:bg-slate-800 gap-1.5"
+            >
+              <MapPin size={14} className="text-orange-400" strokeWidth={2} />
+              {seeding ? "Importing…" : "India Tech Hubs"}
+            </Button>
+            <Button
+              size="sm"
+              disabled={seeding}
+              onClick={() => seedTopCompanies("all")}
+              className="rounded-xl gradient-primary text-white text-xs font-bold gap-1.5 shadow-lg shadow-indigo-500/25"
+            >
+              <Code2 size={14} strokeWidth={2} />
+              {seeding ? "Importing…" : "All Python + AI Roles"}
             </Button>
           </div>
         </div>
-      ) : (
-        <div className="space-y-2">
-          {filteredCompanies.map((c) => {
-            const href = portalHref(c.portal_url);
-            const expanded = expandedId === c.id;
-            return (
-              <div key={c.id} className="border-[3px] border-brut-ink bg-card">
-                <div className="flex items-center gap-3 p-3">
-                  {editingId === c.id ? (
-                    <>
-                      <Input value={editName} onChange={(e) => setEditName(e.target.value)} className="max-w-[18rem]" />
-                      <Input
-                        type="url"
-                        placeholder="https://…"
-                        value={editPortal}
-                        onChange={(e) => setEditPortal(e.target.value)}
-                        className="max-w-[18rem]"
-                      />
-                      <Button size="sm" onClick={() => saveEdit(c.id)}>
-                        <Save size={13} strokeWidth={2.5} />
-                        Save
-                      </Button>
-                      <Button size="sm" variant="outline" onClick={() => setEditingId(null)}>
-                        <X size={13} strokeWidth={2.5} />
-                        Cancel
-                      </Button>
-                    </>
-                  ) : (
-                    <>
-                      <button
-                        onClick={() => toggleExpand(c.id)}
-                        className="flex flex-1 items-center gap-3 text-left min-w-0"
-                        aria-expanded={expanded}
-                      >
-                        <span className="flex size-9 shrink-0 items-center justify-center border-[3px] border-brut-ink bg-primary">
-                          <Building2 size={16} strokeWidth={2.5} className="text-primary-foreground" />
-                        </span>
-                        <span className="min-w-0">
-                          <span className="block font-black text-foreground truncate">{c.name}</span>
-                          <span className="block text-xs font-bold text-muted-foreground">
-                            {c.job_count ?? 0} {c.job_count === 1 ? "job" : "jobs"}
-                          </span>
-                        </span>
-                        {href && (
-                          <span className="ml-auto flex shrink-0 items-center gap-1 border-[3px] border-brut-ink bg-brut-applied px-2.5 py-1 text-xs font-bold uppercase tracking-wider text-primary-foreground">
-                            <ExternalLink size={12} strokeWidth={2.5} />
-                            Career Page
-                          </span>
-                        )}
-                      </button>
-                      <div className="flex shrink-0 items-center gap-1.5">
-                        {href && (
-                          <a
-                            href={href}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="border-[3px] border-brut-ink bg-card px-2.5 py-1 text-xs font-bold uppercase tracking-wider text-foreground hover:bg-brut-paper transition-colors flex items-center gap-1"
-                            title="Open official career portal"
-                          >
-                            <ExternalLink size={12} strokeWidth={2.5} />
-                            Open
-                          </a>
-                        )}
-                        <Button size="sm" variant="ghost" onClick={() => startEdit(c)} aria-label={`Edit ${c.name}`}>
-                          <Pencil size={13} strokeWidth={2.5} />
-                        </Button>
-                        <Button size="sm" variant="ghost" onClick={() => remove(c)} aria-label={`Delete ${c.name}`}>
-                          <Trash2 size={13} strokeWidth={2.5} className="text-destructive" />
-                        </Button>
-                      </div>
-                    </>
-                  )}
-                </div>
 
-                {expanded && !editingId && (
-                  <div className="border-t-[3px] border-brut-ink bg-background/30 p-3">
-                    {expandedJobs === null ? (
-                      <p className="py-4 text-center text-xs font-bold uppercase tracking-wider text-muted-foreground">Loading…</p>
-                    ) : expandedJobs.length === 0 ? (
-                      <p className="py-4 text-center text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                        No jobs at {c.name} yet.
-                      </p>
-                    ) : (
-                      <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-                        {expandedJobs.map((j) => (
-                          <button
-                            key={j.id}
-                            onClick={() => setOpenJobId(j.id)}
-                            className="border-[3px] border-brut-ink bg-card p-3 text-left transition-colors hover:bg-brut-paper"
-                          >
-                            <div className="flex items-center justify-between gap-2">
-                              <span className="truncate font-black text-foreground">{j.title}</span>
-                              <Badge variant="outline" className={`${STATUS_BG[j.status]} ${STATUS_TEXT[j.status]} border-brut-ink shrink-0`}>
-                                {STATUS_LABELS[j.status]}
-                              </Badge>
-                            </div>
-                            {j.location && (
-                              <p className="mt-1 truncate text-xs font-medium text-muted-foreground">{j.location}</p>
-                            )}
-                          </button>
-                        ))}
+        <form onSubmit={add} className="grid grid-cols-[1fr_1fr_auto] gap-3 rounded-2xl border border-white/10 bg-slate-900/80 p-4 shadow-xl">
+          <Input
+            required
+            placeholder="Company name *"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            className="rounded-xl border-white/10 bg-slate-950 text-white placeholder:text-slate-500 text-xs"
+          />
+          <Input
+            type="url"
+            placeholder="Official career portal URL (https://…)"
+            value={portalUrl}
+            onChange={(e) => setPortalUrl(e.target.value)}
+            className="rounded-xl border-white/10 bg-slate-950 text-white placeholder:text-slate-500 text-xs"
+          />
+          <Button type="submit" size="sm" disabled={busy} className="rounded-xl gradient-primary text-white font-bold text-xs shrink-0 px-4">
+            <Plus size={14} strokeWidth={2.5} />
+            {busy ? "…" : "Add Company"}
+          </Button>
+          {formError && (
+            <p className="col-span-3 rounded-xl border border-rose-500/30 bg-rose-500/10 p-2 text-xs font-semibold text-rose-400" role="alert">
+              {formError}
+            </p>
+          )}
+        </form>
+
+        <div className="flex flex-wrap items-center gap-2 rounded-2xl border border-white/10 bg-slate-900/60 p-2">
+          <div className="relative flex-1 min-w-[220px]">
+            <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+            <Input
+              placeholder="Search companies or career links…"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="pl-10 rounded-xl border-white/5 bg-slate-950 text-white placeholder:text-slate-500 text-xs h-9"
+            />
+          </div>
+          <div className="flex flex-wrap gap-1.5">
+            {[
+              { id: "all", label: "All", Icon: Building2, iconClass: "text-slate-400" },
+              { id: "actively_hiring", label: "Actively Hiring", Icon: Flame, iconClass: "text-rose-400 fill-rose-400" },
+              { id: "company", label: "Tech Giants", Icon: Sparkles, iconClass: "text-amber-400" },
+              { id: "startup", label: "Startups", Icon: Rocket, iconClass: "text-indigo-400" },
+              { id: "remote", label: "Remote", Icon: Globe, iconClass: "text-emerald-400" },
+              { id: "visa_remote", label: "Visa & Relocation", Icon: Plane, iconClass: "text-sky-400" },
+              { id: "india_tech", label: "India Tech", Icon: MapPin, iconClass: "text-orange-400" },
+            ].map(({ id, label, Icon, iconClass }) => (
+              <Button
+                key={id}
+                size="sm"
+                variant={categoryFilter === id ? "default" : "outline"}
+                onClick={() => setCategoryFilter(id as any)}
+                className={`text-xs font-semibold rounded-xl border border-white/10 gap-1.5 h-9 ${
+                  categoryFilter === id ? "bg-indigo-600 text-white border-indigo-500 font-bold shadow-lg shadow-indigo-600/30" : "bg-slate-950 text-slate-300 hover:text-white hover:bg-slate-800"
+                }`}
+              >
+                <Icon size={14} className={iconClass} strokeWidth={2} />
+                {label}
+              </Button>
+            ))}
+          </div>
+        </div>
+
+        {filteredCompanies.length === 0 ? (
+          <div className="rounded-2xl border border-dashed border-white/10 p-12 text-center bg-slate-900/40">
+            <Building2 size={32} strokeWidth={1.5} className="mx-auto text-slate-500" />
+            <p className="mt-3 text-xs font-semibold text-slate-400">
+              No matching companies found.
+            </p>
+            <div className="mt-4 flex justify-center gap-2">
+              <Button size="sm" onClick={() => seedTopCompanies("all")} disabled={seeding} className="rounded-xl gradient-primary text-white text-xs font-bold">
+                <Sparkles size={14} strokeWidth={2} />
+                Import All Companies
+              </Button>
+            </div>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 gap-3">
+            {filteredCompanies.map((c) => {
+              const href = portalHref(c.portal_url);
+              const expanded = expandedId === c.id;
+              const info = topCompanyMap.get(c.name.toLowerCase().trim());
+              const catTag = info?.category ? CATEGORY_TAGS[info.category] : null;
+
+              return (
+                <div key={c.id} className="rounded-2xl border border-white/10 bg-slate-900/80 shadow-xl overflow-hidden transition-all duration-200 hover:border-white/20">
+                  <div className="flex items-center gap-4 p-4">
+                    {editingId === c.id ? (
+                      <div className="flex flex-wrap items-center gap-2 w-full">
+                        <Input value={editName} onChange={(e) => setEditName(e.target.value)} className="max-w-xs rounded-xl border-white/10 bg-slate-950 text-white text-xs" />
+                        <Input
+                          type="url"
+                          placeholder="https://…"
+                          value={editPortal}
+                          onChange={(e) => setEditPortal(e.target.value)}
+                          className="max-w-xs rounded-xl border-white/10 bg-slate-950 text-white text-xs"
+                        />
+                        <Button size="sm" onClick={() => saveEdit(c.id)} className="rounded-xl bg-indigo-600 text-white text-xs font-bold">
+                          <Save size={14} strokeWidth={2} />
+                          Save
+                        </Button>
+                        <Button size="sm" variant="outline" onClick={() => setEditingId(null)} className="rounded-xl border-white/10 text-xs">
+                          <X size={14} strokeWidth={2} />
+                          Cancel
+                        </Button>
                       </div>
+                    ) : (
+                      <>
+                        <button
+                          onClick={() => toggleExpand(c.id)}
+                          className="flex flex-1 items-center gap-3.5 text-left min-w-0"
+                          aria-expanded={expanded}
+                        >
+                          <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 text-white font-bold text-sm shadow-md">
+                            {c.name.charAt(0).toUpperCase()}
+                          </div>
+                          <div className="min-w-0">
+                            <div className="flex items-center gap-2">
+                              <h3 className="font-bold text-sm text-slate-100 truncate">{c.name}</h3>
+                              {info?.actively_hiring && (
+                                <span className="flex items-center gap-1 rounded-full border border-rose-500/30 bg-rose-500/10 px-2 py-0.5 text-[10px] font-bold text-rose-400">
+                                  <Flame size={10} className="fill-rose-400" />
+                                  Hiring
+                                </span>
+                              )}
+                              {catTag && (
+                                <span className={`rounded-full border px-2 py-0.5 text-[10px] font-semibold ${catTag.bg} ${catTag.text} ${catTag.border}`}>
+                                  {catTag.label}
+                                </span>
+                              )}
+                            </div>
+                            <p className="text-xs font-medium text-slate-400 mt-0.5">
+                              {c.job_count ?? 0} {c.job_count === 1 ? "job tracked" : "jobs tracked"} {info?.location ? `· ${info.location}` : ""}
+                            </p>
+                          </div>
+                        </button>
+
+                        <div className="flex shrink-0 items-center gap-2">
+                          {href && (
+                            <a
+                              href={href}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="rounded-xl border border-indigo-500/30 bg-indigo-500/10 px-3 py-1.5 text-xs font-semibold text-indigo-400 hover:bg-indigo-500/20 transition-all flex items-center gap-1.5"
+                              title="Open official career portal"
+                            >
+                              <ExternalLink size={13} strokeWidth={2} />
+                              Career Portal
+                            </a>
+                          )}
+                          <Button size="sm" variant="ghost" onClick={() => startEdit(c)} className="rounded-xl text-slate-400 hover:text-white" aria-label={`Edit ${c.name}`}>
+                            <Pencil size={14} strokeWidth={2} />
+                          </Button>
+                          <Button size="sm" variant="ghost" onClick={() => remove(c)} className="rounded-xl text-rose-400 hover:bg-rose-500/10" aria-label={`Delete ${c.name}`}>
+                            <Trash2 size={14} strokeWidth={2} />
+                          </Button>
+                        </div>
+                      </>
                     )}
                   </div>
-                )}
-              </div>
-            );
-          })}
-        </div>
-      )}
 
-      {openJob && (
-        <JobDrawer
-          key={openJob.id}
-          job={openJob}
-          onClose={() => setOpenJobId(null)}
-          onChange={(_updated) => {
-            if (expandedId) {
-              setJobsByCompany((m) => ({ ...m, [expandedId]: [] }));
-              api.get<Job[]>("/jobs").then((all) =>
-                setJobsByCompany((m) => ({ ...m, [expandedId]: all.filter((j) => j.company_id === expandedId) }))
+                  {expanded && !editingId && (
+                    <div className="border-t border-white/5 bg-white/[0.01] p-4">
+                      {expandedJobs === null ? (
+                        <p className="py-4 text-center text-xs font-medium text-slate-400">Loading open roles…</p>
+                      ) : expandedJobs.length === 0 ? (
+                        <p className="py-4 text-center text-xs font-medium text-slate-400">
+                          No jobs tracked for {c.name} yet.
+                        </p>
+                      ) : (
+                        <div className="grid gap-2.5 sm:grid-cols-2 lg:grid-cols-3">
+                          {expandedJobs.map((j) => (
+                            <button
+                              key={j.id}
+                              onClick={() => setOpenJobId(j.id)}
+                              className="rounded-xl border border-white/5 bg-slate-950/60 p-3 text-left transition-all hover:border-indigo-500/30 hover:bg-slate-900"
+                            >
+                              <div className="flex items-center justify-between gap-2">
+                                <span className="truncate font-semibold text-xs text-white">{j.title}</span>
+                                <Badge variant="outline" className="text-[10px] rounded-lg border-white/10 bg-slate-800 text-slate-300 shrink-0">
+                                  {STATUS_LABELS[j.status]}
+                                </Badge>
+                              </div>
+                              {j.location && (
+                                <p className="mt-1 truncate text-[11px] font-medium text-slate-400">{j.location}</p>
+                              )}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
               );
-            }
-          }}
-          onDelete={(id) => {
-            if (expandedId) {
-              setJobsByCompany((m) => ({ ...m, [expandedId]: (m[expandedId] ?? []).filter((j) => j.id !== id) }));
-              setCompanies((cs) => cs.map((c) => (c.id === expandedId ? { ...c, job_count: (c.job_count ?? 0) - 1 } : c)));
-            }
-            setOpenJobId(null);
-          }}
-        />
-      )}
+            })}
+          </div>
+        )}
+
+        {openJob && (
+          <JobDrawer
+            key={openJob.id}
+            job={openJob}
+            onClose={() => setOpenJobId(null)}
+            onChange={(_updated) => {
+              if (expandedId) {
+                setJobsByCompany((m) => ({ ...m, [expandedId]: [] }));
+                api.get<Job[]>("/jobs").then((all) =>
+                  setJobsByCompany((m) => ({ ...m, [expandedId]: all.filter((j) => j.company_id === expandedId) }))
+                );
+              }
+            }}
+            onDelete={(id) => {
+              if (expandedId) {
+                setJobsByCompany((m) => ({ ...m, [expandedId]: (m[expandedId] ?? []).filter((j) => j.id !== id) }));
+                setCompanies((cs) => cs.map((c) => (c.id === expandedId ? { ...c, job_count: (c.job_count ?? 0) - 1 } : c)));
+              }
+              setOpenJobId(null);
+            }}
+          />
+        )}
+      </div>
     </div>
   );
 }
