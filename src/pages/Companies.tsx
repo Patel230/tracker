@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState, type FormEvent } from "react";
-import { Building2, ExternalLink, Pencil, Plus, Save, Trash2, X, RotateCcw, Search, Sparkles, Rocket, Globe, Flame } from "lucide-react";
+import { Building2, ExternalLink, Pencil, Plus, Save, Trash2, X, RotateCcw, Search, Sparkles, Rocket, Globe, Flame, Plane, MapPin } from "lucide-react";
 import { api, ApiError } from "../lib/api";
 import { useFetch } from "../lib/useFetch";
 import { STATUS_LABELS, safeExternalUrl, type Company, type Job } from "../../shared/types";
@@ -55,7 +55,7 @@ export default function Companies() {
     }
   };
 
-  const seedTopCompanies = async (category: "all" | "company" | "startup" | "remote" | "actively_hiring") => {
+  const seedTopCompanies = async (category: "all" | "company" | "startup" | "remote" | "actively_hiring" | "visa_remote" | "india_tech") => {
     if (seeding) return;
     setSeeding(true);
     setFormError(null);
@@ -195,6 +195,26 @@ export default function Companies() {
           >
             <Globe size={13} className="text-emerald-500" strokeWidth={2.5} />
             {seeding ? "Importing…" : "+ Top 100 Remote Companies"}
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            disabled={seeding}
+            onClick={() => seedTopCompanies("visa_remote")}
+            className="border-[3px] border-brut-ink bg-card text-xs font-bold"
+          >
+            <Plane size={13} className="text-sky-500" strokeWidth={2.5} />
+            {seeding ? "Importing…" : "+ Visa & Relocation"}
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            disabled={seeding}
+            onClick={() => seedTopCompanies("india_tech")}
+            className="border-[3px] border-brut-ink bg-card text-xs font-bold"
+          >
+            <MapPin size={13} className="text-orange-500" strokeWidth={2.5} />
+            {seeding ? "Importing…" : "🇮🇳 Top Companies in India"}
           </Button>
         </div>
       </div>

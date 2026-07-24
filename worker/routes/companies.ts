@@ -113,7 +113,7 @@ companies.delete("/:id", async (c) => {
 
 companies.post("/seed", async (c) => {
   const userId = c.get("userId");
-  const body = (await c.req.json().catch(() => ({}))) as { category?: "company" | "startup" | "remote" | "actively_hiring" | "all" };
+  const body = (await c.req.json().catch(() => ({}))) as { category?: "company" | "startup" | "remote" | "actively_hiring" | "visa_remote" | "india_tech" | "all" };
   const targetCategory = body.category || "all";
 
   const { TOP_COMPANIES } = await import("../../shared/topCompaniesData");

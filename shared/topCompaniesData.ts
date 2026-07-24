@@ -1,10 +1,11 @@
 export interface SeedCompany {
   name: string;
-  category: "company" | "startup" | "remote";
+  category: "company" | "startup" | "remote" | "visa_remote" | "india_tech";
   portal_url: string;
   location?: string;
   job_title?: string;
   actively_hiring?: boolean;
+  visa_sponsorship?: boolean;
 }
 
 export const TOP_COMPANIES: SeedCompany[] = [
@@ -293,5 +294,48 @@ export const TOP_COMPANIES: SeedCompany[] = [
   { name: "Planful", category: "remote", portal_url: "https://planful.com/careers/", location: "100% Remote Worldwide" },
   { name: "Vena Solutions", category: "remote", portal_url: "https://www.venasolutions.com/careers", location: "100% Remote Worldwide" },
   { name: "Cube Software", category: "remote", portal_url: "https://www.cube.io/careers", location: "100% Remote Worldwide" },
-  { name: "Mosaic", category: "remote", portal_url: "https://www.mosaic.tech/careers", location: "100% Remote Worldwide" }
+  { name: "Mosaic", category: "remote", portal_url: "https://www.mosaic.tech/careers", location: "100% Remote Worldwide" },
+
+  // --- VISA SPONSORSHIP & GLOBAL RELOCATION ---
+  { name: "Adyen", category: "visa_remote", portal_url: "https://careers.adyen.com", location: "Amsterdam, Netherlands (Visa & Relocation)", visa_sponsorship: true },
+  { name: "Delivery Hero", category: "visa_remote", portal_url: "https://careers.deliveryhero.com", location: "Berlin, Germany (Visa & Relocation)", visa_sponsorship: true },
+  { name: "Zalando", category: "visa_remote", portal_url: "https://jobs.zalando.com", location: "Berlin, Germany (Visa & Relocation)", visa_sponsorship: true },
+  { name: "Personio", category: "visa_remote", portal_url: "https://www.personio.com/careers", location: "Munich, Germany (Visa & Relocation)", visa_sponsorship: true },
+  { name: "Bolt", category: "visa_remote", portal_url: "https://bolt.eu/careers/", location: "Tallinn, Estonia (Visa & Relocation)", visa_sponsorship: true },
+  { name: "Shopee", category: "visa_remote", portal_url: "https://careers.shopee.sg", location: "Singapore (Visa & Relocation)", visa_sponsorship: true },
+  { name: "Rakuten", category: "visa_remote", portal_url: "https://rakuten.careers", location: "Tokyo, Japan (Visa & Relocation)", visa_sponsorship: true },
+  { name: "Mercari", category: "visa_remote", portal_url: "https://careers.mercari.com", location: "Tokyo, Japan (Visa & Relocation)", visa_sponsorship: true },
+  { name: "LY Corporation (LINE)", category: "visa_remote", portal_url: "https://linecorp.com/en/career/", location: "Tokyo, Japan (Visa & Relocation)", visa_sponsorship: true },
+  { name: "Careem", category: "visa_remote", portal_url: "https://www.careem.com/careers/", location: "Dubai, UAE (Visa & Relocation)", visa_sponsorship: true },
+  { name: "Talabat", category: "visa_remote", portal_url: "https://www.talabat.com/careers", location: "Dubai, UAE (Visa & Relocation)", visa_sponsorship: true },
+  { name: "Canva", category: "visa_remote", portal_url: "https://www.canva.com/careers/", location: "Sydney, Australia (Visa & Relocation)", visa_sponsorship: true },
+
+  // --- TOP TECH & PRODUCT COMPANIES IN INDIA ---
+  { name: "Flipkart", category: "india_tech", portal_url: "https://careers.flipkart.com", location: "Bengaluru, India" },
+  { name: "Swiggy", category: "india_tech", portal_url: "https://careers.swiggy.com", location: "Bengaluru, India / Remote" },
+  { name: "Zomato", category: "india_tech", portal_url: "https://www.zomato.com/careers", location: "Gurgaon, India" },
+  { name: "Razorpay", category: "india_tech", portal_url: "https://razorpay.com/jobs/", location: "Bengaluru, India" },
+  { name: "PhonePe", category: "india_tech", portal_url: "https://www.phonepe.com/careers/", location: "Bengaluru, India" },
+  { name: "Paytm", category: "india_tech", portal_url: "https://paytm.com/careers", location: "Noida, India" },
+  { name: "CRED", category: "india_tech", portal_url: "https://cred.club/careers", location: "Bengaluru, India" },
+  { name: "Groww", category: "india_tech", portal_url: "https://groww.in/careers", location: "Bengaluru, India" },
+  { name: "Zerodha", category: "india_tech", portal_url: "https://zerodha.com/careers", location: "Bengaluru, India" },
+  { name: "Meesho", category: "india_tech", portal_url: "https://meesho.io/careers", location: "Bengaluru, India" },
+  { name: "Oyo", category: "india_tech", portal_url: "https://www.oyorooms.com/careers", location: "Gurgaon, India" },
+  { name: "Ola", category: "india_tech", portal_url: "https://www.olacabs.com/careers", location: "Bengaluru, India" },
+  { name: "MakeMyTrip", category: "india_tech", portal_url: "https://careers.makemytrip.com", location: "Gurgaon, India" },
+  { name: "InMobi", category: "india_tech", portal_url: "https://www.inmobi.com/company/careers/", location: "Bengaluru, India" },
+  { name: "Zepto", category: "india_tech", portal_url: "https://www.zepto.co/careers", location: "Mumbai / Bengaluru, India" },
+  { name: "Blinkit", category: "india_tech", portal_url: "https://blinkit.com/careers", location: "Gurgaon, India" },
+  { name: "Dream11", category: "india_tech", portal_url: "https://www.dream11.com/careers", location: "Mumbai, India" },
+  { name: "Freshworks", category: "india_tech", portal_url: "https://www.freshworks.com/careers/", location: "Chennai / Bengaluru, India" },
+  { name: "Hasura", category: "india_tech", portal_url: "https://hasura.io/careers/", location: "Bengaluru, India / Remote" },
+  { name: "BrowserStack", category: "india_tech", portal_url: "https://www.browserstack.com/careers", location: "Mumbai, India / Remote" },
+  { name: "Zoho", category: "india_tech", portal_url: "https://www.zoho.com/careers/", location: "Chennai / Tenkasi, India" },
+  { name: "Walmart Global Tech India", category: "india_tech", portal_url: "https://careers.walmart.com", location: "Bengaluru / Chennai, India" },
+  { name: "Lowe's India", category: "india_tech", portal_url: "https://lowes.co.in/careers/", location: "Bengaluru, India" },
+  { name: "DE Shaw India", category: "india_tech", portal_url: "https://www.deshawindia.com/careers", location: "Hyderabad, India" },
+  { name: "Tower Research Capital India", category: "india_tech", portal_url: "https://www.tower-research.com/careers", location: "Gurgaon, India" },
+  { name: "HRT India", category: "india_tech", portal_url: "https://www.hudsonrivertrading.com/careers/", location: "Gurgaon, India" },
+  { name: "Graviton Research Capital", category: "india_tech", portal_url: "https://www.graviton.com/careers", location: "Gurgaon, India" }
 ];
