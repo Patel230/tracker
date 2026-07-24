@@ -181,7 +181,7 @@ export default function Companies() {
             className="border-[3px] border-brut-ink bg-destructive/10 text-destructive border-destructive text-xs font-black shadow-[2px_2px_0_0_#ef4444]"
           >
             <Flame size={13} className="text-destructive fill-destructive" strokeWidth={2.5} />
-            {seeding ? "Importing…" : "🔥 Top 10 Actively Hiring"}
+            {seeding ? "Importing…" : "Top 10 Actively Hiring"}
           </Button>
           <Button
             size="sm"
@@ -231,7 +231,7 @@ export default function Companies() {
             className="border-[3px] border-brut-ink bg-card text-xs font-bold"
           >
             <MapPin size={13} className="text-orange-500" strokeWidth={2.5} />
-            {seeding ? "Importing…" : "🇮🇳 Top Companies in India"}
+            {seeding ? "Importing…" : "Top Companies in India"}
           </Button>
           <Button
             size="sm"
@@ -241,7 +241,7 @@ export default function Companies() {
             className="border-[3px] border-brut-ink bg-primary text-primary-foreground text-xs font-black"
           >
             <Code2 size={13} strokeWidth={2.5} />
-            {seeding ? "Importing…" : "🐍 All Python + AI Companies"}
+            {seeding ? "Importing…" : "All Python + AI Companies"}
           </Button>
         </div>
       </div>
@@ -282,24 +282,25 @@ export default function Companies() {
         </div>
         <div className="flex flex-wrap gap-1">
           {[
-            { id: "all", label: "All" },
-            { id: "actively_hiring", label: "🔥 Actively Hiring" },
-            { id: "company", label: "💻 Tech Giants" },
-            { id: "startup", label: "🚀 Startups" },
-            { id: "remote", label: "🌐 Remote" },
-            { id: "visa_remote", label: "✈️ Visa & Relocation" },
-            { id: "india_tech", label: "🇮🇳 India Tech" },
-          ].map((tab) => (
+            { id: "all", label: "All", Icon: Building2, iconClass: "text-muted-foreground" },
+            { id: "actively_hiring", label: "Actively Hiring", Icon: Flame, iconClass: "text-destructive fill-destructive" },
+            { id: "company", label: "Tech Giants", Icon: Sparkles, iconClass: "text-amber-500" },
+            { id: "startup", label: "Startups", Icon: Rocket, iconClass: "text-indigo-500" },
+            { id: "remote", label: "Remote", Icon: Globe, iconClass: "text-emerald-500" },
+            { id: "visa_remote", label: "Visa & Relocation", Icon: Plane, iconClass: "text-sky-500" },
+            { id: "india_tech", label: "India Tech", Icon: MapPin, iconClass: "text-orange-500" },
+          ].map(({ id, label, Icon, iconClass }) => (
             <Button
-              key={tab.id}
+              key={id}
               size="sm"
-              variant={categoryFilter === tab.id ? "default" : "outline"}
-              onClick={() => setCategoryFilter(tab.id as any)}
-              className={`text-xs font-bold border-[2px] border-brut-ink ${
-                categoryFilter === tab.id ? "bg-brut-yellow text-brut-ink font-black shadow-[2px_2px_0_0_#000]" : "bg-card"
+              variant={categoryFilter === id ? "default" : "outline"}
+              onClick={() => setCategoryFilter(id as any)}
+              className={`text-xs font-bold border-[2px] border-brut-ink gap-1.5 ${
+                categoryFilter === id ? "bg-brut-yellow text-brut-ink font-black shadow-[2px_2px_0_0_#000]" : "bg-card"
               }`}
             >
-              {tab.label}
+              <Icon size={13} className={iconClass} strokeWidth={2.5} />
+              {label}
             </Button>
           ))}
         </div>
