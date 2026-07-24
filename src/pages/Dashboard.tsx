@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Award, Bell, Briefcase, Percent, Timer, RotateCcw, Sparkles, Kanban, Building2, type LucideIcon } from "lucide-react";
 import { Link } from "react-router-dom";
+import { motion } from "framer-motion";
 import { useFetch } from "../lib/useFetch";
 import { STATUS_LABELS, JOB_STATUSES, type Stats } from "../../shared/types";
 import { useReminders } from "../components/RemindersProvider";
@@ -53,50 +54,56 @@ export default function Dashboard() {
       <div className="mx-auto max-w-6xl space-y-6">
         {/* Quick Action Navigation Bar */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <Link
-            to="/board"
-            className="group flex items-center gap-4 rounded-2xl border border-fuchsia-500/30 bg-slate-900/80 p-4 shadow-xl hover:border-fuchsia-500/60 hover:bg-slate-900 hover:shadow-fuchsia-500/20 transition-all duration-200"
-          >
-            <span className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-fuchsia-500/20 text-fuchsia-400 group-hover:scale-110 transition-transform">
-              <Kanban size={22} strokeWidth={2} />
-            </span>
-            <div>
-              <div className="text-sm font-bold text-white group-hover:text-fuchsia-400 transition-colors">
-                Kanban Pipeline
+          <motion.div whileHover={{ scale: 1.02, y: -2 }} whileTap={{ scale: 0.98 }}>
+            <Link
+              to="/board"
+              className="group flex items-center gap-4 rounded-2xl border border-fuchsia-500/30 bg-slate-900/80 p-4 shadow-xl hover:border-fuchsia-500/60 hover:bg-slate-900 hover:shadow-fuchsia-500/20 transition-all duration-200"
+            >
+              <span className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-fuchsia-500/20 text-fuchsia-400 group-hover:scale-110 transition-transform">
+                <Kanban size={22} strokeWidth={2} />
+              </span>
+              <div>
+                <div className="text-sm font-bold text-white group-hover:text-fuchsia-400 transition-colors">
+                  Kanban Pipeline
+                </div>
+                <div className="text-xs font-medium text-slate-400">Drag & drop application cards</div>
               </div>
-              <div className="text-xs font-medium text-slate-400">Drag & drop application cards</div>
-            </div>
-          </Link>
+            </Link>
+          </motion.div>
 
-          <Link
-            to="/companies"
-            className="group flex items-center gap-4 rounded-2xl border border-teal-500/30 bg-slate-900/80 p-4 shadow-xl hover:border-teal-500/60 hover:bg-slate-900 hover:shadow-teal-500/20 transition-all duration-200"
-          >
-            <span className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-teal-500/20 text-teal-400 group-hover:scale-110 transition-transform">
-              <Building2 size={22} strokeWidth={2} />
-            </span>
-            <div>
-              <div className="text-sm font-bold text-white group-hover:text-teal-400 transition-colors">
-                Companies Directory
+          <motion.div whileHover={{ scale: 1.02, y: -2 }} whileTap={{ scale: 0.98 }}>
+            <Link
+              to="/companies"
+              className="group flex items-center gap-4 rounded-2xl border border-teal-500/30 bg-slate-900/80 p-4 shadow-xl hover:border-teal-500/60 hover:bg-slate-900 hover:shadow-teal-500/20 transition-all duration-200"
+            >
+              <span className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-teal-500/20 text-teal-400 group-hover:scale-110 transition-transform">
+                <Building2 size={22} strokeWidth={2} />
+              </span>
+              <div>
+                <div className="text-sm font-bold text-white group-hover:text-teal-400 transition-colors">
+                  Companies Directory
+                </div>
+                <div className="text-xs font-medium text-slate-400">380+ Verified Career Portals</div>
               </div>
-              <div className="text-xs font-medium text-slate-400">380+ Verified Career Portals</div>
-            </div>
-          </Link>
+            </Link>
+          </motion.div>
 
-          <Link
-            to="/table"
-            className="group flex items-center gap-4 rounded-2xl border border-lime-500/30 bg-slate-900/80 p-4 shadow-xl hover:border-lime-500/60 hover:bg-slate-900 hover:shadow-lime-500/20 transition-all duration-200"
-          >
-            <span className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-lime-500/20 text-lime-400 group-hover:scale-110 transition-transform">
-              <Sparkles size={22} strokeWidth={2} />
-            </span>
-            <div>
-              <div className="text-sm font-bold text-white group-hover:text-lime-400 transition-colors">
-                Data & Table View
+          <motion.div whileHover={{ scale: 1.02, y: -2 }} whileTap={{ scale: 0.98 }}>
+            <Link
+              to="/table"
+              className="group flex items-center gap-4 rounded-2xl border border-lime-500/30 bg-slate-900/80 p-4 shadow-xl hover:border-lime-500/60 hover:bg-slate-900 hover:shadow-lime-500/20 transition-all duration-200"
+            >
+              <span className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-lime-500/20 text-lime-400 group-hover:scale-110 transition-transform">
+                <Sparkles size={22} strokeWidth={2} />
+              </span>
+              <div>
+                <div className="text-sm font-bold text-white group-hover:text-lime-400 transition-colors">
+                  Data & Table View
+                </div>
+                <div className="text-xs font-medium text-slate-400">Sort, filter, and export applications</div>
               </div>
-              <div className="text-xs font-medium text-slate-400">Sort, filter, and export applications</div>
-            </div>
-          </Link>
+            </Link>
+          </motion.div>
         </div>
 
         {/* Stat tiles */}
@@ -104,7 +111,14 @@ export default function Dashboard() {
           {tiles.map((t, i) => {
             const style = TILE_STYLES[i];
             return (
-              <div key={t.label} className={`rounded-2xl border p-5 shadow-xl ${style.border} ${style.bg}`}>
+              <motion.div
+                key={t.label}
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3, delay: i * 0.08 }}
+                whileHover={{ scale: 1.03, y: -3 }}
+                className={`rounded-2xl border p-5 shadow-xl ${style.border} ${style.bg}`}
+              >
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-bold uppercase tracking-wider text-slate-300">{t.label}</span>
                   <span className={`p-2 rounded-xl ${style.iconBg}`}>
@@ -113,7 +127,7 @@ export default function Dashboard() {
                 </div>
                 <div className={`mt-3 text-3xl font-extrabold tabular-nums ${style.text}`}>{t.value}</div>
                 {t.hint && <div className="mt-1.5 text-xs font-medium text-slate-400">{t.hint}</div>}
-              </div>
+              </motion.div>
             );
           })}
         </div>
@@ -152,7 +166,12 @@ export default function Dashboard() {
               {reminders.map((r) => {
                 const overdue = new Date(r.due_at) <= new Date();
                 return (
-                  <li key={r.id} className="flex items-center gap-3 rounded-xl border border-white/5 bg-white/[0.02] p-3 text-xs">
+                  <motion.li
+                    key={r.id}
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    className="flex items-center gap-3 rounded-xl border border-white/5 bg-white/[0.02] p-3 text-xs"
+                  >
                     <span
                       title={new Date(r.due_at).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" })}
                       className={`font-semibold shrink-0 px-2 py-1 rounded-lg ${
@@ -168,7 +187,7 @@ export default function Dashboard() {
                     <Button size="sm" variant="outline" onClick={() => complete(r.id)} className="ml-auto rounded-lg text-xs h-7">
                       Done
                     </Button>
-                  </li>
+                  </motion.li>
                 );
               })}
             </ul>
@@ -275,9 +294,12 @@ function Funnel({ funnel }: { funnel: Stats["funnel"] }) {
             {STATUS_LABELS[s]}
           </span>
           <div className="h-3 flex-1 rounded-full bg-slate-800/80 overflow-hidden border border-white/5">
-            <div
-              className={`h-full rounded-full transition-all duration-500 ${COLORS[s]}`}
-              style={{ width: `${(funnel[s] / max) * 100}%`, minWidth: funnel[s] ? "6px" : 0 }}
+            <motion.div
+              initial={{ width: 0 }}
+              animate={{ width: `${(funnel[s] / max) * 100}%` }}
+              transition={{ duration: 0.6, ease: "easeOut" }}
+              className={`h-full rounded-full ${COLORS[s]}`}
+              style={{ minWidth: funnel[s] ? "6px" : 0 }}
             />
           </div>
           <span className="w-8 text-right text-xs font-bold tabular-nums text-white">{funnel[s]}</span>

@@ -2,6 +2,7 @@ import { forwardRef, type ComponentPropsWithRef, type KeyboardEvent as ReactKeyb
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { Clock, MapPin, Wallet } from "lucide-react";
+import { motion } from "framer-motion";
 import { PERIOD_LABELS, type Job, type JobStatus } from "../../shared/types";
 
 const STATUS_PILLS: Record<JobStatus, { border: string; bg: string; text: string }> = {
@@ -66,8 +67,11 @@ export const JobCard = forwardRef<HTMLDivElement, JobCardProps>(function JobCard
   };
 
   return (
-    <div
-      {...rest}
+    <motion.div
+      whileHover={overlay ? {} : { scale: 1.015, y: -3 }}
+      whileTap={overlay ? {} : { scale: 0.98 }}
+      transition={{ type: "spring", stiffness: 400, damping: 25 }}
+      {...(rest as any)}
       ref={ref}
       style={style}
       role={onOpen ? "button" : undefined}
@@ -78,7 +82,7 @@ export const JobCard = forwardRef<HTMLDivElement, JobCardProps>(function JobCard
       className={`relative group rounded-2xl border border-white/10 bg-slate-900/90 p-4 transition-all duration-200 cursor-grab ${
         overlay
           ? "rotate-2 shadow-2xl scale-105 border-lime-500/50 bg-slate-900"
-          : "hover:border-lime-500/40 hover:bg-slate-900 hover:shadow-xl hover:shadow-lime-500/10 hover:-translate-y-0.5"
+          : "hover:border-lime-500/40 hover:bg-slate-900 hover:shadow-xl hover:shadow-lime-500/10"
       } ${className}`}
     >
       <div className="flex items-start gap-3">
@@ -116,7 +120,7 @@ export const JobCard = forwardRef<HTMLDivElement, JobCardProps>(function JobCard
           {daysAgo(job.applied_at ?? job.created_at)}
         </span>
       </div>
-    </div>
+    </motion.div>
   );
 });
 
