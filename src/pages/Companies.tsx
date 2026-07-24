@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState, type FormEvent } from "react";
-import { Building2, ExternalLink, Pencil, Plus, Save, Trash2, X, RotateCcw, Search, Sparkles, Rocket, Globe, Flame, Plane, MapPin } from "lucide-react";
+import { Building2, ExternalLink, Pencil, Plus, Save, Trash2, X, RotateCcw, Search, Sparkles, Rocket, Globe, Flame, Plane, MapPin, Code2 } from "lucide-react";
 import { api, ApiError } from "../lib/api";
 import { useFetch } from "../lib/useFetch";
 import { STATUS_LABELS, safeExternalUrl, type Company, type Job } from "../../shared/types";
@@ -215,6 +215,16 @@ export default function Companies() {
           >
             <MapPin size={13} className="text-orange-500" strokeWidth={2.5} />
             {seeding ? "Importing…" : "🇮🇳 Top Companies in India"}
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            disabled={seeding}
+            onClick={() => seedTopCompanies("all")}
+            className="border-[3px] border-brut-ink bg-primary text-primary-foreground text-xs font-black"
+          >
+            <Code2 size={13} strokeWidth={2.5} />
+            {seeding ? "Importing…" : "🐍 All Python + AI Companies"}
           </Button>
         </div>
       </div>
