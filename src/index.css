@@ -12,32 +12,32 @@
   --font-sans: "Inter", "Space Grotesk", system-ui, -apple-system, sans-serif;
   --font-head: "Space Grotesk", system-ui, -apple-system, sans-serif;
 
-  /* Modern Vibrant Dark Theme Palette */
-  --color-background: #090d16;
-  --color-foreground: #f8fafc;
-  --color-card: #111827;
-  --color-card-hover: #1f2937;
-  --color-primary: #6366f1;
-  --color-primary-foreground: #ffffff;
-  --color-secondary: #06b6d4;
+  /* Ultra Vibrant Dark Theme Palette with Multi-color Accents */
+  --color-background: #070a12;
+  --color-foreground: #ffffff;
+  --color-card: #0f172a;
+  --color-card-hover: #1e293b;
+  --color-primary: #84cc16; /* Electric Lime */
+  --color-primary-foreground: #070a12;
+  --color-secondary: #06b6d4; /* Vivid Cyan */
   --color-secondary-foreground: #ffffff;
   --color-muted: #1e293b;
   --color-muted-foreground: #94a3b8;
-  --color-destructive: #f43f5e;
-  --color-input: #1f2937;
+  --color-destructive: #ef4444; /* Vivid Red */
+  --color-input: #1e293b;
 
-  /* Pipeline Stage Status Colors - Vibrant Modern Palette */
-  --color-brut-ink: #f8fafc;
-  --color-brut-paper: #090d16;
-  --color-brut-wishlist: #f59e0b; /* Amber Gold */
-  --color-brut-applied: #3b82f6;  /* Royal Blue */
-  --color-brut-interview: #10b981;/* Emerald Green */
-  --color-brut-offer: #ec4899;    /* Hot Pink */
-  --color-brut-rejected: #f43f5e; /* Rose Red */
+  /* Pipeline Stage Status Colors - Multi-Color Neon Palette */
+  --color-brut-ink: #ffffff;
+  --color-brut-paper: #070a12;
+  --color-brut-wishlist: #eab308; /* Sunny Yellow */
+  --color-brut-applied: #06b6d4;  /* Electric Cyan */
+  --color-brut-interview: #84cc16;/* Vivid Lime Green */
+  --color-brut-offer: #d946ef;    /* Hot Magenta / Fuchsia */
+  --color-brut-rejected: #ef4444; /* Coral Red */
 
-  --color-brut-note: #8b5cf6;
+  --color-brut-note: #14b8a6;
   --color-brut-system: #64748b;
-  --color-brut-terminal: #f59e0b;
+  --color-brut-terminal: #f97316;
 }
 
 html,
@@ -49,9 +49,10 @@ body,
 body {
   background-color: var(--color-background);
   background-image: 
-    radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.12) 0px, transparent 50%),
-    radial-gradient(at 100% 0%, rgba(6, 182, 212, 0.10) 0px, transparent 50%),
-    radial-gradient(at 50% 100%, rgba(236, 72, 153, 0.08) 0px, transparent 50%);
+    radial-gradient(at 0% 0%, rgba(132, 204, 22, 0.12) 0px, transparent 50%),
+    radial-gradient(at 100% 0%, rgba(6, 182, 212, 0.12) 0px, transparent 50%),
+    radial-gradient(at 50% 100%, rgba(217, 70, 239, 0.10) 0px, transparent 50%),
+    radial-gradient(at 100% 100%, rgba(249, 115, 22, 0.08) 0px, transparent 50%);
   background-attachment: fixed;
   color: var(--color-foreground);
   font-family: var(--font-sans);
@@ -60,8 +61,8 @@ body {
 }
 
 ::selection {
-  background-color: var(--color-primary);
-  color: #ffffff;
+  background-color: #84cc16;
+  color: #070a12;
 }
 
 button:not(:disabled),
@@ -88,34 +89,34 @@ button:not(:disabled),
   background: rgba(255, 255, 255, 0.3);
 }
 
-/* Smooth glassmorphic utility classes */
-.glass-panel {
-  background: rgba(17, 24, 39, 0.75);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.glass-panel-hover {
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-}
-.glass-panel-hover:hover {
-  background: rgba(31, 41, 55, 0.85);
-  border-color: rgba(99, 102, 241, 0.3);
-  transform: translateY(-2px);
-  box-shadow: 0 12px 30px -10px rgba(99, 102, 241, 0.2);
-}
-
-.gradient-text {
-  background: linear-gradient(135deg, #818cf8 0%, #c084fc 50%, #f472b6 100%);
+.gradient-text-lime {
+  background: linear-gradient(135deg, #a3e635 0%, #2dd4bf 50%, #38bdf8 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
-.gradient-primary {
-  background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+.gradient-text-magenta {
+  background: linear-gradient(135deg, #f472b6 0%, #d946ef 50%, #818cf8 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
-.gradient-primary:hover {
-  background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%);
+.gradient-lime {
+  background: linear-gradient(135deg, #84cc16 0%, #65a30d 100%);
+}
+
+.gradient-cyan {
+  background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
+}
+
+.gradient-magenta {
+  background: linear-gradient(135deg, #d946ef 0%, #c026d3 100%);
+}
+
+.gradient-orange {
+  background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+}
+
+.gradient-teal {
+  background: linear-gradient(135deg, #14b8a6 0%, #0d9488 100%);
 }

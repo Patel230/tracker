@@ -5,19 +5,21 @@ import { Clock, MapPin, Wallet } from "lucide-react";
 import { PERIOD_LABELS, type Job, type JobStatus } from "../../shared/types";
 
 const STATUS_PILLS: Record<JobStatus, { border: string; bg: string; text: string }> = {
-  wishlist: { border: "border-amber-500/30", bg: "bg-amber-500/10", text: "text-amber-400" },
-  applied: { border: "border-sky-500/30", bg: "bg-sky-500/10", text: "text-sky-400" },
-  interview: { border: "border-emerald-500/30", bg: "bg-emerald-500/10", text: "text-emerald-400" },
-  offer: { border: "border-pink-500/30", bg: "bg-pink-500/10", text: "text-pink-400" },
-  rejected: { border: "border-rose-500/30", bg: "bg-rose-500/10", text: "text-rose-400" },
+  wishlist: { border: "border-yellow-500/30", bg: "bg-yellow-500/15", text: "text-yellow-300" },
+  applied: { border: "border-cyan-500/30", bg: "bg-cyan-500/15", text: "text-cyan-300" },
+  interview: { border: "border-lime-500/30", bg: "bg-lime-500/15", text: "text-lime-300" },
+  offer: { border: "border-fuchsia-500/30", bg: "bg-fuchsia-500/15", text: "text-fuchsia-300" },
+  rejected: { border: "border-red-500/30", bg: "bg-red-500/15", text: "text-red-300" },
 };
 
 const COMPANY_AVATAR_COLORS = [
-  "from-indigo-500 to-purple-600",
-  "from-sky-500 to-blue-600",
-  "from-emerald-500 to-teal-600",
-  "from-amber-500 to-orange-600",
-  "from-pink-500 to-rose-600",
+  "from-lime-400 to-emerald-600 text-slate-950",
+  "from-cyan-400 to-blue-600 text-slate-950",
+  "from-amber-400 to-red-600 text-slate-950",
+  "from-fuchsia-400 to-purple-600 text-white",
+  "from-teal-400 to-cyan-600 text-slate-950",
+  "from-yellow-300 to-amber-600 text-slate-950",
+  "from-pink-400 to-rose-600 text-white",
 ];
 
 export function salaryLabel(job: Job): string | null {
@@ -73,18 +75,18 @@ export const JobCard = forwardRef<HTMLDivElement, JobCardProps>(function JobCard
       onClick={() => onOpen?.(job.id)}
       onKeyDown={onOpen ? onKeyDown : undefined}
       aria-label={onOpen ? `Open ${job.company} — ${job.title}` : undefined}
-      className={`relative group rounded-2xl border border-white/10 bg-slate-900/80 p-4 transition-all duration-200 cursor-grab ${
+      className={`relative group rounded-2xl border border-white/10 bg-slate-900/90 p-4 transition-all duration-200 cursor-grab ${
         overlay
-          ? "rotate-2 shadow-2xl scale-105 border-indigo-500/50 bg-slate-900"
-          : "hover:border-indigo-500/40 hover:bg-slate-900 hover:shadow-xl hover:shadow-indigo-500/10 hover:-translate-y-0.5"
+          ? "rotate-2 shadow-2xl scale-105 border-lime-500/50 bg-slate-900"
+          : "hover:border-lime-500/40 hover:bg-slate-900 hover:shadow-xl hover:shadow-lime-500/10 hover:-translate-y-0.5"
       } ${className}`}
     >
       <div className="flex items-start gap-3">
-        <div className={`flex size-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br ${COMPANY_AVATAR_COLORS[avatarIndex]} text-white font-bold text-xs shadow-md shadow-black/20`}>
+        <div className={`flex size-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br ${COMPANY_AVATAR_COLORS[avatarIndex]} font-extrabold text-xs shadow-md`}>
           {job.company.charAt(0).toUpperCase()}
         </div>
         <div className="min-w-0 flex-1">
-          <h3 className="text-sm font-bold text-slate-100 group-hover:text-indigo-400 transition-colors truncate">
+          <h3 className="text-sm font-bold text-white group-hover:text-lime-400 transition-colors truncate">
             {job.company}
           </h3>
           <p className="text-xs font-semibold text-slate-300 truncate mt-0.5">
@@ -93,22 +95,22 @@ export const JobCard = forwardRef<HTMLDivElement, JobCardProps>(function JobCard
         </div>
       </div>
 
-      <div className="mt-3 flex flex-wrap items-center gap-2 pt-2 border-t border-white/5">
+      <div className="mt-3 flex flex-wrap items-center gap-2 pt-2.5 border-t border-white/10">
         {job.location && (
-          <span className="flex items-center gap-1 rounded-lg bg-slate-800/80 border border-white/5 px-2 py-1 text-[11px] font-medium text-slate-300">
+          <span className="flex items-center gap-1 rounded-lg bg-slate-800 border border-white/10 px-2 py-1 text-[11px] font-medium text-slate-200">
             <MapPin size={11} className="text-slate-400" strokeWidth={2} />
             {job.location}
           </span>
         )}
         {salary && (
-          <span className={`flex items-center gap-1 rounded-lg border px-2 py-1 text-[11px] font-semibold ${pill.border} ${pill.bg} ${pill.text}`}>
+          <span className={`flex items-center gap-1 rounded-lg border px-2 py-1 text-[11px] font-bold ${pill.border} ${pill.bg} ${pill.text}`}>
             <Wallet size={11} strokeWidth={2} />
             {salary}
           </span>
         )}
         <span
           title={exactTimestamp(job.applied_at ?? job.created_at)}
-          className="ml-auto flex items-center gap-1 text-[11px] font-medium text-slate-400"
+          className="ml-auto flex items-center gap-1 text-[11px] font-semibold text-slate-400"
         >
           <Clock size={11} strokeWidth={2} />
           {daysAgo(job.applied_at ?? job.created_at)}

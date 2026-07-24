@@ -10,11 +10,11 @@ import { Input } from "../components/ui/input";
 type SortKey = "company" | "title" | "status" | "applied_at" | "created_at";
 
 const STATUS_BADGE_STYLES: Record<JobStatus, { bg: string; text: string; border: string }> = {
-  wishlist: { bg: "bg-amber-500/10", text: "text-amber-400", border: "border-amber-500/30" },
-  applied: { bg: "bg-sky-500/10", text: "text-sky-400", border: "border-sky-500/30" },
-  interview: { bg: "bg-emerald-500/10", text: "text-emerald-400", border: "border-emerald-500/30" },
-  offer: { bg: "bg-pink-500/10", text: "text-pink-400", border: "border-pink-500/30" },
-  rejected: { bg: "bg-rose-500/10", text: "text-rose-400", border: "border-rose-500/30" },
+  wishlist: { bg: "bg-yellow-500/15", text: "text-yellow-300", border: "border-yellow-500/30" },
+  applied: { bg: "bg-cyan-500/15", text: "text-cyan-300", border: "border-cyan-500/30" },
+  interview: { bg: "bg-lime-500/15", text: "text-lime-300", border: "border-lime-500/30" },
+  offer: { bg: "bg-fuchsia-500/15", text: "text-fuchsia-300", border: "border-fuchsia-500/30" },
+  rejected: { bg: "bg-red-500/15", text: "text-red-300", border: "border-red-500/30" },
 };
 
 export default function TableView() {
@@ -65,12 +65,12 @@ export default function TableView() {
         if (sortKey === key) setSortAsc(!sortAsc);
         else { setSortKey(key); setSortAsc(true); }
       }}
-      className="cursor-pointer select-none bg-slate-900/90 border-b border-white/10 px-4 py-3 text-left text-xs font-bold uppercase tracking-wider text-slate-300 hover:text-white hover:bg-slate-800 transition-all"
+      className="cursor-pointer select-none bg-slate-900/90 border-b border-white/10 px-4 py-3 text-left text-xs font-bold uppercase tracking-wider text-slate-200 hover:text-white hover:bg-slate-800 transition-all"
     >
       <span className="flex items-center gap-1.5">
         {label}
         {sortKey === key &&
-          (sortAsc ? <ChevronUp size={13} strokeWidth={2.5} className="text-indigo-400" /> : <ChevronDown size={13} strokeWidth={2.5} className="text-indigo-400" />)}
+          (sortAsc ? <ChevronUp size={13} strokeWidth={2.5} className="text-lime-400" /> : <ChevronDown size={13} strokeWidth={2.5} className="text-lime-400" />)}
       </span>
     </th>
   );
@@ -85,7 +85,7 @@ export default function TableView() {
   if (error) {
     return (
       <div className="flex h-full flex-col items-center justify-center gap-3 p-6 text-center">
-        <p className="text-sm font-semibold text-rose-400">Couldn't load your jobs.</p>
+        <p className="text-sm font-semibold text-red-400">Couldn't load your jobs.</p>
         <Button variant="outline" size="sm" onClick={reload} className="rounded-xl border-white/10">
           <RotateCcw size={14} strokeWidth={2} />
           Retry
@@ -115,7 +115,7 @@ export default function TableView() {
             <select
               value={status}
               onChange={(e) => setStatus(e.target.value as JobStatus | "all")}
-              className="rounded-xl border border-white/10 bg-slate-950 px-3 py-1.5 text-xs font-semibold text-white focus:outline-none focus:border-indigo-500 h-9"
+              className="rounded-xl border border-white/10 bg-slate-950 px-3 py-1.5 text-xs font-bold text-white focus:outline-none focus:border-lime-500 h-9"
             >
               <option value="all">All statuses</option>
               {JOB_STATUSES.map((s) => (
@@ -123,17 +123,17 @@ export default function TableView() {
               ))}
             </select>
           </div>
-          <label className="flex items-center gap-2 px-2 text-xs font-medium text-slate-300">
+          <label className="flex items-center gap-2 px-2 text-xs font-semibold text-slate-300">
             <input
               type="checkbox"
               checked={showArchived}
               onChange={(e) => setShowArchived(e.target.checked)}
-              className="size-4 rounded accent-indigo-600"
+              className="size-4 rounded accent-lime-500"
             />
             <ArchiveRestore size={14} strokeWidth={2} className="text-slate-400" />
             Include archived
           </label>
-          <span className="ml-auto text-xs font-semibold text-slate-400 px-2">{rows.length} jobs</span>
+          <span className="ml-auto text-xs font-bold text-slate-400 px-2">{rows.length} jobs</span>
         </div>
 
         <div className="rounded-2xl border border-white/10 bg-slate-900/80 shadow-2xl overflow-hidden">
@@ -143,8 +143,8 @@ export default function TableView() {
                 {header("company", "Company")}
                 {header("title", "Title")}
                 {header("status", "Status")}
-                <th className="bg-slate-900/90 border-b border-white/10 px-4 py-3 text-left text-xs font-bold uppercase tracking-wider text-slate-300">Location</th>
-                <th className="bg-slate-900/90 border-b border-white/10 px-4 py-3 text-left text-xs font-bold uppercase tracking-wider text-slate-300">Salary</th>
+                <th className="bg-slate-900/90 border-b border-white/10 px-4 py-3 text-left text-xs font-bold uppercase tracking-wider text-slate-200">Location</th>
+                <th className="bg-slate-900/90 border-b border-white/10 px-4 py-3 text-left text-xs font-bold uppercase tracking-wider text-slate-200">Salary</th>
                 {header("applied_at", "Applied")}
                 {header("created_at", "Added")}
               </tr>
@@ -171,19 +171,19 @@ export default function TableView() {
                       {j.company}
                       {!!j.archived && <span className="ml-2 text-xs font-normal text-slate-500">(archived)</span>}
                     </td>
-                    <td className="px-4 py-3 font-medium text-slate-300">{j.title}</td>
+                    <td className="px-4 py-3 font-semibold text-slate-300">{j.title}</td>
                     <td className="px-4 py-3">
-                      <span className={`rounded-lg border px-2.5 py-1 text-[11px] font-bold ${badge.bg} ${badge.text} ${badge.border}`}>
+                      <span className={`rounded-lg border px-2.5 py-1 text-[11px] font-extrabold ${badge.bg} ${badge.text} ${badge.border}`}>
                         {STATUS_LABELS[j.status]}
                       </span>
                     </td>
                     <td className="px-4 py-3 font-medium text-slate-400">{j.location ?? "—"}</td>
-                    <td className="px-4 py-3 font-semibold text-slate-200">
+                    <td className="px-4 py-3 font-bold text-slate-200">
                       {salaryLabel(j) ?? "—"}
                     </td>
                     <td
                       title={j.applied_at ? exactTimestamp(j.applied_at) : undefined}
-                      className="px-4 py-3 font-medium text-sky-400"
+                      className="px-4 py-3 font-semibold text-cyan-300"
                     >
                       {j.applied_at ? daysAgo(j.applied_at) : "—"}
                     </td>

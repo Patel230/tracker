@@ -14,11 +14,11 @@ function portalHref(url: string | null): string | null {
 }
 
 const CATEGORY_TAGS: Record<string, { label: string; bg: string; text: string; border: string }> = {
-  company: { label: "Tech Giant", bg: "bg-amber-500/10", text: "text-amber-400", border: "border-amber-500/20" },
-  startup: { label: "Startup", bg: "bg-indigo-500/10", text: "text-indigo-400", border: "border-indigo-500/20" },
-  remote: { label: "Remote-First", bg: "bg-emerald-500/10", text: "text-emerald-400", border: "border-emerald-500/20" },
-  visa_remote: { label: "Visa Sponsor", bg: "bg-sky-500/10", text: "text-sky-400", border: "border-sky-500/20" },
-  india_tech: { label: "India Hub", bg: "bg-orange-500/10", text: "text-orange-400", border: "border-orange-500/20" },
+  company: { label: "Tech Giant", bg: "bg-amber-500/15", text: "text-amber-300", border: "border-amber-500/30" },
+  startup: { label: "Startup", bg: "bg-fuchsia-500/15", text: "text-fuchsia-300", border: "border-fuchsia-500/30" },
+  remote: { label: "Remote-First", bg: "bg-teal-500/15", text: "text-teal-300", border: "border-teal-500/30" },
+  visa_remote: { label: "Visa Sponsor", bg: "bg-cyan-500/15", text: "text-cyan-300", border: "border-cyan-500/30" },
+  india_tech: { label: "India Hub", bg: "bg-lime-500/15", text: "text-lime-300", border: "border-lime-500/30" },
 };
 
 export default function Companies() {
@@ -160,7 +160,7 @@ export default function Companies() {
   if (error) {
     return (
       <div className="flex h-full flex-col items-center justify-center gap-3 p-6 text-center">
-        <p className="text-sm font-semibold text-rose-400">Couldn't load companies.</p>
+        <p className="text-sm font-semibold text-red-400">Couldn't load companies.</p>
         <Button variant="outline" size="sm" onClick={reload} className="rounded-xl border-white/10">
           <RotateCcw size={14} strokeWidth={2} />
           Retry
@@ -174,8 +174,8 @@ export default function Companies() {
       <div className="mx-auto max-w-6xl space-y-6">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
-            <h1 className="text-xl font-bold tracking-tight text-white">Companies & Startup Directory</h1>
-            <p className="mt-1 text-xs font-medium text-slate-400">
+            <h1 className="text-xl font-extrabold tracking-tight text-white">Companies & Startup Directory</h1>
+            <p className="mt-1 text-xs font-semibold text-slate-400">
               {companies.length} verified companies · {totalJobs} Backend & Tech jobs tracked
             </p>
           </div>
@@ -186,9 +186,9 @@ export default function Companies() {
               variant="outline"
               disabled={seeding}
               onClick={() => seedTopCompanies("actively_hiring")}
-              className="rounded-xl border border-rose-500/30 bg-rose-500/10 text-rose-400 text-xs font-bold hover:bg-rose-500/20 gap-1.5"
+              className="rounded-xl border border-red-500/30 bg-red-500/15 text-red-300 text-xs font-bold hover:bg-red-500/25 gap-1.5"
             >
-              <Flame size={14} className="text-rose-400 fill-rose-400" strokeWidth={2} />
+              <Flame size={14} className="text-red-400 fill-red-400" strokeWidth={2} />
               {seeding ? "Importing…" : "Top 10 Actively Hiring"}
             </Button>
             <Button
@@ -196,9 +196,9 @@ export default function Companies() {
               variant="outline"
               disabled={seeding}
               onClick={() => seedTopCompanies("company")}
-              className="rounded-xl border border-white/10 bg-slate-900 text-slate-200 text-xs font-semibold hover:bg-slate-800 gap-1.5"
+              className="rounded-xl border border-amber-500/30 bg-amber-500/15 text-amber-300 text-xs font-bold hover:bg-amber-500/25 gap-1.5"
             >
-              <Sparkles size={14} className="text-amber-400" strokeWidth={2} />
+              <Sparkles size={14} className="text-amber-300" strokeWidth={2} />
               {seeding ? "Importing…" : "Top 100 Tech Giants"}
             </Button>
             <Button
@@ -206,9 +206,9 @@ export default function Companies() {
               variant="outline"
               disabled={seeding}
               onClick={() => seedTopCompanies("startup")}
-              className="rounded-xl border border-white/10 bg-slate-900 text-slate-200 text-xs font-semibold hover:bg-slate-800 gap-1.5"
+              className="rounded-xl border border-fuchsia-500/30 bg-fuchsia-500/15 text-fuchsia-300 text-xs font-bold hover:bg-fuchsia-500/25 gap-1.5"
             >
-              <Rocket size={14} className="text-indigo-400" strokeWidth={2} />
+              <Rocket size={14} className="text-fuchsia-300" strokeWidth={2} />
               {seeding ? "Importing…" : "Top 100 Startups"}
             </Button>
             <Button
@@ -216,9 +216,9 @@ export default function Companies() {
               variant="outline"
               disabled={seeding}
               onClick={() => seedTopCompanies("remote")}
-              className="rounded-xl border border-white/10 bg-slate-900 text-slate-200 text-xs font-semibold hover:bg-slate-800 gap-1.5"
+              className="rounded-xl border border-teal-500/30 bg-teal-500/15 text-teal-300 text-xs font-bold hover:bg-teal-500/25 gap-1.5"
             >
-              <Globe size={14} className="text-emerald-400" strokeWidth={2} />
+              <Globe size={14} className="text-teal-300" strokeWidth={2} />
               {seeding ? "Importing…" : "Top 100 Remote"}
             </Button>
             <Button
@@ -226,9 +226,9 @@ export default function Companies() {
               variant="outline"
               disabled={seeding}
               onClick={() => seedTopCompanies("visa_remote")}
-              className="rounded-xl border border-white/10 bg-slate-900 text-slate-200 text-xs font-semibold hover:bg-slate-800 gap-1.5"
+              className="rounded-xl border border-cyan-500/30 bg-cyan-500/15 text-cyan-300 text-xs font-bold hover:bg-cyan-500/25 gap-1.5"
             >
-              <Plane size={14} className="text-sky-400" strokeWidth={2} />
+              <Plane size={14} className="text-cyan-300" strokeWidth={2} />
               {seeding ? "Importing…" : "Visa & Relocation"}
             </Button>
             <Button
@@ -236,18 +236,18 @@ export default function Companies() {
               variant="outline"
               disabled={seeding}
               onClick={() => seedTopCompanies("india_tech")}
-              className="rounded-xl border border-white/10 bg-slate-900 text-slate-200 text-xs font-semibold hover:bg-slate-800 gap-1.5"
+              className="rounded-xl border border-lime-500/30 bg-lime-500/15 text-lime-300 text-xs font-bold hover:bg-lime-500/25 gap-1.5"
             >
-              <MapPin size={14} className="text-orange-400" strokeWidth={2} />
+              <MapPin size={14} className="text-lime-300" strokeWidth={2} />
               {seeding ? "Importing…" : "India Tech Hubs"}
             </Button>
             <Button
               size="sm"
               disabled={seeding}
               onClick={() => seedTopCompanies("all")}
-              className="rounded-xl gradient-primary text-white text-xs font-bold gap-1.5 shadow-lg shadow-indigo-500/25"
+              className="rounded-xl gradient-lime text-slate-950 text-xs font-extrabold gap-1.5 shadow-lg shadow-lime-500/25"
             >
-              <Code2 size={14} strokeWidth={2} />
+              <Code2 size={14} strokeWidth={2.5} />
               {seeding ? "Importing…" : "All Python + AI Roles"}
             </Button>
           </div>
@@ -268,12 +268,12 @@ export default function Companies() {
             onChange={(e) => setPortalUrl(e.target.value)}
             className="rounded-xl border-white/10 bg-slate-950 text-white placeholder:text-slate-500 text-xs"
           />
-          <Button type="submit" size="sm" disabled={busy} className="rounded-xl gradient-primary text-white font-bold text-xs shrink-0 px-4">
+          <Button type="submit" size="sm" disabled={busy} className="rounded-xl gradient-lime text-slate-950 font-extrabold text-xs shrink-0 px-4">
             <Plus size={14} strokeWidth={2.5} />
             {busy ? "…" : "Add Company"}
           </Button>
           {formError && (
-            <p className="col-span-3 rounded-xl border border-rose-500/30 bg-rose-500/10 p-2 text-xs font-semibold text-rose-400" role="alert">
+            <p className="col-span-3 rounded-xl border border-red-500/30 bg-red-500/10 p-2 text-xs font-semibold text-red-400" role="alert">
               {formError}
             </p>
           )}
@@ -291,21 +291,21 @@ export default function Companies() {
           </div>
           <div className="flex flex-wrap gap-1.5">
             {[
-              { id: "all", label: "All", Icon: Building2, iconClass: "text-slate-400" },
-              { id: "actively_hiring", label: "Actively Hiring", Icon: Flame, iconClass: "text-rose-400 fill-rose-400" },
-              { id: "company", label: "Tech Giants", Icon: Sparkles, iconClass: "text-amber-400" },
-              { id: "startup", label: "Startups", Icon: Rocket, iconClass: "text-indigo-400" },
-              { id: "remote", label: "Remote", Icon: Globe, iconClass: "text-emerald-400" },
-              { id: "visa_remote", label: "Visa & Relocation", Icon: Plane, iconClass: "text-sky-400" },
-              { id: "india_tech", label: "India Tech", Icon: MapPin, iconClass: "text-orange-400" },
-            ].map(({ id, label, Icon, iconClass }) => (
+              { id: "all", label: "All", Icon: Building2, iconClass: "text-slate-400", activeBg: "bg-slate-800 border-white/20 text-white" },
+              { id: "actively_hiring", label: "Actively Hiring", Icon: Flame, iconClass: "text-red-400 fill-red-400", activeBg: "bg-red-500/20 border-red-500/40 text-red-300" },
+              { id: "company", label: "Tech Giants", Icon: Sparkles, iconClass: "text-amber-400", activeBg: "bg-amber-500/20 border-amber-500/40 text-amber-300" },
+              { id: "startup", label: "Startups", Icon: Rocket, iconClass: "text-fuchsia-400", activeBg: "bg-fuchsia-500/20 border-fuchsia-500/40 text-fuchsia-300" },
+              { id: "remote", label: "Remote", Icon: Globe, iconClass: "text-teal-400", activeBg: "bg-teal-500/20 border-teal-500/40 text-teal-300" },
+              { id: "visa_remote", label: "Visa & Relocation", Icon: Plane, iconClass: "text-cyan-400", activeBg: "bg-cyan-500/20 border-cyan-500/40 text-cyan-300" },
+              { id: "india_tech", label: "India Tech", Icon: MapPin, iconClass: "text-lime-400", activeBg: "bg-lime-500/20 border-lime-500/40 text-lime-300" },
+            ].map(({ id, label, Icon, iconClass, activeBg }) => (
               <Button
                 key={id}
                 size="sm"
                 variant={categoryFilter === id ? "default" : "outline"}
                 onClick={() => setCategoryFilter(id as any)}
-                className={`text-xs font-semibold rounded-xl border border-white/10 gap-1.5 h-9 ${
-                  categoryFilter === id ? "bg-indigo-600 text-white border-indigo-500 font-bold shadow-lg shadow-indigo-600/30" : "bg-slate-950 text-slate-300 hover:text-white hover:bg-slate-800"
+                className={`text-xs font-bold rounded-xl border border-white/10 gap-1.5 h-9 ${
+                  categoryFilter === id ? `${activeBg} shadow-md` : "bg-slate-950 text-slate-300 hover:text-white hover:bg-slate-800"
                 }`}
               >
                 <Icon size={14} className={iconClass} strokeWidth={2} />
@@ -322,7 +322,7 @@ export default function Companies() {
               No matching companies found.
             </p>
             <div className="mt-4 flex justify-center gap-2">
-              <Button size="sm" onClick={() => seedTopCompanies("all")} disabled={seeding} className="rounded-xl gradient-primary text-white text-xs font-bold">
+              <Button size="sm" onClick={() => seedTopCompanies("all")} disabled={seeding} className="rounded-xl gradient-lime text-slate-950 text-xs font-extrabold">
                 <Sparkles size={14} strokeWidth={2} />
                 Import All Companies
               </Button>
@@ -349,7 +349,7 @@ export default function Companies() {
                           onChange={(e) => setEditPortal(e.target.value)}
                           className="max-w-xs rounded-xl border-white/10 bg-slate-950 text-white text-xs"
                         />
-                        <Button size="sm" onClick={() => saveEdit(c.id)} className="rounded-xl bg-indigo-600 text-white text-xs font-bold">
+                        <Button size="sm" onClick={() => saveEdit(c.id)} className="rounded-xl gradient-lime text-slate-950 text-xs font-bold">
                           <Save size={14} strokeWidth={2} />
                           Save
                         </Button>
@@ -365,20 +365,20 @@ export default function Companies() {
                           className="flex flex-1 items-center gap-3.5 text-left min-w-0"
                           aria-expanded={expanded}
                         >
-                          <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 text-white font-bold text-sm shadow-md">
+                          <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-lime-400 to-emerald-600 text-slate-950 font-extrabold text-sm shadow-md">
                             {c.name.charAt(0).toUpperCase()}
                           </div>
                           <div className="min-w-0">
                             <div className="flex items-center gap-2">
-                              <h3 className="font-bold text-sm text-slate-100 truncate">{c.name}</h3>
+                              <h3 className="font-bold text-sm text-white truncate">{c.name}</h3>
                               {info?.actively_hiring && (
-                                <span className="flex items-center gap-1 rounded-full border border-rose-500/30 bg-rose-500/10 px-2 py-0.5 text-[10px] font-bold text-rose-400">
-                                  <Flame size={10} className="fill-rose-400" />
+                                <span className="flex items-center gap-1 rounded-full border border-red-500/30 bg-red-500/15 px-2 py-0.5 text-[10px] font-bold text-red-300">
+                                  <Flame size={10} className="fill-red-400" />
                                   Hiring
                                 </span>
                               )}
                               {catTag && (
-                                <span className={`rounded-full border px-2 py-0.5 text-[10px] font-semibold ${catTag.bg} ${catTag.text} ${catTag.border}`}>
+                                <span className={`rounded-full border px-2 py-0.5 text-[10px] font-bold ${catTag.bg} ${catTag.text} ${catTag.border}`}>
                                   {catTag.label}
                                 </span>
                               )}
@@ -395,7 +395,7 @@ export default function Companies() {
                               href={href}
                               target="_blank"
                               rel="noreferrer"
-                              className="rounded-xl border border-indigo-500/30 bg-indigo-500/10 px-3 py-1.5 text-xs font-semibold text-indigo-400 hover:bg-indigo-500/20 transition-all flex items-center gap-1.5"
+                              className="rounded-xl border border-cyan-500/30 bg-cyan-500/15 px-3 py-1.5 text-xs font-bold text-cyan-300 hover:bg-cyan-500/25 transition-all flex items-center gap-1.5"
                               title="Open official career portal"
                             >
                               <ExternalLink size={13} strokeWidth={2} />
@@ -405,7 +405,7 @@ export default function Companies() {
                           <Button size="sm" variant="ghost" onClick={() => startEdit(c)} className="rounded-xl text-slate-400 hover:text-white" aria-label={`Edit ${c.name}`}>
                             <Pencil size={14} strokeWidth={2} />
                           </Button>
-                          <Button size="sm" variant="ghost" onClick={() => remove(c)} className="rounded-xl text-rose-400 hover:bg-rose-500/10" aria-label={`Delete ${c.name}`}>
+                          <Button size="sm" variant="ghost" onClick={() => remove(c)} className="rounded-xl text-red-400 hover:bg-red-500/10" aria-label={`Delete ${c.name}`}>
                             <Trash2 size={14} strokeWidth={2} />
                           </Button>
                         </div>
@@ -427,11 +427,11 @@ export default function Companies() {
                             <button
                               key={j.id}
                               onClick={() => setOpenJobId(j.id)}
-                              className="rounded-xl border border-white/5 bg-slate-950/60 p-3 text-left transition-all hover:border-indigo-500/30 hover:bg-slate-900"
+                              className="rounded-xl border border-white/5 bg-slate-950/60 p-3 text-left transition-all hover:border-lime-500/30 hover:bg-slate-900"
                             >
                               <div className="flex items-center justify-between gap-2">
-                                <span className="truncate font-semibold text-xs text-white">{j.title}</span>
-                                <Badge variant="outline" className="text-[10px] rounded-lg border-white/10 bg-slate-800 text-slate-300 shrink-0">
+                                <span className="truncate font-bold text-xs text-white">{j.title}</span>
+                                <Badge variant="outline" className="text-[10px] rounded-lg border-white/10 bg-slate-800 text-slate-200 shrink-0">
                                   {STATUS_LABELS[j.status]}
                                 </Badge>
                               </div>

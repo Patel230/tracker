@@ -7,10 +7,10 @@ import { useReminders } from "../components/RemindersProvider";
 import { Button } from "../components/ui/button";
 
 const TILE_STYLES = [
-  { border: "border-amber-500/30", bg: "bg-gradient-to-br from-amber-500/15 via-slate-900 to-slate-950", text: "text-amber-400", iconBg: "bg-amber-500/20" },
-  { border: "border-sky-500/30", bg: "bg-gradient-to-br from-sky-500/15 via-slate-900 to-slate-950", text: "text-sky-400", iconBg: "bg-sky-500/20" },
-  { border: "border-emerald-500/30", bg: "bg-gradient-to-br from-emerald-500/15 via-slate-900 to-slate-950", text: "text-emerald-400", iconBg: "bg-emerald-500/20" },
-  { border: "border-pink-500/30", bg: "bg-gradient-to-br from-pink-500/15 via-slate-900 to-slate-950", text: "text-pink-400", iconBg: "bg-pink-500/20" },
+  { border: "border-cyan-500/30", bg: "bg-gradient-to-br from-cyan-500/20 via-slate-900 to-slate-950", text: "text-cyan-300", iconBg: "bg-cyan-500/20 text-cyan-300" },
+  { border: "border-lime-500/30", bg: "bg-gradient-to-br from-lime-500/20 via-slate-900 to-slate-950", text: "text-lime-300", iconBg: "bg-lime-500/20 text-lime-300" },
+  { border: "border-fuchsia-500/30", bg: "bg-gradient-to-br from-fuchsia-500/20 via-slate-900 to-slate-950", text: "text-fuchsia-300", iconBg: "bg-fuchsia-500/20 text-fuchsia-300" },
+  { border: "border-orange-500/30", bg: "bg-gradient-to-br from-orange-500/20 via-slate-900 to-slate-950", text: "text-orange-300", iconBg: "bg-orange-500/20 text-orange-300" },
 ];
 
 export default function Dashboard() {
@@ -20,7 +20,7 @@ export default function Dashboard() {
   if (error || !stats) {
     return (
       <div className="flex h-full flex-col items-center justify-center gap-3 p-6 text-center">
-        <p className="text-sm font-semibold text-rose-400">
+        <p className="text-sm font-semibold text-red-400">
           Couldn't load your stats.
         </p>
         <Button variant="outline" size="sm" onClick={reload} className="rounded-xl border-white/10">
@@ -55,13 +55,13 @@ export default function Dashboard() {
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <Link
             to="/board"
-            className="group flex items-center gap-4 rounded-2xl border border-white/10 bg-slate-900/80 p-4 shadow-xl hover:border-indigo-500/40 hover:bg-slate-900 hover:shadow-indigo-500/10 transition-all duration-200"
+            className="group flex items-center gap-4 rounded-2xl border border-fuchsia-500/30 bg-slate-900/80 p-4 shadow-xl hover:border-fuchsia-500/60 hover:bg-slate-900 hover:shadow-fuchsia-500/20 transition-all duration-200"
           >
-            <span className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-indigo-500/20 text-indigo-400 group-hover:scale-110 transition-transform">
+            <span className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-fuchsia-500/20 text-fuchsia-400 group-hover:scale-110 transition-transform">
               <Kanban size={22} strokeWidth={2} />
             </span>
             <div>
-              <div className="text-sm font-bold text-slate-100 group-hover:text-indigo-400 transition-colors">
+              <div className="text-sm font-bold text-white group-hover:text-fuchsia-400 transition-colors">
                 Kanban Pipeline
               </div>
               <div className="text-xs font-medium text-slate-400">Drag & drop application cards</div>
@@ -70,13 +70,13 @@ export default function Dashboard() {
 
           <Link
             to="/companies"
-            className="group flex items-center gap-4 rounded-2xl border border-white/10 bg-slate-900/80 p-4 shadow-xl hover:border-sky-500/40 hover:bg-slate-900 hover:shadow-sky-500/10 transition-all duration-200"
+            className="group flex items-center gap-4 rounded-2xl border border-teal-500/30 bg-slate-900/80 p-4 shadow-xl hover:border-teal-500/60 hover:bg-slate-900 hover:shadow-teal-500/20 transition-all duration-200"
           >
-            <span className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-sky-500/20 text-sky-400 group-hover:scale-110 transition-transform">
+            <span className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-teal-500/20 text-teal-400 group-hover:scale-110 transition-transform">
               <Building2 size={22} strokeWidth={2} />
             </span>
             <div>
-              <div className="text-sm font-bold text-slate-100 group-hover:text-sky-400 transition-colors">
+              <div className="text-sm font-bold text-white group-hover:text-teal-400 transition-colors">
                 Companies Directory
               </div>
               <div className="text-xs font-medium text-slate-400">380+ Verified Career Portals</div>
@@ -85,13 +85,13 @@ export default function Dashboard() {
 
           <Link
             to="/table"
-            className="group flex items-center gap-4 rounded-2xl border border-white/10 bg-slate-900/80 p-4 shadow-xl hover:border-emerald-500/40 hover:bg-slate-900 hover:shadow-emerald-500/10 transition-all duration-200"
+            className="group flex items-center gap-4 rounded-2xl border border-lime-500/30 bg-slate-900/80 p-4 shadow-xl hover:border-lime-500/60 hover:bg-slate-900 hover:shadow-lime-500/20 transition-all duration-200"
           >
-            <span className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-emerald-500/20 text-emerald-400 group-hover:scale-110 transition-transform">
+            <span className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-lime-500/20 text-lime-400 group-hover:scale-110 transition-transform">
               <Sparkles size={22} strokeWidth={2} />
             </span>
             <div>
-              <div className="text-sm font-bold text-slate-100 group-hover:text-emerald-400 transition-colors">
+              <div className="text-sm font-bold text-white group-hover:text-lime-400 transition-colors">
                 Data & Table View
               </div>
               <div className="text-xs font-medium text-slate-400">Sort, filter, and export applications</div>
@@ -106,8 +106,8 @@ export default function Dashboard() {
             return (
               <div key={t.label} className={`rounded-2xl border p-5 shadow-xl ${style.border} ${style.bg}`}>
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold uppercase tracking-wider text-slate-400">{t.label}</span>
-                  <span className={`p-2 rounded-xl ${style.iconBg} ${style.text}`}>
+                  <span className="text-xs font-bold uppercase tracking-wider text-slate-300">{t.label}</span>
+                  <span className={`p-2 rounded-xl ${style.iconBg}`}>
                     <t.icon size={16} strokeWidth={2} />
                   </span>
                 </div>
@@ -120,8 +120,8 @@ export default function Dashboard() {
 
         <div className="grid gap-6 lg:grid-cols-2">
           <div className="rounded-2xl border border-white/10 bg-slate-900/80 p-6 shadow-xl">
-            <h2 className="flex items-center gap-2 text-sm font-bold text-slate-100">
-              <Briefcase size={16} strokeWidth={2} className="text-sky-400" />
+            <h2 className="flex items-center gap-2 text-sm font-bold text-white">
+              <Briefcase size={16} strokeWidth={2} className="text-cyan-400" />
               Applications per week
             </h2>
             <p className="text-xs font-medium text-slate-400 mt-0.5">last 12 weeks activity</p>
@@ -129,8 +129,8 @@ export default function Dashboard() {
           </div>
 
           <div className="rounded-2xl border border-white/10 bg-slate-900/80 p-6 shadow-xl">
-            <h2 className="flex items-center gap-2 text-sm font-bold text-slate-100">
-              <Timer size={16} strokeWidth={2} className="text-emerald-400" />
+            <h2 className="flex items-center gap-2 text-sm font-bold text-white">
+              <Timer size={16} strokeWidth={2} className="text-lime-400" />
               Pipeline Funnel
             </h2>
             <p className="text-xs font-medium text-slate-400 mt-0.5">jobs grouped by current stage</p>
@@ -139,8 +139,8 @@ export default function Dashboard() {
         </div>
 
         <div className="rounded-2xl border border-white/10 bg-slate-900/80 p-6 shadow-xl">
-          <h2 className="flex items-center gap-2 text-sm font-bold text-slate-100">
-            <Bell size={16} strokeWidth={2} className="text-amber-400" />
+          <h2 className="flex items-center gap-2 text-sm font-bold text-white">
+            <Bell size={16} strokeWidth={2} className="text-yellow-400" />
             Upcoming Reminders
           </h2>
           {reminders.length === 0 ? (
@@ -156,12 +156,12 @@ export default function Dashboard() {
                     <span
                       title={new Date(r.due_at).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" })}
                       className={`font-semibold shrink-0 px-2 py-1 rounded-lg ${
-                        overdue ? "bg-rose-500/10 text-rose-400 border border-rose-500/20" : "bg-slate-800 text-slate-300"
+                        overdue ? "bg-red-500/15 text-red-400 border border-red-500/30" : "bg-slate-800 text-slate-300"
                       }`}
                     >
                       {new Date(r.due_at).toLocaleDateString(undefined, { month: "short", day: "numeric" })}
                     </span>
-                    <span className="font-semibold text-slate-100">{r.note}</span>
+                    <span className="font-semibold text-white">{r.note}</span>
                     <span className="font-medium text-slate-400">
                       {r.company} · {r.job_title}
                     </span>
@@ -219,7 +219,7 @@ function WeeklyBars({ weekly }: { weekly: Stats["weekly"] }) {
                   width={barW}
                   height={barH}
                   rx="4"
-                  fill="#6366f1"
+                  fill="#06b6d4"
                   opacity={hover === null || hover === i ? 1 : 0.4}
                   className="transition-opacity duration-150"
                 />
@@ -244,10 +244,10 @@ function WeeklyBars({ weekly }: { weekly: Stats["weekly"] }) {
       </svg>
       {hover !== null && (
         <div
-          className="pointer-events-none absolute -top-2 rounded-xl border border-white/10 bg-slate-900 px-3 py-1.5 text-xs shadow-xl backdrop-blur-md"
+          className="pointer-events-none absolute -top-2 rounded-xl border border-cyan-500/30 bg-slate-900 px-3 py-1.5 text-xs shadow-xl backdrop-blur-md"
           style={{ left: `${((pad.left + hover * step + step / 2) / W) * 100}%`, transform: "translateX(-50%)" }}
         >
-          <span className="font-bold text-indigo-400">{weekly[hover].count}</span>{" "}
+          <span className="font-bold text-cyan-300">{weekly[hover].count}</span>{" "}
           <span className="font-medium text-slate-300">
             application{weekly[hover].count === 1 ? "" : "s"} · wk of {weekLabel(weekly[hover].weekStart)}
           </span>
@@ -260,11 +260,11 @@ function WeeklyBars({ weekly }: { weekly: Stats["weekly"] }) {
 function Funnel({ funnel }: { funnel: Stats["funnel"] }) {
   const max = Math.max(1, ...JOB_STATUSES.map((s) => funnel[s]));
   const COLORS: Record<string, string> = {
-    wishlist: "bg-amber-500",
-    applied: "bg-sky-500",
-    interview: "bg-emerald-500",
-    offer: "bg-pink-500",
-    rejected: "bg-rose-500",
+    wishlist: "bg-yellow-400",
+    applied: "bg-cyan-400",
+    interview: "bg-lime-400",
+    offer: "bg-fuchsia-400",
+    rejected: "bg-red-400",
   };
 
   return (
@@ -280,7 +280,7 @@ function Funnel({ funnel }: { funnel: Stats["funnel"] }) {
               style={{ width: `${(funnel[s] / max) * 100}%`, minWidth: funnel[s] ? "6px" : 0 }}
             />
           </div>
-          <span className="w-8 text-right text-xs font-bold tabular-nums text-slate-100">{funnel[s]}</span>
+          <span className="w-8 text-right text-xs font-bold tabular-nums text-white">{funnel[s]}</span>
         </div>
       ))}
     </div>
