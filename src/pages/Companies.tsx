@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState, type FormEvent } from "react";
-import { Building2, ExternalLink, Pencil, Plus, Save, Trash2, X, RotateCcw, Search, Sparkles, Rocket, Globe } from "lucide-react";
+import { Building2, ExternalLink, Pencil, Plus, Save, Trash2, X, RotateCcw, Search, Sparkles, Rocket, Globe, Flame } from "lucide-react";
 import { api, ApiError } from "../lib/api";
 import { useFetch } from "../lib/useFetch";
 import { STATUS_LABELS, safeExternalUrl, type Company, type Job } from "../../shared/types";
@@ -55,7 +55,7 @@ export default function Companies() {
     }
   };
 
-  const seedTopCompanies = async (category: "all" | "company" | "startup" | "remote") => {
+  const seedTopCompanies = async (category: "all" | "company" | "startup" | "remote" | "actively_hiring") => {
     if (seeding) return;
     setSeeding(true);
     setFormError(null);
@@ -156,6 +156,16 @@ export default function Companies() {
         </div>
 
         <div className="flex flex-wrap gap-2">
+          <Button
+            size="sm"
+            variant="outline"
+            disabled={seeding}
+            onClick={() => seedTopCompanies("actively_hiring")}
+            className="border-[3px] border-brut-ink bg-destructive/10 text-destructive border-destructive text-xs font-black shadow-[2px_2px_0_0_#ef4444]"
+          >
+            <Flame size={13} className="text-destructive fill-destructive" strokeWidth={2.5} />
+            {seeding ? "Importing…" : "🔥 Top 10 Actively Hiring"}
+          </Button>
           <Button
             size="sm"
             variant="outline"

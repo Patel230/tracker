@@ -113,14 +113,16 @@ companies.delete("/:id", async (c) => {
 
 companies.post("/seed", async (c) => {
   const userId = c.get("userId");
-  const body = (await c.req.json().catch(() => ({}))) as { category?: "company" | "startup" | "remote" | "all" };
+  const body = (await c.req.json().catch(() => ({}))) as { category?: "company" | "startup" | "remote" | "actively_hiring" | "all" };
   const targetCategory = body.category || "all";
 
   const { TOP_COMPANIES } = await import("../../shared/topCompaniesData");
 
-  const items = TOP_COMPANIES.filter(
-    (item) => targetCategory === "all" || item.category === targetCategory
-  );
+  const items = TOP_COMPANIES.filter((item) => {
+    if (targetCategory === "all") return true;
+    if (targetCategory === "actively_hiring") return !!item.actively_hiring;
+    return item.category === targetCategory;
+  });
 
   const { results: existing } = await c.env.DB.prepare(
     "SELECT id, name FROM companies WHERE user_id = ?"

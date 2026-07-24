@@ -4,6 +4,7 @@ export interface SeedCompany {
   portal_url: string;
   location?: string;
   job_title?: string;
+  actively_hiring?: boolean;
 }
 
 export const TOP_COMPANIES: SeedCompany[] = [
@@ -32,13 +33,13 @@ export const TOP_COMPANIES: SeedCompany[] = [
   { name: "PayPal", category: "company", portal_url: "https://crafted.paypal.com/careers", location: "San Jose, CA / Remote" },
   { name: "Shopify", category: "company", portal_url: "https://www.shopify.com/careers", location: "Ottawa, ON / Remote" },
   { name: "Snowflake", category: "company", portal_url: "https://www.snowflake.com/careers/", location: "Bozeman, MT / Remote" },
-  { name: "Databricks", category: "company", portal_url: "https://www.databricks.com/company/careers", location: "San Francisco, CA / Remote" },
+  { name: "Databricks", category: "company", portal_url: "https://www.databricks.com/company/careers", location: "San Francisco, CA / Remote", actively_hiring: true },
   { name: "Palantir", category: "company", portal_url: "https://www.palantir.com/careers/", location: "Denver, CO / NYC / Remote" },
   { name: "Atlassian", category: "company", portal_url: "https://www.atlassian.com/company/careers", location: "Sydney / SF / Remote" },
   { name: "Workday", category: "company", portal_url: "https://www.workday.com/en-us/company/careers.html", location: "Pleasanton, CA / Remote" },
   { name: "ServiceNow", category: "company", portal_url: "https://www.servicenow.com/company/careers.html", location: "Santa Clara, CA / Remote" },
   { name: "Twilio", category: "company", portal_url: "https://www.twilio.com/en-us/company/jobs", location: "San Francisco, CA / Remote" },
-  { name: "Cloudflare", category: "company", portal_url: "https://www.cloudflare.com/careers/", location: "San Francisco, CA / Remote" },
+  { name: "Cloudflare", category: "company", portal_url: "https://www.cloudflare.com/careers/", location: "San Francisco, CA / Remote", actively_hiring: true },
   { name: "Datadog", category: "company", portal_url: "https://www.datadoghq.com/careers/", location: "New York, NY / Remote" },
   { name: "MongoDB", category: "company", portal_url: "https://www.mongodb.com/careers", location: "New York, NY / Remote" },
   { name: "CrowdStrike", category: "company", portal_url: "https://www.crowdstrike.com/careers/", location: "Austin, TX / Remote" },
@@ -93,7 +94,7 @@ export const TOP_COMPANIES: SeedCompany[] = [
   { name: "Capgemini", category: "company", portal_url: "https://www.capgemini.com/careers/", location: "Paris / Remote" },
   { name: "EPAM Systems", category: "company", portal_url: "https://www.epam.com/careers", location: "Newtown, PA / Remote" },
   { name: "Thoughtworks", category: "company", portal_url: "https://www.thoughtworks.com/careers", location: "Chicago, IL / Remote" },
-  { name: "Stripe", category: "company", portal_url: "https://stripe.com/jobs", location: "San Francisco, CA / Remote" },
+  { name: "Stripe", category: "company", portal_url: "https://stripe.com/jobs", location: "San Francisco, CA / Remote", actively_hiring: true },
   { name: "Plaid", category: "company", portal_url: "https://plaid.com/careers/", location: "San Francisco, CA / Remote" },
   { name: "Brex", category: "company", portal_url: "https://www.brex.com/careers", location: "San Francisco, CA / Remote" },
   { name: "Ramp", category: "company", portal_url: "https://ramp.com/careers", location: "New York, NY / Remote" },
@@ -110,22 +111,22 @@ export const TOP_COMPANIES: SeedCompany[] = [
   { name: "Synopsys", category: "company", portal_url: "https://www.synopsys.com/company/careers.html", location: "Sunnyvale, CA / Remote" },
 
   // --- TOP 100 TECH STARTUPS ---
-  { name: "OpenAI", category: "startup", portal_url: "https://openai.com/careers", location: "San Francisco, CA" },
-  { name: "Anthropic", category: "startup", portal_url: "https://anthropic.com/careers", location: "San Francisco, CA / Seattle, WA" },
+  { name: "OpenAI", category: "startup", portal_url: "https://openai.com/careers", location: "San Francisco, CA", actively_hiring: true },
+  { name: "Anthropic", category: "startup", portal_url: "https://anthropic.com/careers", location: "San Francisco, CA / Seattle, WA", actively_hiring: true },
   { name: "Midjourney", category: "startup", portal_url: "https://www.midjourney.com/careers", location: "San Francisco, CA / Remote" },
-  { name: "Perplexity AI", category: "startup", portal_url: "https://www.perplexity.ai/careers", location: "San Francisco, CA" },
+  { name: "Perplexity AI", category: "startup", portal_url: "https://www.perplexity.ai/careers", location: "San Francisco, CA", actively_hiring: true },
   { name: "Mistral AI", category: "startup", portal_url: "https://mistral.ai/careers/", location: "Paris / Remote" },
   { name: "Cohere", category: "startup", portal_url: "https://cohere.com/careers", location: "Toronto / SF / Remote" },
   { name: "ElevenLabs", category: "startup", portal_url: "https://elevenlabs.io/careers", location: "New York, NY / Remote" },
-  { name: "Scale AI", category: "startup", portal_url: "https://scale.com/careers", location: "San Francisco, CA" },
+  { name: "Scale AI", category: "startup", portal_url: "https://scale.com/careers", location: "San Francisco, CA", actively_hiring: true },
   { name: "Hugging Face", category: "startup", portal_url: "https://huggingface.co/jobs", location: "NYC / Paris / Remote" },
   { name: "Runway", category: "startup", portal_url: "https://runwayml.com/careers", location: "New York, NY / Remote" },
   { name: "Character.AI", category: "startup", portal_url: "https://beta.character.ai/careers", location: "Palo Alto, CA" },
   { name: "Synthesia", category: "startup", portal_url: "https://www.synthesia.io/careers", location: "London / Remote" },
-  { name: "Cursor (Anysphere)", category: "startup", portal_url: "https://www.cursor.com/careers", location: "San Francisco, CA" },
+  { name: "Cursor (Anysphere)", category: "startup", portal_url: "https://www.cursor.com/careers", location: "San Francisco, CA", actively_hiring: true },
   { name: "Replit", category: "startup", portal_url: "https://replit.com/site/careers", location: "San Francisco, CA / Remote" },
-  { name: "Supabase", category: "startup", portal_url: "https://supabase.com/careers", location: "100% Remote" },
-  { name: "Vercel", category: "startup", portal_url: "https://vercel.com/careers", location: "San Francisco, CA / Remote" },
+  { name: "Supabase", category: "startup", portal_url: "https://supabase.com/careers", location: "100% Remote", actively_hiring: true },
+  { name: "Vercel", category: "startup", portal_url: "https://vercel.com/careers", location: "San Francisco, CA / Remote", actively_hiring: true },
   { name: "Netlify", category: "startup", portal_url: "https://www.netlify.com/careers/", location: "100% Remote" },
   { name: "Railway", category: "startup", portal_url: "https://railway.app/careers", location: "San Francisco, CA / Remote" },
   { name: "Render", category: "startup", portal_url: "https://render.com/careers", location: "San Francisco, CA / Remote" },
