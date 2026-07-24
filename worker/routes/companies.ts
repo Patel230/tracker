@@ -88,8 +88,6 @@ companies.patch("/:id", async (c) => {
     .bind(...vals)
     .run();
 
-  // Keep the denormalized jobs.company in sync when a company is renamed, so
-  // every view that reads jobs.company (cards, table, reminders) updates too.
   if (f.name !== undefined) {
     await c.env.DB.prepare("UPDATE jobs SET company = ? WHERE company_id = ?")
       .bind(f.name, c.req.param("id"))
@@ -99,8 +97,6 @@ companies.patch("/:id", async (c) => {
 });
 
 companies.delete("/:id", async (c) => {
-  // Detach any jobs linking here before deleting, so they fall back to their
-  // denormalized company name instead of dangling on a missing company.
   await c.env.DB.prepare("UPDATE jobs SET company_id = NULL WHERE company_id = ? AND user_id = ?")
     .bind(c.req.param("id"), c.get("userId"))
     .run();
@@ -113,7 +109,7 @@ companies.delete("/:id", async (c) => {
 
 companies.post("/seed", async (c) => {
   const userId = c.get("userId");
-  const body = (await c.req.json().catch(() => ({}))) as { category?: "company" | "startup" | "remote" | "actively_hiring" | "visa_remote" | "india_tech" | "all" };
+  const body = (await c.req.json().catch(() => ({}))) as { category?: "company" | "startup" | "remote" | "actively_hiring" | "visa_remote" | "india_tech" | "ai_yc" | "all" };
   const targetCategory = body.category || "all";
 
   const { TOP_COMPANIES } = await import("../../shared/topCompaniesData");
@@ -175,8 +171,8 @@ companies.post("/seed", async (c) => {
           item.location || "Remote / Hybrid",
           "wishlist",
           i * 10,
-          `Backend Engineering career portal for ${item.name}.`,
-          `Curated ${item.category === "startup" ? "Top Startup" : "Top Tech Company"} Career Page`
+          `Backend & AI Engineering career portal for ${item.name}.`,
+          `Curated ${item.category === "ai_yc" ? "Top AI & YC Startup" : item.category === "startup" ? "Top Startup" : "Top Tech Company"} Career Page`
         )
       );
     }

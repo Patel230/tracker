@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState, type FormEvent } from "react";
-import { Building2, ExternalLink, Pencil, Plus, Save, Trash2, X, RotateCcw, Search, Sparkles, Rocket, Globe, Flame, Plane, MapPin, Code2 } from "lucide-react";
+import { Building2, ExternalLink, Pencil, Plus, Save, Trash2, X, RotateCcw, Search, Sparkles, Globe, Flame, Plane, MapPin, Code2, Bot } from "lucide-react";
 import { api, ApiError } from "../lib/api";
 import { useFetch } from "../lib/useFetch";
 import { STATUS_LABELS, safeExternalUrl, type Company, type Job } from "../../shared/types";
@@ -14,6 +14,7 @@ function portalHref(url: string | null): string | null {
 }
 
 const CATEGORY_TAGS: Record<string, { label: string; bg: string; text: string; border: string }> = {
+  ai_yc: { label: "AI & YC Startup", bg: "bg-purple-500/15", text: "text-purple-300", border: "border-purple-500/30" },
   company: { label: "Tech Giant", bg: "bg-amber-500/15", text: "text-amber-300", border: "border-amber-500/30" },
   startup: { label: "Startup", bg: "bg-fuchsia-500/15", text: "text-fuchsia-300", border: "border-fuchsia-500/30" },
   remote: { label: "Remote-First", bg: "bg-teal-500/15", text: "text-teal-300", border: "border-teal-500/30" },
@@ -34,7 +35,7 @@ export default function Companies() {
   const [seeding, setSeeding] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
   const [search, setSearch] = useState("");
-  const [categoryFilter, setCategoryFilter] = useState<"all" | "actively_hiring" | "company" | "startup" | "remote" | "visa_remote" | "india_tech">("all");
+  const [categoryFilter, setCategoryFilter] = useState<"all" | "actively_hiring" | "ai_yc" | "company" | "startup" | "remote" | "visa_remote" | "india_tech">("all");
 
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editName, setEditName] = useState("");
@@ -89,7 +90,7 @@ export default function Companies() {
     }
   };
 
-  const seedTopCompanies = async (category: "all" | "company" | "startup" | "remote" | "actively_hiring" | "visa_remote" | "india_tech") => {
+  const seedTopCompanies = async (category: "all" | "company" | "startup" | "remote" | "actively_hiring" | "visa_remote" | "india_tech" | "ai_yc") => {
     if (seeding) return;
     setSeeding(true);
     setFormError(null);
@@ -185,6 +186,16 @@ export default function Companies() {
               size="sm"
               variant="outline"
               disabled={seeding}
+              onClick={() => seedTopCompanies("ai_yc")}
+              className="rounded-xl border border-purple-500/30 bg-purple-500/15 text-purple-300 text-xs font-bold hover:bg-purple-500/25 gap-1.5"
+            >
+              <Bot size={14} className="text-purple-300" strokeWidth={2} />
+              {seeding ? "Importing…" : "100+ AI & YC Startups"}
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              disabled={seeding}
               onClick={() => seedTopCompanies("actively_hiring")}
               className="rounded-xl border border-red-500/30 bg-red-500/15 text-red-300 text-xs font-bold hover:bg-red-500/25 gap-1.5"
             >
@@ -200,16 +211,6 @@ export default function Companies() {
             >
               <Sparkles size={14} className="text-amber-300" strokeWidth={2} />
               {seeding ? "Importing…" : "Top 100 Tech Giants"}
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              disabled={seeding}
-              onClick={() => seedTopCompanies("startup")}
-              className="rounded-xl border border-fuchsia-500/30 bg-fuchsia-500/15 text-fuchsia-300 text-xs font-bold hover:bg-fuchsia-500/25 gap-1.5"
-            >
-              <Rocket size={14} className="text-fuchsia-300" strokeWidth={2} />
-              {seeding ? "Importing…" : "Top 100 Startups"}
             </Button>
             <Button
               size="sm"
@@ -248,7 +249,7 @@ export default function Companies() {
               className="rounded-xl gradient-lime text-slate-950 text-xs font-extrabold gap-1.5 shadow-lg shadow-lime-500/25"
             >
               <Code2 size={14} strokeWidth={2.5} />
-              {seeding ? "Importing…" : "All Python + AI Roles"}
+              {seeding ? "Importing…" : "All Roles"}
             </Button>
           </div>
         </div>
@@ -292,9 +293,9 @@ export default function Companies() {
           <div className="flex flex-wrap gap-1.5">
             {[
               { id: "all", label: "All", Icon: Building2, iconClass: "text-slate-400", activeBg: "bg-slate-800 border-white/20 text-white" },
+              { id: "ai_yc", label: "AI & YC", Icon: Bot, iconClass: "text-purple-400", activeBg: "bg-purple-500/20 border-purple-500/40 text-purple-300" },
               { id: "actively_hiring", label: "Actively Hiring", Icon: Flame, iconClass: "text-red-400 fill-red-400", activeBg: "bg-red-500/20 border-red-500/40 text-red-300" },
               { id: "company", label: "Tech Giants", Icon: Sparkles, iconClass: "text-amber-400", activeBg: "bg-amber-500/20 border-amber-500/40 text-amber-300" },
-              { id: "startup", label: "Startups", Icon: Rocket, iconClass: "text-fuchsia-400", activeBg: "bg-fuchsia-500/20 border-fuchsia-500/40 text-fuchsia-300" },
               { id: "remote", label: "Remote", Icon: Globe, iconClass: "text-teal-400", activeBg: "bg-teal-500/20 border-teal-500/40 text-teal-300" },
               { id: "visa_remote", label: "Visa & Relocation", Icon: Plane, iconClass: "text-cyan-400", activeBg: "bg-cyan-500/20 border-cyan-500/40 text-cyan-300" },
               { id: "india_tech", label: "India Tech", Icon: MapPin, iconClass: "text-lime-400", activeBg: "bg-lime-500/20 border-lime-500/40 text-lime-300" },
@@ -322,9 +323,9 @@ export default function Companies() {
               No matching companies found.
             </p>
             <div className="mt-4 flex justify-center gap-2">
-              <Button size="sm" onClick={() => seedTopCompanies("all")} disabled={seeding} className="rounded-xl gradient-lime text-slate-950 text-xs font-extrabold">
-                <Sparkles size={14} strokeWidth={2} />
-                Import All Companies
+              <Button size="sm" onClick={() => seedTopCompanies("ai_yc")} disabled={seeding} className="rounded-xl gradient-lime text-slate-950 text-xs font-extrabold">
+                <Bot size={14} strokeWidth={2} />
+                Import 100+ AI & YC Startups
               </Button>
             </div>
           </div>
